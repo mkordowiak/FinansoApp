@@ -2,24 +2,26 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using FinansoData.Repository;
+using FinansoData.BLL;
+using FinansoData.Data;
 
 namespace FinansoApp.Controllers
 {
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        private readonly IBalanceRepository _balanceRepository;
+        private readonly IAccountBLL _accountBLL;
+        private readonly ISeed _seed;
 
-        public HomeController(ILogger<HomeController> logger, IBalanceRepository balanceRepository)
+        public HomeController(ILogger<HomeController> logger, IAccountBLL accountBLL, ISeed seed)
         {
             _logger = logger;
-            this._balanceRepository = balanceRepository;
+            _accountBLL = accountBLL;
+            _seed = seed;
         }
 
         public async Task<IActionResult> Index()
         {
-            var data = await _balanceRepository.GetAllBalancesAsync();
-            var data2 = await _balanceRepository.GetBalanceAsync(1);
             return View();
         }
 

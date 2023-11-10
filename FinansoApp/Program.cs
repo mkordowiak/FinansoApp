@@ -1,14 +1,19 @@
+using FinansoApp.Controllers;
+using FinansoData.BLL;
 using FinansoData.Data;
 using FinansoData.Models;
 using FinansoData.Repository;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Scopes
 builder.Services.AddScoped<IBalanceRepository, BalanceRepository>();
+builder.Services.AddScoped<IAccountBLL, AccountBLL>();
+builder.Services.AddScoped<ISeed, Seed>();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
@@ -32,10 +37,18 @@ var app = builder.Build();
 
 
 
-if (args.Length == 1 && args[0].ToLower() == "seeddata")
-{
-    Seed.SeedData(app);
-}
+
+
+Seed.SeedUsers(app, "passWord123");
+
+//if (args.Length == 1 && args[0].ToLower() == "seeddata")
+//{
+//    //var serviceProvider = app.Services;
+//    //var seed = ActivatorUtilities.CreateInstance<HomeController>(serviceProvider);
+//    //await seed.SeedData();
+
+
+//}
 
 
 // Configure the HTTP request pipeline.
