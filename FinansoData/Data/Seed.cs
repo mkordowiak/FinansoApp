@@ -24,7 +24,7 @@ namespace FinansoData.Data
         /// <returns></returns>
         /// <exception cref="InvalidOperationException"></exception>
         public static async Task SeedUsers(IApplicationBuilder applicationBuilder, string defaultPassword)
-        {
+            {
             using (var serviceScope = applicationBuilder.ApplicationServices.CreateScope())
             {
                 var roleManager = serviceScope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
@@ -73,12 +73,14 @@ namespace FinansoData.Data
                 if (appUser == null)
                 {
                     var newRegularUser = new AppUser()
-                    {
-                        UserName = "user1",
+                {
+                    UserName = "user1",
                         Email = appUserEmail,
-                        EmailConfirmed = true,
-                        Created = DateTime.Now
-                    };
+                    EmailConfirmed = true,
+                    FirstName = "user",
+                    Created = DateTime.Now
+
+                };
                     var regularUserCreation = await userManager.CreateAsync(newRegularUser, defaultPassword);
                     if (regularUserCreation.Succeeded == false)
                     {
