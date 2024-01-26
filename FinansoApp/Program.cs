@@ -14,6 +14,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddScoped<IBalanceRepository, BalanceRepository>();
 builder.Services.AddScoped<IAccountBLL, AccountBLL>();
 builder.Services.AddScoped<ISeed, Seed>();
+builder.Services.AddScoped<ICurrencyRepository, CurrencyRepository>(); 
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();

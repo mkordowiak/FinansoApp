@@ -4,16 +4,20 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using FinansoData.BLL;
 using System.Net;
+using FinansoData.Repository;
 
 namespace FinansoData.Data
 {
     public class Seed : ISeed
     {
         private readonly IAccountBLL _accountBLL;
+        ICurrencyRepository _currencyRepository;
 
-        public Seed(IAccountBLL accountBLL)
+
+        public Seed(IAccountBLL accountBLL, ICurrencyRepository currencyRepository)
         {
-            this._accountBLL = accountBLL;
+            _accountBLL = accountBLL;
+            _currencyRepository = currencyRepository;
         }
 
         /// <summary>
@@ -93,6 +97,17 @@ namespace FinansoData.Data
                     }
                 }
             }
+        }
+
+        public async Task<bool> SeedCurrencies()
+        {
+            _currencyRepository.Add(new Currency { Name = "PLN", ExchangeRate=1,Updated = DateTime.Now});
+            _currencyRepository.Add(new Currency { Name = "EUR", ExchangeRate = 4.5, Updated = DateTime.Now});
+            _currencyRepository.Add(new Currency { Name = "USD", ExchangeRate = 4.2, Updated= DateTime.Now});
+            
+            _currencyRepository.Save();
+
+            return true;
         }
     }
 }
