@@ -12,6 +12,27 @@ namespace FinansoData.BLL
             _userManager = userManager;
         }
 
+        private bool? _RegisterAlreadyExists;
+        private bool? _RegisterError;
+
+        public bool? RegisterAlreadyExists
+        {
+            get
+            {
+                return _RegisterAlreadyExists;
+            }
+        }
+
+        public bool? RegisterError
+        {
+            get
+            {
+                return _RegisterError;
+            }
+        }
+
+
+        #region methods
         public async Task<AppUser?> AddUserToRoleAdminAsync(AppUser appUser)
         {
             await _userManager.AddToRoleAsync(appUser, UserRoles.Admin);
@@ -95,5 +116,51 @@ namespace FinansoData.BLL
                 return false;
             }
         }
+
+        public async Task<AppUser?> RegisterNewUserAsync(string Email, string Password)
+        {
+            // Check if user is already exists
+            AppUser? user = await _userManager.FindByEmailAsync(Email);
+            if (user != null)
+            {
+                _RegisterAlreadyExists = true;
+                return null;
+            }
+
+            // New user object
+            AppUser newUser = new AppUser()
+            {
+                UserName = Email,
+                Email = Email,
+                EmailConfirmed = false,
+                Created = DateTime.Now
+
+            };
+
+            // Create user
+            IdentityResult userCreation = await _userManager.CreateAsync(newUser, Password);
+
+            // When can't create user
+            if (userCreation == null || userCreation.Succeeded == false)
+            {
+                _RegisterError = true;
+                return null;
+            }
+
+            // Assign user role
+            IdentityResult userRoleAssign = await _userManager.AddToRoleAsync(newUser, UserRoles.User);
+            
+            // If can't assing user to role
+            if (userRoleAssign.Succeeded == false)
+            {
+                await _userManager.DeleteAsync(newUser);
+                _RegisterError = true;
+                return null;
+            }
+
+            //
+            return newUser;
+        }
+        #endregion
     }
 }

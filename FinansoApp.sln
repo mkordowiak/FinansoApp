@@ -3,9 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.7.34221.43
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinansoApp", "FinansoApp\FinansoApp.csproj", "{E613E4D4-3555-4F65-A273-E04AD1A43240}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FinansoApp", "FinansoApp\FinansoApp.csproj", "{E613E4D4-3555-4F65-A273-E04AD1A43240}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinansoData", "FinansoData\FinansoData.csproj", "{8CE6BF34-988C-41F1-A006-E34973F5C449}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FinansoData", "FinansoData\FinansoData.csproj", "{8CE6BF34-988C-41F1-A006-E34973F5C449}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

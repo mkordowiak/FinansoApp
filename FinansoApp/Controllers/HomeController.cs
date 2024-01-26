@@ -22,8 +22,6 @@ namespace FinansoApp.Controllers
 
         public async Task<IActionResult> Index()
         {
-            var data = await _balanceRepository.GetAllBalancesAsync();
-            var data2 = await _balanceRepository.GetBalanceAsync(1);
             return View();
         }
 
