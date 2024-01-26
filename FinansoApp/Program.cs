@@ -38,17 +38,11 @@ var app = builder.Build();
 
 
 
-
-Seed.SeedUsers(app, "passWord123");
-
-//if (args.Length == 1 && args[0].ToLower() == "seeddata")
-//{
-//    //var serviceProvider = app.Services;
-//    //var seed = ActivatorUtilities.CreateInstance<HomeController>(serviceProvider);
-//    //await seed.SeedData();
-
-
-//}
+if (args.Length == 1 && args[0].ToLower() == "seeddata")
+{
+    string defaultPassword = builder.Configuration.GetValue<string>("DefaultPassword");
+    Seed.SeedUsers(app, defaultPassword);
+}
 
 
 // Configure the HTTP request pipeline.

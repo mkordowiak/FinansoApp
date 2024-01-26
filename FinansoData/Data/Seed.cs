@@ -16,20 +16,20 @@ namespace FinansoData.Data
             this._accountBLL = accountBLL;
         }
 
-
-        public async Task SeedData()
-        {
-            await _accountBLL.CreateAdminAsync("admin1", "admin1@mail.pl", "Haslo?123");
-            await _accountBLL.CreateUserAsync("user1", "user1@mail.pl", "Haslo?123");
-        }
-
-        public static async Task SeedUsers(IApplicationBuilder applicationBuilder, string password)
+        /// <summary>
+        /// Static method to run ONLY when project is initialized
+        /// </summary>
+        /// <param name="applicationBuilder"></param>
+        /// <param name="defaultPassword"></param>
+        /// <returns></returns>
+        /// <exception cref="InvalidOperationException"></exception>
+        public static async Task SeedUsers(IApplicationBuilder applicationBuilder, string defaultPassword)
         {
             using (var serviceScope = applicationBuilder.ApplicationServices.CreateScope())
             {
                 var roleManager = serviceScope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
-                // Create roles
+                // Create roles if they dont exists
                 if (!await roleManager.RoleExistsAsync(UserRoles.Admin))
                     await roleManager.CreateAsync(new IdentityRole(UserRoles.Admin));
                 if (!await roleManager.RoleExistsAsync(UserRoles.User))
@@ -51,8 +51,20 @@ namespace FinansoData.Data
                         Created = DateTime.Now
 
                     };
-                    await userManager.CreateAsync(newAdminUser, password);
-                    await userManager.AddToRoleAsync(newAdminUser, UserRoles.Admin);
+
+                    var adminUserCreation = await userManager.CreateAsync(newAdminUser, defaultPassword);
+
+                    if (adminUserCreation.Succeeded == false)
+                    {
+                        throw new InvalidOperationException(adminUserCreation.Errors.ToString());
+                    }
+
+                    var adminUserRoleAssign = await userManager.AddToRoleAsync(newAdminUser, UserRoles.Admin);
+
+                    if(adminUserRoleAssign.Succeeded == false)
+                    {
+                        throw new InvalidOperationException(adminUserRoleAssign.Errors.ToString());
+                    }
                 }
 
                 string appUserEmail = "user@user1.pl";
@@ -60,15 +72,23 @@ namespace FinansoData.Data
                 var appUser = await userManager.FindByEmailAsync(appUserEmail);
                 if (appUser == null)
                 {
-                    var newAppUser = new AppUser()
+                    var newRegularUser = new AppUser()
                     {
                         UserName = "user1",
                         Email = appUserEmail,
                         EmailConfirmed = true,
                         Created = DateTime.Now
                     };
-                    await userManager.CreateAsync(newAppUser, password);
-                    await userManager.AddToRoleAsync(newAppUser, UserRoles.User);
+                    var regularUserCreation = await userManager.CreateAsync(newRegularUser, defaultPassword);
+                    if (regularUserCreation.Succeeded == false)
+                    {
+                        throw new InvalidOperationException(regularUserCreation.Errors.ToString());
+                    }
+                    var regularUserRoleCreation = await userManager.AddToRoleAsync(newRegularUser, UserRoles.User);
+                    if (regularUserRoleCreation.Succeeded == false)
+                    {
+                        throw new InvalidOperationException(regularUserRoleCreation.Errors.ToString());
+                    }
                 }
             }
         }
