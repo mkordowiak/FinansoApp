@@ -14,6 +14,7 @@ builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 builder.Services.AddScoped<IBalanceRepository, BalanceRepository>();
 builder.Services.AddScoped<ISeed, Seed>();
 builder.Services.AddScoped<ICurrencyRepository, CurrencyRepository>(); 
+builder.Services.AddScoped<IGroupRepository, GroupRepository>();
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();

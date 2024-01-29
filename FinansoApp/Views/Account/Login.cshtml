@@ -1,8 +1,10 @@
 ﻿@using FinansoApp.ViewModels
+@using System.ComponentModel.DataAnnotations
+
 @model LoginViewModel
 
 @{
-    ViewData["Title"] = "LoginAsync";
+    ViewData["Title"] = "Login";
 }
 <div class="row">
     <div class="col-md-6 offset-3">
@@ -29,7 +31,7 @@
             <div class="col-md-8 offset-2">
                 <form asp-action="Login">
 
-                    <div asp-validation-summary="ModelOnly" class="text-danger"></div>
+                    <div asp-validation-summary="All" class="text-danger"></div>
                     <div class="form-group">
                         <label asp-for="Email" class="control-label"></label>
                         <input asp-for="Email" class="form-control">
@@ -42,7 +44,7 @@
                     </div>
                     <div class="form-group">
                         <input class="btn btn-outline-success float right" type="submit" value="Log in" />
-                        <a class="btn btn-outline-secondary" asp-controller="Club" asp-action="Index">Cancel</a>
+                        <a class="btn btn-outline-secondary" asp-controller="Home" asp-action="Index">Cancel</a>
                     </div>
                 </form>
             </div>

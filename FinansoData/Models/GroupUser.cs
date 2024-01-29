@@ -18,6 +18,8 @@ namespace FinansoData.Models
         [Key]
         public int Id { get; set; }
 
+        public Group Group { get; set; }
+
         /// <summary>
         /// AppUser foreign key
         /// </summary>
