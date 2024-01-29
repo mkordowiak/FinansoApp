@@ -1,4 +1,17 @@
-﻿@using FinansoApp.ViewModels
-@model GroupIndexViewModel
+﻿@using FinansoData.DataViewModel.Group
+@model List<GetUserGroupsViewModel>
 
-<a class="nav-link text-dark" asp-area="" asp-controller="Group" asp-action="Create">Groups</a>
+<a type="button" class="btn btn-secondary mb-1" asp-action="Create" asp-controller="Group">New group</a>
+
+
+@foreach (var i in Model)
+            {
+    <h2>@i.Name</h2>
+    <p>Members: <bold>@i.MembersCount</bold></p> 
+    @if(i.IsOwner){
+        <a type="button" class="btn btn-secondary mb-1" asp-action="DeleteGroup" asp-controller="Group" asp-route-id="@i.Id">DeleteGroup</a>
+    }
+    <a type="button" class="btn btn-secondary mb-1" asp-action="EditMembers" asp-controller="Group" asp-route-id="@i.Id">Edit members</a>
+    
+    
+}

@@ -156,7 +156,7 @@ namespace FinansoData.Repository
             return Add(group) ? true : false;
         }
 
-        public async Task<IEnumerable<GetUserGroupsViewModel>> GetUserGroups(string appUser)
+        public async Task<IEnumerable<GetUserGroupsViewModel>?> GetUserGroups(string appUser)
         {
             AppUser user;
             try
@@ -177,31 +177,8 @@ namespace FinansoData.Repository
                 return null;
             }
 
-            //var q1 = from gu in _context.GroupUsers
-            //         where gu.AppUser.Equals(appUser)
-            //         select gu;
 
-            //var query = from g in _context.Groups
-            //            join gu in _context.GroupUsers on g.GroupUser equals gu.Id
-            //            select g;
-
-
-            var query3 = from g in _context.Groups
-                        join gu in _context.GroupUsers on g.Id equals gu.Group.Id
-                        where gu.AppUser == user
-                        && gu.Active == true
-                        select new
-                        {
-                            Id = g.Id,
-                            GroupName = g.Name,
-                            c = (from gusq in _context.GroupUsers
-                                 where gusq.Group.Id.Equals(g.Id) 
-                                 && gusq.Active == true
-                                 select gusq.Id).Count() 
-                        };
-
-
-            var query5 = from g in _context.Groups
+            var query = from g in _context.Groups
                                       join gu in _context.GroupUsers on g.Id equals gu.Group.Id
                                       where gu.AppUser == user
                                       && gu.Active == true
@@ -209,22 +186,22 @@ namespace FinansoData.Repository
                                       {
                                           Id = g.Id,
                                           Name = g.Name,
+                                          IsOwner = (g.OwnerAppUser == user),
                                           MembersCount = (from gusq in _context.GroupUsers
                                                where gusq.Group.Id.Equals(g.Id)
                                                && gusq.Active == true
                                                select gusq.Id).Count()
                                       };
 
-            return await query5.ToListAsync();
-
-
-
-
-            //var wwww = await query3.ToListAsync();
-
-            //var qqq= from w in wwww
-            //         select String.Concat(w.c.ToString(), w.Id.ToString(), w.GroupName);
-            //return qqq.ToList();
+            try
+            {
+                return await query.ToListAsync();
+            }
+            catch (Exception)
+            {
+                _errors.Add(new KeyValuePair<string, bool>("DatabaseError", true));
+                return null;
+            }
         }
     }
 }

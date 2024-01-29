@@ -20,7 +20,7 @@ namespace FinansoApp.Controllers
         public async Task<IActionResult> Index()
         {
             IEnumerable< GetUserGroupsViewModel> data = await _groupRepository.GetUserGroups(User.Identity.Name);
-            return View();
+            return View(data);
         }
 
         [Authorize]
@@ -48,6 +48,17 @@ namespace FinansoApp.Controllers
                 TempData["InternalError"] = true;
                 return View(groupCreateViewModel);
             }
+            return RedirectToAction("Index", "Home");
+        }
+
+
+        public async Task<IActionResult> EditMembers(int id)
+        {
+            return RedirectToAction("Index", "Home");
+        }
+
+        public async Task<IActionResult> DeleteGroup(int id)
+        {
             return RedirectToAction("Index", "Home");
         }
     }
