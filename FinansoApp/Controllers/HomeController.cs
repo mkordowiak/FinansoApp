@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
 using FinansoData.Repository;
-using FinansoData.BLL;
 using FinansoData.Data;
 
 namespace FinansoApp.Controllers
@@ -10,13 +9,11 @@ namespace FinansoApp.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        private readonly IAccountBLL _accountBLL;
         private readonly ISeed _seed;
 
-        public HomeController(ILogger<HomeController> logger, IAccountBLL accountBLL, ISeed seed)
+        public HomeController(ILogger<HomeController> logger,ISeed seed)
         {
             _logger = logger;
-            _accountBLL = accountBLL;
             _seed = seed;
         }
 

@@ -2,17 +2,27 @@
 @model LoginViewModel
 
 @{
-    ViewData["Title"] = "Login";
+    ViewData["Title"] = "LoginAsync";
 }
 <div class="row">
     <div class="col-md-6 offset-3">
         <p>
             <h4>Log in to your account</h4>
         </p>
-        @if (TempData["Error"] != null)
+        @if (TempData["InternalError"] != null)
         {
             <div class="col-md-12 alert alert-danger">
-                <span><b>Sorry!</b> - @TempData["Error"]</span>
+                <span>
+                    <b>Sorry!</b> An error occurred while logging in, please try again later
+                </span>
+            </div>
+        }
+        @if (TempData["WrongCredentials"] != null)
+        {
+            <div class="col-md-12 alert alert-danger">
+                <span>
+                    <b>Sorry!</b> The provided data is not correct, please check if the email and password entered are correct.
+                </span>
             </div>
         }
         <div class="row">

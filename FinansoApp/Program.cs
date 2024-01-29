@@ -1,5 +1,4 @@
 using FinansoApp.Controllers;
-using FinansoData.BLL;
 using FinansoData.Data;
 using FinansoData.Models;
 using FinansoData.Repository;
@@ -11,8 +10,8 @@ using Microsoft.EntityFrameworkCore;
 var builder = WebApplication.CreateBuilder(args);
 
 // Scopes
+builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 builder.Services.AddScoped<IBalanceRepository, BalanceRepository>();
-builder.Services.AddScoped<IAccountBLL, AccountBLL>();
 builder.Services.AddScoped<ISeed, Seed>();
 builder.Services.AddScoped<ICurrencyRepository, CurrencyRepository>(); 
 

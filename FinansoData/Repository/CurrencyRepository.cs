@@ -12,33 +12,77 @@ namespace FinansoData.Repository
     public class CurrencyRepository : ICurrencyRepository
     {
         private ApplicationDbContext _context;
+        private readonly List<KeyValuePair<string, bool>> _errors;
 
         public CurrencyRepository(ApplicationDbContext context)
         {
             _context = context;
+
+            _errors = new List<KeyValuePair<string, bool>>();
         }
 
+        public IEnumerable<KeyValuePair<string, bool>> Error
+        {
+            get => _errors;
+        }
 
+        #region CRUD operations
         public bool Add(Currency currency)
         {
-            _context.Add(currency);
-            return Save();
+            try
+            {
+                _context.Add(currency);
+                return Save();
+            }
+            catch
+            {
+
+                _errors.Add(new KeyValuePair<string, bool>("DatabaseError", true));
+                return false;
+            }
+            
         }
 
         public bool Delete(Currency currency)
         {
-            _context.Remove(currency);
-            return Save();
+            try
+            {
+                _context.Remove(currency);
+                return Save();
+            }
+            catch
+            {
+                _errors.Add(new KeyValuePair<string, bool>("DatabaseError", true));
+                return false;
+            }
         }
 
-        public async Task<IEnumerable<Currency>> GetAllCurrencyAsync()
+        public bool Update(Currency currency)
         {
-            return await _context.Currencies.ToListAsync();
+            try
+            {
+                _context.Update(currency);
+                return Save();
+            }
+            catch
+            {
+                _errors.Add(new KeyValuePair<string, bool>("DatabaseError", true));
+                return false;
+            }
         }
 
-        public async Task<Currency> GetCurrencyAsync(int currencyId)
+        public async Task<bool> UpdateAsync(Currency currency)
         {
-            return await _context.Currencies.FirstAsync(c => c.Id == currencyId);
+            try
+            {
+                _context.Update(currency);
+                return await SaveAsync();
+            }
+            catch
+            {
+                _errors.Add(new KeyValuePair<string, bool>("DatabaseError", true));
+                return false;
+            }
         }
 
         public bool Save()
@@ -52,11 +96,36 @@ namespace FinansoData.Repository
             int saved = await _context.SaveChangesAsync();
             return saved > 0 ? true : false;
         }
+        #endregion
 
-        public bool UpdaterThan(Currency currency)
+        public async Task<IEnumerable<Currency>?> GetAllCurrencyAsync()
         {
-            _context.Update(currency);
-            return Save();
+            try
+            {
+                return await _context.Currencies.ToListAsync();
+            }
+            catch
+            {
+                _errors.Add(new KeyValuePair<string, bool>("DatabaseError", true));
+                return null;
+            }
         }
+
+        public async Task<Currency?> GetCurrencyAsync(int currencyId)
+        {
+            try
+            {
+                return await _context.Currencies.FirstAsync(c => c.Id == currencyId);
+            }
+            catch
+            {
+                _errors.Add(new KeyValuePair<string, bool>("DatabaseError", true));
+                return null;
+            }
+        }
+
+        
+
+        
     }
 }

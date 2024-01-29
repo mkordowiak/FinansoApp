@@ -4,7 +4,7 @@ using Microsoft.AspNetCore.Identity;
 using FinansoData.Models;
 using Microsoft.EntityFrameworkCore;
 using FinansoData.Data;
-using FinansoData.BLL;
+using FinansoData.Repository;
 
 namespace FinansoApp.Controllers
 {
@@ -12,13 +12,13 @@ namespace FinansoApp.Controllers
     {
         private readonly UserManager<AppUser> _userManager;
         private readonly SignInManager<AppUser> _signInManager;
-        private readonly IAccountBLL _accountBLL;
+        private readonly IAccountRepository _accountRepository;
 
-        public AccountController(UserManager<AppUser> userManager, IAccountBLL accountBLL, SignInManager<AppUser> signInManager = null)
+        public AccountController(UserManager<AppUser> userManager, IAccountRepository accountRepository, SignInManager<AppUser> signInManager = null)
         {
             _userManager = userManager;
             _signInManager = signInManager;
-            _accountBLL = accountBLL;
+            _accountRepository = accountRepository;
         }
 
         
@@ -36,29 +36,30 @@ namespace FinansoApp.Controllers
         {
             if(!ModelState.IsValid) return View(loginViewModel);
 
+            AppUser? user = await _accountRepository.LoginAsync(loginViewModel.Email, loginViewModel.Password);
 
-            // Checks if user exists
-            var user = await _userManager.FindByEmailAsync(loginViewModel.Email);
-            if (user == null)
+            // if there's something wrong with accessing data
+            if(user == null 
+                && _accountRepository.Error.Any(x => x.Key == "DatabaseError"))
             {
-                TempData["Error"] = false;
+                TempData["InternalError"] = true;
                 return View(loginViewModel);
             }
+
+            // When app can access data, but credentials did not match
+            if(user == null)
+            {
+                TempData["WrongCredentials"] = true;
+                return View(loginViewModel);
+            }
+
             
-
-            // Check if password matches
-            var passwordCheck = await _userManager.CheckPasswordAsync(user, loginViewModel.Password);
-            if(passwordCheck == false)
-            {
-                TempData["Error"] = false;
-                return View(loginViewModel);
-            }
 
             // Perform login
             var result = await _signInManager.PasswordSignInAsync(user, loginViewModel.Password, false, false);
             if (result.Succeeded == false)
             {
-                TempData["Error"] = false;
+                TempData["InternalError"] = false;
                 return View(loginViewModel);
             }
 
@@ -81,22 +82,36 @@ namespace FinansoApp.Controllers
             AppUser user;
             try
             {
-                user = await _accountBLL.RegisterNewUserAsync(registerViewModel.Email, registerViewModel.Password);
+                user = await _accountRepository.CreateAppUser(registerViewModel.Email, registerViewModel.Password);
             }
             catch
             {
                 TempData["RegisterError"] = true;
                 return View(registerViewModel);
             }
+
             
 
-            if(_accountBLL.RegisterAlreadyExists == true)
+            // If email already exists pass information to frontend
+            if (_accountRepository.Error.Any(x => x.Key == "EmailAlreadyExists"))
             {
                 TempData["AlreadyExists"] = true;
                 return View(registerViewModel);
             }
 
-            if (_accountBLL.RegisterError == true)
+            if (_accountRepository.Error.Any(x => x.Key == "RegisterError"))
+            {
+                TempData["RegisterError"] = true;
+                return View(registerViewModel);
+            }
+
+            if (_accountRepository.Error.Any(x => x.Key == "AssignUserRoleError"))
+            {
+                TempData["RegisterError"] = true;
+                return View(registerViewModel);
+            }
+
+            if (user == null)
             {
                 TempData["RegisterError"] = true;
                 return View(registerViewModel);
