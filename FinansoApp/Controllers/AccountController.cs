@@ -1,10 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using FinansoApp.ViewModels;
-using Microsoft.AspNetCore.Identity;
+﻿using FinansoApp.ViewModels;
 using FinansoData.Models;
-using Microsoft.EntityFrameworkCore;
-using FinansoData.Data;
 using FinansoData.Repository;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 
 namespace FinansoApp.Controllers
 {
@@ -21,7 +19,7 @@ namespace FinansoApp.Controllers
             _accountRepository = accountRepository;
         }
 
-        
+
 
 
         public IActionResult Login()
@@ -34,12 +32,12 @@ namespace FinansoApp.Controllers
         [HttpPost]
         public async Task<IActionResult> Login(LoginViewModel loginViewModel)
         {
-            if(!ModelState.IsValid) return View(loginViewModel);
+            if (!ModelState.IsValid) return View(loginViewModel);
 
             AppUser? user = await _accountRepository.LoginAsync(loginViewModel.Email, loginViewModel.Password);
 
             // if there's something wrong with accessing data
-            if(user == null 
+            if (user == null
                 && _accountRepository.Error.Any(x => x.Key == "DatabaseError"))
             {
                 TempData["InternalError"] = true;
@@ -47,13 +45,13 @@ namespace FinansoApp.Controllers
             }
 
             // When app can access data, but credentials did not match
-            if(user == null)
+            if (user == null)
             {
                 TempData["WrongCredentials"] = true;
                 return View(loginViewModel);
             }
 
-            
+
 
             // Perform login
             var result = await _signInManager.PasswordSignInAsync(user, loginViewModel.Password, false, false);
@@ -90,7 +88,7 @@ namespace FinansoApp.Controllers
                 return View(registerViewModel);
             }
 
-            
+
 
             // If email already exists pass information to frontend
             if (_accountRepository.Error.Any(x => x.Key == "EmailAlreadyExists"))
