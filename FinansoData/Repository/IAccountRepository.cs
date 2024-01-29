@@ -1,17 +1,24 @@
 ﻿using FinansoData.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FinansoData.Repository
 {
     public interface IAccountRepository
     {
-        Task<bool> IsUserExists(string username);
-        Task<AppUser?> GetUser(string username);
-        Task<AppUser?> GetUserByEmail(string email);
-        Task<AppUser> AppUser(AppUser user);
+        /// <summary>
+        /// Errors while performing operations
+        /// </summary>
+        IEnumerable<KeyValuePair<string, bool>> Error { get; }
+
+        Task<bool> IsUserExistsAsync(string username);
+        Task<bool> IsUserExistsByEmailAsync(string email);
+        Task<bool> DeleteUserAsync(AppUser user);
+
+        Task<AppUser?> GetUserAsync(string username);
+        Task<AppUser?> GetUserByEmailAsync(string email);
+        Task<AppUser?> CreateAppUser(string Email, string Password);
+        Task<AppUser?> LoginAsync(string Email, string Password);
+
+        Task<AppUser?> AddUserToRoleUserAsync(AppUser appUser);
+        Task<AppUser?> AddUserToRoleAdminAsync(AppUser appUser);
     }
 }

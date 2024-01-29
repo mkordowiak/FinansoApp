@@ -2,7 +2,6 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
-using FinansoData.BLL;
 using System.Net;
 using FinansoData.Repository;
 
@@ -10,13 +9,13 @@ namespace FinansoData.Data
 {
     public class Seed : ISeed
     {
-        private readonly IAccountBLL _accountBLL;
+        private readonly IAccountRepository _accountRepository;
         ICurrencyRepository _currencyRepository;
 
 
-        public Seed(IAccountBLL accountBLL, ICurrencyRepository currencyRepository)
+        public Seed(IAccountRepository accountRepository, ICurrencyRepository currencyRepository)
         {
-            _accountBLL = accountBLL;
+            _accountRepository = accountRepository;
             _currencyRepository = currencyRepository;
         }
 
