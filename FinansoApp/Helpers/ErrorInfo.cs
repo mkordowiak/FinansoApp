@@ -1,6 +1,6 @@
 ﻿using System.Reflection;
 
-namespace FinansoData.Helpers
+namespace FinansoApp.Helpers
 {
     public class ErrorInfo
     {

@@ -1,5 +1,4 @@
-﻿using FinansoData.Helpers;
-using FinansoData.Models;
+﻿using FinansoData.Models;
 
 namespace FinansoData.Repository
 {
@@ -7,7 +6,7 @@ namespace FinansoData.Repository
     {
         IAccountRepositoryErrorInfo Err { get; set; }
 
-        public class IAccountRepositoryErrorInfo : ErrorInfo
+        public class IAccountRepositoryErrorInfo
         {
             public bool DatabaseError { get; set; }
             public bool EmailAlreadyExists { get; set; }

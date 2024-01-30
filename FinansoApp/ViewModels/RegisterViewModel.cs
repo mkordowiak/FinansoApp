@@ -24,7 +24,7 @@ namespace FinansoApp.ViewModels
         /// </summary>
         public RegisterViewModelErrorInfo Error { get; } = new RegisterViewModelErrorInfo();
 
-        public class RegisterViewModelErrorInfo : FinansoData.Helpers.ErrorInfo
+        public class RegisterViewModelErrorInfo : Helpers.ErrorInfo
         {
             public bool CreateUserError { get; set; }
             public bool AlreadyExists { get; set; }

@@ -40,13 +40,10 @@ namespace FinansoApp.Controllers
 
             AppUser? user = await _accountRepository.LoginAsync(loginViewModel.Email, loginViewModel.Password);
 
-            // Is there any error
-            bool isError = _accountRepository.Err.IsError();
 
 
             // if there's something wrong with accessing data
-            if (isError
-                && _accountRepository.Err.DatabaseError)
+            if (_accountRepository.Err.DatabaseError)
             {
                 loginViewModel.Error.InternalError = true;
                 return View(loginViewModel);

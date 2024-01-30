@@ -14,7 +14,7 @@ namespace FinansoApp.ViewModels
 
         public LoginViewModelErrorInfo Error { get; } = new LoginViewModelErrorInfo();
 
-        public class LoginViewModelErrorInfo : FinansoData.Helpers.ErrorInfo
+        public class LoginViewModelErrorInfo : Helpers.ErrorInfo
         {
             public bool InternalError { get; set; } = false;
             public bool WrongCredentials { get; set; } = false;
