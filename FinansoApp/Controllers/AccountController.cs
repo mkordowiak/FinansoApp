@@ -1,10 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using FinansoApp.ViewModels;
-using Microsoft.AspNetCore.Identity;
+﻿using FinansoApp.ViewModels;
 using FinansoData.Models;
-using Microsoft.EntityFrameworkCore;
-using FinansoData.Data;
 using FinansoData.Repository;
+using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 
 namespace FinansoApp.Controllers
 {
@@ -21,45 +19,48 @@ namespace FinansoApp.Controllers
             _accountRepository = accountRepository;
         }
 
-        
+
 
 
         public IActionResult Login()
         {
             // Hold values wher reload
-            var responseViewModel = new LoginViewModel();
+            LoginViewModel responseViewModel = new LoginViewModel();
             return View(responseViewModel);
         }
 
         [HttpPost]
         public async Task<IActionResult> Login(LoginViewModel loginViewModel)
         {
-            if(!ModelState.IsValid) return View(loginViewModel);
+            if (!ModelState.IsValid)
+            {
+                return View(loginViewModel);
+            }
 
             AppUser? user = await _accountRepository.LoginAsync(loginViewModel.Email, loginViewModel.Password);
 
             // if there's something wrong with accessing data
-            if(user == null 
+            if (user == null
                 && _accountRepository.Error.Any(x => x.Key == "DatabaseError"))
             {
-                TempData["InternalError"] = true;
+                loginViewModel.ErrorMessages.InternalError = true;
                 return View(loginViewModel);
             }
 
             // When app can access data, but credentials did not match
-            if(user == null)
+            if (user == null)
             {
-                TempData["WrongCredentials"] = true;
+                loginViewModel.ErrorMessages.WrongCredentials = true; ;
                 return View(loginViewModel);
             }
 
-            
+
 
             // Perform login
-            var result = await _signInManager.PasswordSignInAsync(user, loginViewModel.Password, false, false);
+            Microsoft.AspNetCore.Identity.SignInResult result = await _signInManager.PasswordSignInAsync(user, loginViewModel.Password, false, false);
             if (result.Succeeded == false)
             {
-                TempData["InternalError"] = false;
+                loginViewModel.ErrorMessages.InternalError = true;
                 return View(loginViewModel);
             }
 
@@ -69,15 +70,17 @@ namespace FinansoApp.Controllers
         public IActionResult Register()
         {
             // Hold values wher reload
-            var responseViewModel = new RegisterViewModel();
+            RegisterViewModel responseViewModel = new RegisterViewModel();
             return View(responseViewModel);
         }
 
         [HttpPost]
         public async Task<IActionResult> Register(RegisterViewModel registerViewModel)
         {
-            if (!ModelState.IsValid) return View(registerViewModel);
-
+            if (!ModelState.IsValid)
+            {
+                return View(registerViewModel);
+            }
 
             AppUser user;
             try
@@ -90,7 +93,7 @@ namespace FinansoApp.Controllers
                 return View(registerViewModel);
             }
 
-            
+
 
             // If email already exists pass information to frontend
             if (_accountRepository.Error.Any(x => x.Key == "EmailAlreadyExists"))

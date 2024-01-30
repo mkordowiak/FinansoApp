@@ -11,7 +11,7 @@
         <p>
             <h4>Log in to your account</h4>
         </p>
-        @if (TempData["InternalError"] != null)
+        @if (Model.ErrorMessages.InternalError)
         {
             <div class="col-md-12 alert alert-danger">
                 <span>
@@ -19,7 +19,7 @@
                 </span>
             </div>
         }
-        @if (TempData["WrongCredentials"] != null)
+        @if (Model.ErrorMessages.WrongCredentials)
         {
             <div class="col-md-12 alert alert-danger">
                 <span>
