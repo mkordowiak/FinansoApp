@@ -3,6 +3,7 @@ using FinansoData.Models;
 using FinansoData.Repository;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using System.Reflection.Metadata.Ecma335;
 
 namespace FinansoApp.Controllers
 {
@@ -29,6 +30,12 @@ namespace FinansoApp.Controllers
             return View(responseViewModel);
         }
 
+        public async Task<bool> test(string email)
+        {
+            bool aaa = await _accountRepository.IsUserExistsAsync(email);
+            return aaa;
+        }
+
         [HttpPost]
         public async Task<IActionResult> Login(LoginViewModel loginViewModel)
         {
@@ -40,14 +47,14 @@ namespace FinansoApp.Controllers
             if (user == null
                 && _accountRepository.Error.Any(x => x.Key == "DatabaseError"))
             {
-                TempData["InternalError"] = true;
+                loginViewModel.ErrorMessages.InternalError = true;
                 return View(loginViewModel);
             }
 
             // When app can access data, but credentials did not match
             if (user == null)
             {
-                TempData["WrongCredentials"] = true;
+                loginViewModel.ErrorMessages.WrongCredentials = true; ;
                 return View(loginViewModel);
             }
 
@@ -57,7 +64,7 @@ namespace FinansoApp.Controllers
             var result = await _signInManager.PasswordSignInAsync(user, loginViewModel.Password, false, false);
             if (result.Succeeded == false)
             {
-                TempData["InternalError"] = false;
+                loginViewModel.ErrorMessages.InternalError = true;
                 return View(loginViewModel);
             }
 

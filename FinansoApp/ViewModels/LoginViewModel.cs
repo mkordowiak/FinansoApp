@@ -12,5 +12,12 @@ namespace FinansoApp.ViewModels
         [DataType(DataType.Password)]
         public string Password { get; set; }
 
+        public ErrorInfo ErrorMessages { get; set; } = new ErrorInfo();
+
+        public class ErrorInfo
+        {
+            public bool InternalError { get; set; } = false;
+            public bool WrongCredentials { get; set; } = false;
+        }
     }
 }
