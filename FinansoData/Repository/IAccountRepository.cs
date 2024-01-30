@@ -1,13 +1,22 @@
-﻿using FinansoData.Models;
+﻿using FinansoData.Helpers;
+using FinansoData.Models;
 
 namespace FinansoData.Repository
 {
     public interface IAccountRepository
     {
-        /// <summary>
-        /// Errors while performing operations
-        /// </summary>
-        IEnumerable<KeyValuePair<string, bool>> Error { get; }
+        IAccountRepositoryErrorInfo Err { get; set; }
+
+        public class IAccountRepositoryErrorInfo : ErrorInfo
+        {
+            public bool DatabaseError { get; set; }
+            public bool EmailAlreadyExists { get; set; }
+            public bool RegisterError { get; set; }
+            public bool AssignUserRoleError { get; set; }
+            public bool UserNotFound { get; set; }
+            public bool WrongPassword { get; set; }
+
+        }
 
         Task<bool> IsUserExistsAsync(string username);
         Task<bool> IsUserExistsByEmailAsync(string email);

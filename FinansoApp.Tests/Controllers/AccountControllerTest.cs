@@ -29,6 +29,21 @@ namespace FinansoApp.Tests.Controllers
             _userPrincipalFactoryMock = new Mock<IUserClaimsPrincipalFactory<AppUser>>();
 
             _accountRepositoryMock = new Mock<IAccountRepository>();
+
+            try
+            {
+                _accountRepositoryMock.Setup(x => x.Err.IsError())
+                .Returns(false);
+            }
+            catch (Exception ex)
+            {
+                throw ex;
+            }
+            
+
+
+
+
             _signInManagerMock = new Mock<SignInManager<AppUser>>(
                 _userManagerMock.Object,
                 _contextAccessorMock.Object,

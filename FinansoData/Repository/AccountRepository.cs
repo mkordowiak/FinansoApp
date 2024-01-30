@@ -2,6 +2,7 @@
 using FinansoData.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using static FinansoData.Repository.IAccountRepository;
 
 namespace FinansoData.Repository
 {
@@ -9,20 +10,29 @@ namespace FinansoData.Repository
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<AppUser> _userManager;
-        private readonly List<KeyValuePair<string, bool>> _errors;
+        private IAccountRepositoryErrorInfo _iaccountRepositoryErrorInfo;
 
-        public IEnumerable<KeyValuePair<string, bool>> Error
+
+
+        public IAccountRepository.IAccountRepositoryErrorInfo Err
         {
-            get => _errors;
-        }
+            get
+            {
+                return _iaccountRepositoryErrorInfo;
+            }
 
+            set
+            {
+                _iaccountRepositoryErrorInfo = value;
+            }
+        }
 
         public AccountRepository(ApplicationDbContext context, UserManager<AppUser> userManager)
         {
             _context = context;
             _userManager = userManager;
 
-            _errors = new List<KeyValuePair<string, bool>>();
+            _iaccountRepositoryErrorInfo = new IAccountRepositoryErrorInfo();
         }
 
 
@@ -74,14 +84,14 @@ namespace FinansoData.Repository
             }
             catch
             {
-                _errors.Add(new KeyValuePair<string, bool>("DatabaseError", true));
+                _iaccountRepositoryErrorInfo.DatabaseError = true;
                 return null;
             }
 
             // End when user is already existed
             if (user != null)
             {
-                _errors.Add(new KeyValuePair<string, bool>("EmailAlreadyExists", true));
+                _iaccountRepositoryErrorInfo.EmailAlreadyExists = true;
                 return null;
             }
 
@@ -104,7 +114,7 @@ namespace FinansoData.Repository
             }
             catch
             {
-                _errors.Add(new KeyValuePair<string, bool>("DatabaseError", true));
+                _iaccountRepositoryErrorInfo.DatabaseError = true;
                 return null;
             }
 
@@ -112,7 +122,7 @@ namespace FinansoData.Repository
             // When can't create user
             if (userCreation == null || userCreation.Succeeded == false)
             {
-                _errors.Add(new KeyValuePair<string, bool>("RegisterError", true));
+                _iaccountRepositoryErrorInfo.RegisterError = true;
                 return null;
             }
 
@@ -125,7 +135,7 @@ namespace FinansoData.Repository
             catch
             {
                 await DeleteUserAsync(newUser);
-                _errors.Add(new KeyValuePair<string, bool>("AssignUserRoleError", true));
+                _iaccountRepositoryErrorInfo.AssignUserRoleError = true;
                 return null;
             }
 
@@ -133,7 +143,7 @@ namespace FinansoData.Repository
             if (userRoleAssign.Succeeded == false)
             {
                 await DeleteUserAsync(newUser);
-                _errors.Add(new KeyValuePair<string, bool>("AssignUserRoleError", true));
+                _iaccountRepositoryErrorInfo.AssignUserRoleError = true;
                 return null;
             }
 
@@ -169,14 +179,14 @@ namespace FinansoData.Repository
             }
             catch
             {
-                _errors.Add(new KeyValuePair<string, bool>("DatabaseError", true));
+                _iaccountRepositoryErrorInfo.DatabaseError = true;
                 return null;
             }
 
             // If user does not exists
             if (user == null)
             {
-                _errors.Add(new KeyValuePair<string, bool>("UserNotFound", true));
+                _iaccountRepositoryErrorInfo.UserNotFound = true;
                 return null;
             }
 
@@ -188,7 +198,7 @@ namespace FinansoData.Repository
             }
             catch
             {
-                _errors.Add(new KeyValuePair<string, bool>("DatabaseError", true));
+                _iaccountRepositoryErrorInfo.DatabaseError = true;
                 return null;
             }
 
@@ -196,7 +206,7 @@ namespace FinansoData.Repository
             // If password does not matches
             if (passwordCheck == false)
             {
-                _errors.Add(new KeyValuePair<string, bool>("WrongPassword", true));
+                _iaccountRepositoryErrorInfo.WrongPassword = true;
                 return null;
             }
 

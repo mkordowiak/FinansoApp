@@ -40,9 +40,13 @@ namespace FinansoApp.Controllers
 
             AppUser? user = await _accountRepository.LoginAsync(loginViewModel.Email, loginViewModel.Password);
 
+            // Is there any error
+            bool isError = _accountRepository.Err.IsError();
+
+
             // if there's something wrong with accessing data
-            if (user == null
-                && _accountRepository.Error.Any(x => x.Key == "DatabaseError"))
+            if (isError
+                && _accountRepository.Err.DatabaseError)
             {
                 loginViewModel.Error.InternalError = true;
                 return View(loginViewModel);
@@ -93,31 +97,22 @@ namespace FinansoApp.Controllers
             }
 
 
-
             // If email already exists pass information to frontend
-            if (_accountRepository.Error.Any(x => x.Key == "EmailAlreadyExists"))
+            if (_accountRepository.Err.EmailAlreadyExists)
             {
                 registerViewModel.Error.AlreadyExists = true;
                 return View(registerViewModel);
             }
 
-            if (_accountRepository.Error.Any(x => x.Key == "RegisterError"))
+            if (_accountRepository.Err.RegisterError 
+                || _accountRepository.Err.AssignUserRoleError
+                || user == null)
             {
                 registerViewModel.Error.CreateUserError = true;
                 return View(registerViewModel);
             }
 
-            if (_accountRepository.Error.Any(x => x.Key == "AssignUserRoleError"))
-            {
-                registerViewModel.Error.CreateUserError = true;
-                return View(registerViewModel);
-            }
 
-            if (user == null)
-            {
-                registerViewModel.Error.CreateUserError = true;
-                return View(registerViewModel);
-            }
 
 
             return RedirectToAction("Index", "Home");
