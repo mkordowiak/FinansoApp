@@ -3,7 +3,6 @@ using FinansoData.Models;
 using FinansoData.Repository;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using System.Reflection.Metadata.Ecma335;
 
 namespace FinansoApp.Controllers
 {
@@ -26,20 +25,17 @@ namespace FinansoApp.Controllers
         public IActionResult Login()
         {
             // Hold values wher reload
-            var responseViewModel = new LoginViewModel();
+            LoginViewModel responseViewModel = new LoginViewModel();
             return View(responseViewModel);
-        }
-
-        public async Task<bool> test(string email)
-        {
-            bool aaa = await _accountRepository.IsUserExistsAsync(email);
-            return aaa;
         }
 
         [HttpPost]
         public async Task<IActionResult> Login(LoginViewModel loginViewModel)
         {
-            if (!ModelState.IsValid) return View(loginViewModel);
+            if (!ModelState.IsValid)
+            {
+                return View(loginViewModel);
+            }
 
             AppUser? user = await _accountRepository.LoginAsync(loginViewModel.Email, loginViewModel.Password);
 
@@ -61,7 +57,7 @@ namespace FinansoApp.Controllers
 
 
             // Perform login
-            var result = await _signInManager.PasswordSignInAsync(user, loginViewModel.Password, false, false);
+            Microsoft.AspNetCore.Identity.SignInResult result = await _signInManager.PasswordSignInAsync(user, loginViewModel.Password, false, false);
             if (result.Succeeded == false)
             {
                 loginViewModel.ErrorMessages.InternalError = true;
@@ -74,15 +70,17 @@ namespace FinansoApp.Controllers
         public IActionResult Register()
         {
             // Hold values wher reload
-            var responseViewModel = new RegisterViewModel();
+            RegisterViewModel responseViewModel = new RegisterViewModel();
             return View(responseViewModel);
         }
 
         [HttpPost]
         public async Task<IActionResult> Register(RegisterViewModel registerViewModel)
         {
-            if (!ModelState.IsValid) return View(registerViewModel);
-
+            if (!ModelState.IsValid)
+            {
+                return View(registerViewModel);
+            }
 
             AppUser user;
             try

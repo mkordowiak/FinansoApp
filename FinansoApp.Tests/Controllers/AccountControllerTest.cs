@@ -1,81 +1,68 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Microsoft.AspNetCore.Identity;
-using FinansoData.Data;
+﻿using FinansoApp.Controllers;
+using FinansoApp.ViewModels;
 using FinansoData.Models;
 using FinansoData.Repository;
-using Moq;
-using FinansoApp.Controllers;
-using Microsoft.AspNetCore.Http;
-using FinansoApp.ViewModels;
-using System.Runtime.CompilerServices;
 using FluentAssertions;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Identity;
+using Moq;
 
 namespace FinansoApp.Tests.Controllers
 {
     public class AccountControllerTest
     {
+        private readonly Mock<IUserStore<AppUser>> _userStoreMock;
+        private readonly Mock<UserManager<AppUser>> _userManagerMock;
+        private readonly Mock<IHttpContextAccessor> _contextAccessorMock;
+        private readonly Mock<IUserClaimsPrincipalFactory<AppUser>> _userPrincipalFactoryMock;
+        private readonly Mock<IAccountRepository> _accountRepositoryMock;
+        private readonly Mock<SignInManager<AppUser>> _signInManagerMock;
 
-
-
-
-        [Fact]
-        public async Task AccountController_Login_ShoudLoginWhenCredentialsAreCorrect()
+        public AccountControllerTest()
         {
-            string email = "test@mail.com";
-            var correctPassword = "correctPassword";
-            var incorrectPassword = "incorrectPassword";
+            _userStoreMock = new Mock<IUserStore<AppUser>>();
+            _userManagerMock = new Mock<UserManager<AppUser>>(_userStoreMock.Object, null, null, null, null, null, null, null, null);
+            _userManagerMock.Setup(x => x.FindByIdAsync(It.IsAny<string>()))
+                .ReturnsAsync(new AppUser { UserName = "testuser" });
 
-            var userStoreMock = new Mock<IUserStore<AppUser>>();
-            var userManagerMock = new Mock<UserManager<AppUser>>(userStoreMock.Object, null, null, null, null, null, null, null, null);
-            var contextAccessorMock = new Mock<IHttpContextAccessor>();
-            var userPrincipalFactoryMock = new Mock<IUserClaimsPrincipalFactory<AppUser>>();
+            _contextAccessorMock = new Mock<IHttpContextAccessor>();
+            _userPrincipalFactoryMock = new Mock<IUserClaimsPrincipalFactory<AppUser>>();
 
-            var signInManagerMock = new Mock<SignInManager<AppUser>>(
-                userManagerMock.Object,
-                contextAccessorMock.Object,
-                userPrincipalFactoryMock.Object,
+            _accountRepositoryMock = new Mock<IAccountRepository>();
+            _signInManagerMock = new Mock<SignInManager<AppUser>>(
+                _userManagerMock.Object,
+                _contextAccessorMock.Object,
+                _userPrincipalFactoryMock.Object,
                 null,
                 null,
                 null,
                 null);
 
-            AppUser user = new AppUser();
-
-            signInManagerMock.Setup(m => m.PasswordSignInAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()))
+            _signInManagerMock.Setup(m => m.PasswordSignInAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()))
                      .ReturnsAsync(SignInResult.Success);
 
-            signInManagerMock.Setup( x => x.PasswordSignInAsync(It.IsAny<AppUser>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()))
+            _signInManagerMock.Setup(x => x.PasswordSignInAsync(It.IsAny<AppUser>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()))
                 .ReturnsAsync(SignInResult.Success);
 
 
 
 
-            userManagerMock.Setup(x => x.FindByIdAsync(It.IsAny<string>()))
-                .ReturnsAsync(new AppUser { UserName = "testuser" });
-
-            
-
-            var accountRepositoryMock = new Mock<IAccountRepository>();
-
-            accountRepositoryMock.Setup(x => x.LoginAsync(email, correctPassword))
-                .ReturnsAsync(user);
-
-
-            AccountController accountController = new AccountController(
-                userManagerMock.Object,
-                accountRepositoryMock.Object,
-                signInManagerMock.Object);
+        }
 
 
 
+        [Fact]
+        public async Task AccountController_Login_ShouldLoginOnlyWhenCredentialsAreCorrect()
+        {
+            #region Arrange
+
+            // Input data
+            string email = "test@mail.com";
+            string correctPassword = "correctPassword";
+            string incorrectPassword = "incorrectPassword";
 
 
-
-            // Login VM
+            // Input ViewModels
             LoginViewModel correctViewModel = new LoginViewModel
             {
                 Email = email,
@@ -86,24 +73,43 @@ namespace FinansoApp.Tests.Controllers
                 Email = email,
                 Password = incorrectPassword,
             };
-            //ACT
-            var correctResult = await accountController.Login(correctViewModel);
-            var incorrectRestult = await accountController.Login(incorrectViewModel);
-            
-
-            correctResult.Should().BeOfType<Microsoft.AspNetCore.Mvc.RedirectToActionResult>();
-            incorrectRestult.Should().BeOfType < Microsoft.AspNetCore.Mvc.ViewResult> ();
-
-            var aaa = incorrectRestult as Microsoft.AspNetCore.Mvc.ViewResult;
-            var bbb = aaa.Model as LoginViewModel;
-
-            bbb.ErrorMessages.WrongCredentials.Should().BeTrue();
 
 
 
 
-            correctResult.Should().NotBeNull();
-            
+            // Mock 
+            _accountRepositoryMock.Setup(x => x.LoginAsync(email, correctPassword))
+                .ReturnsAsync(new AppUser());
+
+            _accountRepositoryMock.Setup(x => x.LoginAsync(email, incorrectPassword))
+                .ReturnsAsync((AppUser)null);
+
+
+            // Arrange controller
+            AccountController accountController = new AccountController(
+                _userManagerMock.Object,
+                _accountRepositoryMock.Object,
+                _signInManagerMock.Object);
+
+            #endregion
+
+
+            #region ACT
+            Microsoft.AspNetCore.Mvc.IActionResult correctCredentialsResult = await accountController.Login(correctViewModel);
+            Microsoft.AspNetCore.Mvc.IActionResult incorrectCredentialsRestult = await accountController.Login(incorrectViewModel);
+            #endregion
+
+
+            #region ASSERT
+            correctCredentialsResult.Should().BeOfType<Microsoft.AspNetCore.Mvc.RedirectToActionResult>();
+            incorrectCredentialsRestult.Should().BeOfType<Microsoft.AspNetCore.Mvc.ViewResult>();
+
+            LoginViewModel? incorrectCredentialsReturnedViewModel = (incorrectCredentialsRestult as Microsoft.AspNetCore.Mvc.ViewResult).Model as LoginViewModel;
+
+            incorrectCredentialsReturnedViewModel.ErrorMessages.WrongCredentials.Should().BeTrue();
+
+            #endregion
+
         }
 
 
