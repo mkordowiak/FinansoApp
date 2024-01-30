@@ -105,9 +105,8 @@ namespace FinansoApp.Tests.Controllers
             incorrectCredentialsRestult.Should().BeOfType<Microsoft.AspNetCore.Mvc.ViewResult>();
 
             LoginViewModel? incorrectCredentialsReturnedViewModel = (incorrectCredentialsRestult as Microsoft.AspNetCore.Mvc.ViewResult).Model as LoginViewModel;
-
-            incorrectCredentialsReturnedViewModel.ErrorMessages.WrongCredentials.Should().BeTrue();
-
+           
+            incorrectCredentialsReturnedViewModel.Error.WrongCredentials.Should().BeTrue();
             #endregion
 
         }

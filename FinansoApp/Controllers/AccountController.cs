@@ -3,6 +3,7 @@ using FinansoData.Models;
 using FinansoData.Repository;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace FinansoApp.Controllers
 {
@@ -43,24 +44,22 @@ namespace FinansoApp.Controllers
             if (user == null
                 && _accountRepository.Error.Any(x => x.Key == "DatabaseError"))
             {
-                loginViewModel.ErrorMessages.InternalError = true;
+                loginViewModel.Error.InternalError = true;
                 return View(loginViewModel);
             }
 
             // When app can access data, but credentials did not match
             if (user == null)
             {
-                loginViewModel.ErrorMessages.WrongCredentials = true; ;
+                loginViewModel.Error.WrongCredentials = true; ;
                 return View(loginViewModel);
             }
-
-
 
             // Perform login
             Microsoft.AspNetCore.Identity.SignInResult result = await _signInManager.PasswordSignInAsync(user, loginViewModel.Password, false, false);
             if (result.Succeeded == false)
             {
-                loginViewModel.ErrorMessages.InternalError = true;
+                loginViewModel.Error.InternalError = true;
                 return View(loginViewModel);
             }
 
@@ -89,7 +88,7 @@ namespace FinansoApp.Controllers
             }
             catch
             {
-                TempData["RegisterError"] = true;
+                registerViewModel.Error.CreateUserError = true;
                 return View(registerViewModel);
             }
 
@@ -98,25 +97,25 @@ namespace FinansoApp.Controllers
             // If email already exists pass information to frontend
             if (_accountRepository.Error.Any(x => x.Key == "EmailAlreadyExists"))
             {
-                TempData["AlreadyExists"] = true;
+                registerViewModel.Error.AlreadyExists = true;
                 return View(registerViewModel);
             }
 
             if (_accountRepository.Error.Any(x => x.Key == "RegisterError"))
             {
-                TempData["RegisterError"] = true;
+                registerViewModel.Error.CreateUserError = true;
                 return View(registerViewModel);
             }
 
             if (_accountRepository.Error.Any(x => x.Key == "AssignUserRoleError"))
             {
-                TempData["RegisterError"] = true;
+                registerViewModel.Error.CreateUserError = true;
                 return View(registerViewModel);
             }
 
             if (user == null)
             {
-                TempData["RegisterError"] = true;
+                registerViewModel.Error.CreateUserError = true;
                 return View(registerViewModel);
             }
 

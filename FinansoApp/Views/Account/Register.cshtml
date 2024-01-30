@@ -9,20 +9,24 @@
         <p>
             <h4>Sign up for a new account</h4>
         </p>
-
-        @if (TempData["AlreadyExists"] != null)
+        @if(Model.Error.IsError())
         {
-            <div class="col-md-12 alert alert-danger">
-                <span><b>Sorry!</b> - User already exists </span>
-            </div>
+            @if (Model.Error.AlreadyExists)
+            {
+                <div class="col-md-12 alert alert-danger">
+                    <span><b>Sorry!</b> - User already exists </span>
+                </div>
+            }
+            @if (Model.Error.CreateUserError)
+            {
+                <div class="col-md-12 alert alert-danger">
+                    <span><b>Sorry!</b> - Register error, please try again later </span>
+                </div>
+            }
         }
+        
 
-        @if (TempData["RegisterError"] != null)
-        {
-            <div class="col-md-12 alert alert-danger">
-                <span><b>Sorry!</b> - Register error, please try again later </span>
-            </div>
-        }
+        
 
         <div class="row">
             <div class="col-md-8 offset-2">
