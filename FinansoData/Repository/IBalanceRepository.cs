@@ -1,18 +1,16 @@
 ﻿using FinansoData.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using static FinansoData.Repository.IBalanceRepository;
 
 namespace FinansoData.Repository
 {
     public interface IBalanceRepository
     {
-        /// <summary>
-        /// Errors while performing operations
-        /// </summary>
-        IEnumerable<KeyValuePair<string, bool>> Error { get; }
+        IBalanceRepositoryErrorInfo Error { get; }
+
+        public interface IBalanceRepositoryErrorInfo
+        {
+            bool DatabaseError { get; set; }
+        }
 
 
         bool Add(Balance balance);
@@ -22,11 +20,14 @@ namespace FinansoData.Repository
         Task<bool> SaveAsync();
         Task<bool> UpdateAsync(Balance balance);
 
-
-
         Task<Balance?> GetBalanceAsync(int id);
         Task<IEnumerable<Balance>?> GetAllBalancesAsync();
-        
 
+    }
+
+
+    public class BalanceRepositoryErrorInfo : IBalanceRepositoryErrorInfo
+    {
+        public bool DatabaseError { get; set; }
     }
 }

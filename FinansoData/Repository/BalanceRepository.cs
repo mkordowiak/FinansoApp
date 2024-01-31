@@ -1,30 +1,26 @@
 ﻿using FinansoData.Data;
 using FinansoData.Models;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using static FinansoData.Repository.IBalanceRepository;
 
 namespace FinansoData.Repository
 {
     public class BalanceRepository : IBalanceRepository
     {
         private ApplicationDbContext _context;
-        private readonly List<KeyValuePair<string, bool>> _errors;
+        private readonly IBalanceRepositoryErrorInfo _ibalanceRepositoryErrorInfo;
+
+        public IBalanceRepository.IBalanceRepositoryErrorInfo Error
+        {
+            get { return _ibalanceRepositoryErrorInfo; }
+        }
+
 
         public BalanceRepository(ApplicationDbContext context)
         {
             _context = context;
-            _errors = new List<KeyValuePair<string, bool>>();
+            _ibalanceRepositoryErrorInfo = new BalanceRepositoryErrorInfo();
         }
-
-        public IEnumerable<KeyValuePair<string, bool>> Error
-        {
-            get => _errors;
-        }
-
 
         #region CRUD operations
         public bool Add(Balance balance)
@@ -36,7 +32,7 @@ namespace FinansoData.Repository
             }
             catch
             {
-                _errors.Add(new KeyValuePair<string, bool>("DatabaseError", true));
+                _ibalanceRepositoryErrorInfo.DatabaseError = true;
                 return false;
             }
         }
@@ -50,7 +46,7 @@ namespace FinansoData.Repository
             }
             catch
             {
-                _errors.Add(new KeyValuePair<string, bool>("DatabaseError", true));
+                _ibalanceRepositoryErrorInfo.DatabaseError = true;
                 return false;
             }
         }
@@ -65,7 +61,7 @@ namespace FinansoData.Repository
             }
             catch
             {
-                _errors.Add(new KeyValuePair<string, bool>("DatabaseError", true));
+                _ibalanceRepositoryErrorInfo.DatabaseError = true;
                 return false;
             }
 
@@ -81,7 +77,7 @@ namespace FinansoData.Repository
             }
             catch
             {
-                _errors.Add(new KeyValuePair<string, bool>("DatabaseError", true));
+                _ibalanceRepositoryErrorInfo.DatabaseError = true;
                 return false;
             }
         }
@@ -95,7 +91,7 @@ namespace FinansoData.Repository
             }
             catch
             {
-                _errors.Add(new KeyValuePair<string, bool>("DatabaseError", true));
+                _ibalanceRepositoryErrorInfo.DatabaseError = true;
                 return false;
             }
         }
@@ -109,7 +105,7 @@ namespace FinansoData.Repository
             }
             catch
             {
-                _errors.Add(new KeyValuePair<string, bool>("DatabaseError", true));
+                _ibalanceRepositoryErrorInfo.DatabaseError = true;
                 return false;
             }
         }
@@ -123,7 +119,7 @@ namespace FinansoData.Repository
             }
             catch (Exception)
             {
-                _errors.Add(new KeyValuePair<string, bool>("DatabaseError", true));
+                _ibalanceRepositoryErrorInfo.DatabaseError = true;
                 return null;
             }
         }
@@ -138,11 +134,11 @@ namespace FinansoData.Repository
             }
             catch (Exception)
             {
-                _errors.Add(new KeyValuePair<string, bool>("DatabaseError", true));
+                _ibalanceRepositoryErrorInfo.DatabaseError = true;
                 return null;
             }
         }
 
-        
+
     }
 }

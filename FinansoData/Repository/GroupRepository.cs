@@ -8,23 +8,28 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 using FinansoData.DataViewModel.Group;
+using static FinansoData.Repository.IGroupRepository;
 
 namespace FinansoData.Repository
 {
     public class GroupRepository : IGroupRepository
     {
         private readonly ApplicationDbContext _context;
-        private readonly List<KeyValuePair<string, bool>> _errors;
+        private IGroupRepositoryErrorInfo _igroupRepositoryErrorInfo;
 
         public GroupRepository(ApplicationDbContext context)
         {
             _context = context;
-            _errors = new List<KeyValuePair<string, bool>>();
+            _igroupRepositoryErrorInfo = new GroupRepositoryErrorInfo();
         }
-        public IEnumerable<KeyValuePair<string, bool>> Error
+        
+        public IGroupRepository.IGroupRepositoryErrorInfo Error
         {
-            get => _errors;
+            get { return _igroupRepositoryErrorInfo; }
         }
+
+        IGroupRepositoryErrorInfo IGroupRepository.Error => throw new NotImplementedException();
+
 
         #region CRUD operations
         public bool Add(Group group)
@@ -36,7 +41,7 @@ namespace FinansoData.Repository
             }
             catch
             {
-                _errors.Add(new KeyValuePair<string, bool>("DatabaseError", true));
+                _igroupRepositoryErrorInfo.DatabaseError = true;
                 return false;
             }
         }
@@ -52,7 +57,7 @@ namespace FinansoData.Repository
             }
             catch
             {
-                _errors.Add(new KeyValuePair<string, bool>("DatabaseError", true));
+                _igroupRepositoryErrorInfo.DatabaseError = true;
                 return false;
             }
         }
@@ -67,7 +72,7 @@ namespace FinansoData.Repository
             }
             catch
             {
-                _errors.Add(new KeyValuePair<string, bool>("DatabaseError", true));
+                _igroupRepositoryErrorInfo.DatabaseError = true;
                 return false;
             }
         }
@@ -81,7 +86,7 @@ namespace FinansoData.Repository
             }
             catch
             {
-                _errors.Add(new KeyValuePair<string, bool>("DatabaseError", true));
+                _igroupRepositoryErrorInfo.DatabaseError = true;
                 return false;
             }
         }
@@ -95,7 +100,7 @@ namespace FinansoData.Repository
             }
             catch
             {
-                _errors.Add(new KeyValuePair<string, bool>("DatabaseError", true));
+                _igroupRepositoryErrorInfo.DatabaseError = true;
                 return false;
             }
         }
@@ -109,7 +114,7 @@ namespace FinansoData.Repository
             }
             catch
             {
-                _errors.Add(new KeyValuePair<string, bool>("DatabaseError", true));
+                _igroupRepositoryErrorInfo.DatabaseError = true;
                 return false;
             }
         }
@@ -127,13 +132,13 @@ namespace FinansoData.Repository
             }
             catch (Exception)
             {
-                _errors.Add(new KeyValuePair<string, bool>("DatabaseError", true));
+                _igroupRepositoryErrorInfo.DatabaseError = true;
                 return false;
             }
 
             if(user == null)
             {
-                _errors.Add(new KeyValuePair<string, bool>("NoUserFoundError", true));
+                _igroupRepositoryErrorInfo.NoUserFoundError = true;
                 return false;
             }
 
@@ -142,7 +147,7 @@ namespace FinansoData.Repository
 
             if (userGroupCount >= 10)
             {
-                _errors.Add(new KeyValuePair<string, bool>("MaxGroupsLimitReached", true));
+                _igroupRepositoryErrorInfo.MaxGroupsLimitReached = true;
                 return false;
             }
 
@@ -167,13 +172,13 @@ namespace FinansoData.Repository
             }
             catch (Exception)
             {
-                _errors.Add(new KeyValuePair<string, bool>("DatabaseError", true));
+                _igroupRepositoryErrorInfo.DatabaseError = true;
                 return null;
             }
 
             if (user == null)
             {
-                _errors.Add(new KeyValuePair<string, bool>("NoUserFoundError", true));
+                _igroupRepositoryErrorInfo.NoUserFoundError = true;
                 return null;
             }
 
@@ -199,7 +204,7 @@ namespace FinansoData.Repository
             }
             catch (Exception)
             {
-                _errors.Add(new KeyValuePair<string, bool>("DatabaseError", true));
+                _igroupRepositoryErrorInfo.DatabaseError = true;
                 return null;
             }
         }
