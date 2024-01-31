@@ -5,16 +5,21 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using static FinansoData.Repository.IGroupRepository;
 
 
 namespace FinansoData.Repository
 {
     public interface IGroupRepository
     {
-        /// <summary>
-        /// Errors while performing operations
-        /// </summary>
-        IEnumerable<KeyValuePair<string, bool>> Error { get; }
+        IGroupRepositoryErrorInfo Error { get; }
+        public interface IGroupRepositoryErrorInfo
+        {
+            bool DatabaseError { get; set; }
+            bool NoUserFoundError { get; set; }
+            bool MaxGroupsLimitReached { get; set; }
+
+        }
 
         #region CRUD operations
         bool Add(Group group);
@@ -27,6 +32,14 @@ namespace FinansoData.Repository
 
         Task<bool> Add(string groupName, string appUser);
         Task<IEnumerable<GetUserGroupsViewModel>?> GetUserGroups(string appUser);
+
+    }
+
+    public class GroupRepositoryErrorInfo : IGroupRepository.IGroupRepositoryErrorInfo
+    {
+        public bool DatabaseError { get; set; }
+        public bool NoUserFoundError { get; set; }
+        public bool MaxGroupsLimitReached { get; set; }
 
     }
 }

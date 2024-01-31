@@ -14,16 +14,11 @@ namespace FinansoData.Repository
 
 
 
-        public IAccountRepository.IAccountRepositoryErrorInfo Err
+        public IAccountRepository.IAccountRepositoryErrorInfo Error
         {
             get
             {
                 return _iaccountRepositoryErrorInfo;
-            }
-
-            set
-            {
-                _iaccountRepositoryErrorInfo = value;
             }
         }
 
@@ -32,7 +27,7 @@ namespace FinansoData.Repository
             _context = context;
             _userManager = userManager;
 
-            _iaccountRepositoryErrorInfo = new IAccountRepositoryErrorInfo();
+            _iaccountRepositoryErrorInfo = new AccountRepositoryErrorInfo();
         }
 
 

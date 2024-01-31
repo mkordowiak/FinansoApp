@@ -41,18 +41,24 @@ namespace FinansoApp.Controllers
             AppUser? user = await _accountRepository.LoginAsync(loginViewModel.Email, loginViewModel.Password);
 
 
-
             // if there's something wrong with accessing data
-            if (_accountRepository.Err.DatabaseError)
+            if (_accountRepository.Error.DatabaseError)
             {
                 loginViewModel.Error.InternalError = true;
                 return View(loginViewModel);
             }
 
             // When app can access data, but credentials did not match
+            if (_accountRepository.Error.WrongPassword)
+            {
+                loginViewModel.Error.WrongCredentials = true;
+                return View(loginViewModel);
+            }
+
+            
             if (user == null)
             {
-                loginViewModel.Error.WrongCredentials = true; ;
+                loginViewModel.Error.InternalError = true;
                 return View(loginViewModel);
             }
 
@@ -95,14 +101,14 @@ namespace FinansoApp.Controllers
 
 
             // If email already exists pass information to frontend
-            if (_accountRepository.Err.EmailAlreadyExists)
+            if (_accountRepository.Error.EmailAlreadyExists)
             {
                 registerViewModel.Error.AlreadyExists = true;
                 return View(registerViewModel);
             }
 
-            if (_accountRepository.Err.RegisterError 
-                || _accountRepository.Err.AssignUserRoleError
+            if (_accountRepository.Error.RegisterError 
+                || _accountRepository.Error.AssignUserRoleError
                 || user == null)
             {
                 registerViewModel.Error.CreateUserError = true;

@@ -1,21 +1,24 @@
 ﻿using FinansoData.Models;
+using static FinansoData.Repository.IAccountRepository;
 
 namespace FinansoData.Repository
 {
     public interface IAccountRepository
     {
-        IAccountRepositoryErrorInfo Err { get; set; }
+        IAccountRepositoryErrorInfo Error { get; }
 
-        public class IAccountRepositoryErrorInfo
+        public interface IAccountRepositoryErrorInfo
         {
-            public bool DatabaseError { get; set; }
-            public bool EmailAlreadyExists { get; set; }
-            public bool RegisterError { get; set; }
-            public bool AssignUserRoleError { get; set; }
+            bool DatabaseError { get; set; }
+            bool EmailAlreadyExists { get; set; }
+            bool RegisterError { get; set; }
+            bool AssignUserRoleError { get; set; }
             public bool UserNotFound { get; set; }
-            public bool WrongPassword { get; set; }
+            bool WrongPassword { get; set; }
 
         }
+
+        
 
         Task<bool> IsUserExistsAsync(string username);
         Task<bool> IsUserExistsByEmailAsync(string email);
@@ -28,5 +31,15 @@ namespace FinansoData.Repository
 
         Task<AppUser?> AddUserToRoleUserAsync(AppUser appUser);
         Task<AppUser?> AddUserToRoleAdminAsync(AppUser appUser);
+    }
+
+    public class AccountRepositoryErrorInfo : IAccountRepository.IAccountRepositoryErrorInfo
+    {
+        public bool DatabaseError { get; set; }
+        public bool EmailAlreadyExists { get; set; }
+        public bool RegisterError { get; set; }
+        public bool AssignUserRoleError { get; set; }
+        public bool UserNotFound { get; set; }
+        public bool WrongPassword { get; set; }
     }
 }

@@ -37,7 +37,7 @@ namespace FinansoApp.Controllers
 
 
             if (createGroup == false
-                && _groupRepository.Error.Any(x => x.Key == "MaxGroupsLimitReached"))
+                && _groupRepository.Error.MaxGroupsLimitReached)
             {
                 TempData["MaxGroupsLimitReached"] = true;
                 return View(groupCreateViewModel);
