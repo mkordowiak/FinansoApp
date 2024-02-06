@@ -32,7 +32,16 @@ namespace FinansoData.Repository
 
         public async Task<AppUser?> GetUserAsync(string username)
         {
-            return await _context.AppUsers.FirstOrDefaultAsync(x => x.UserName.Equals(username));
+            try
+            {
+                return await _context.AppUsers.FirstOrDefaultAsync(x => x.UserName.Equals(username));
+            }
+            catch
+            {
+                _iaccountRepositoryErrorInfo.DatabaseError = true;
+                return null;
+            }
+            
         }
 
         public async Task<AppUser?> GetUserByEmailAsync(string email)
@@ -203,6 +212,53 @@ namespace FinansoData.Repository
 
             return user;
 
+        }
+
+        public async Task<bool?> AdminSetNewPassword(AppUser user, string newPassword)
+        {
+            IdentityResult removePasswordResult;
+            IdentityResult addPasswordResult;
+            try
+            {
+                removePasswordResult = await _userManager.RemovePasswordAsync(user);
+                addPasswordResult = await _userManager.AddPasswordAsync(user, newPassword);
+            }
+            catch
+            {
+                _iaccountRepositoryErrorInfo.DatabaseError = true;
+                return null;
+            }
+
+            if (removePasswordResult == null || addPasswordResult == null)
+            {
+                _iaccountRepositoryErrorInfo.DatabaseError = true;
+                return null;
+            }
+
+            return true;
+
+        }
+
+        public async Task<bool?> AdminSetNewPassword(string username, string newPassword)
+        {
+            AppUser user;
+            try
+            {
+                user = await this.GetUserAsync(username);
+            }
+            catch(Exception ex) 
+            {
+                throw ex;
+            }
+            
+
+
+            if (user == null)
+            {
+                return false;
+            }
+
+            return await this.AdminSetNewPassword(user, newPassword);
         }
     }
 }

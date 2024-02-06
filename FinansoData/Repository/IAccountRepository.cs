@@ -22,6 +22,10 @@ namespace FinansoData.Repository
         Task<bool> IsUserExistsAsync(string username);
         Task<bool> IsUserExistsByEmailAsync(string email);
         Task<bool> DeleteUserAsync(AppUser user);
+        
+        Task<bool?> AdminSetNewPassword(AppUser user, string newPassword);
+        Task<bool?> AdminSetNewPassword(string username, string newPassword);
+
 
         Task<AppUser?> GetUserAsync(string username);
         Task<AppUser?> GetUserByEmailAsync(string email);
