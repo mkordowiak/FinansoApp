@@ -20,7 +20,7 @@ namespace FinansoData.Data
                 .WithMany()
                 .OnDelete(DeleteBehavior.NoAction);
 
-            
+
 
         }
 

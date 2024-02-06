@@ -8,7 +8,7 @@ namespace FinansoApp.Helpers
         {
             Type type = this.GetType();
             PropertyInfo[] properties = type.GetProperties(BindingFlags.Instance | BindingFlags.Public);
-            
+
 
             // Here we want to have simplicity,
             // so we use crude and simple foreach loop, instance of linq

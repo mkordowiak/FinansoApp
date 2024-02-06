@@ -1,5 +1,4 @@
 ﻿using FinansoData.Models;
-using static FinansoData.Repository.ICurrencyRepository;
 
 namespace FinansoData.Repository
 {

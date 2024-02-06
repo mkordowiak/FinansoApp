@@ -1,5 +1,4 @@
 ﻿using FinansoData.Models;
-using static FinansoData.Repository.IAccountRepository;
 
 namespace FinansoData.Repository
 {
@@ -18,7 +17,7 @@ namespace FinansoData.Repository
 
         }
 
-        
+
 
         Task<bool> IsUserExistsAsync(string username);
         Task<bool> IsUserExistsByEmailAsync(string email);

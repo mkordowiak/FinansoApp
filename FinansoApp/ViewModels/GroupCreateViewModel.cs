@@ -4,7 +4,7 @@
     {
         public string Name { get; set; }
 
-        public GroupCreateViewModelErrorInfo Error { get;  } = new GroupCreateViewModelErrorInfo();
+        public GroupCreateViewModelErrorInfo Error { get; } = new GroupCreateViewModelErrorInfo();
 
         public class GroupCreateViewModelErrorInfo : Helpers.ErrorInfo
         {

@@ -12,8 +12,6 @@ namespace FinansoData.Repository
         private readonly UserManager<AppUser> _userManager;
         private IAccountRepositoryErrorInfo _iaccountRepositoryErrorInfo;
 
-
-
         public IAccountRepository.IAccountRepositoryErrorInfo Error
         {
             get
@@ -29,8 +27,6 @@ namespace FinansoData.Repository
 
             _iaccountRepositoryErrorInfo = new AccountRepositoryErrorInfo();
         }
-
-
 
 
 

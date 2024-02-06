@@ -3,7 +3,6 @@ using FinansoData.Models;
 using FinansoData.Repository;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore.Metadata.Internal;
 
 namespace FinansoApp.Controllers
 {
@@ -55,7 +54,7 @@ namespace FinansoApp.Controllers
                 return View(loginViewModel);
             }
 
-            
+
             if (user == null)
             {
                 loginViewModel.Error.InternalError = true;
@@ -107,7 +106,7 @@ namespace FinansoApp.Controllers
                 return View(registerViewModel);
             }
 
-            if (_accountRepository.Error.RegisterError 
+            if (_accountRepository.Error.RegisterError
                 || _accountRepository.Error.AssignUserRoleError
                 || user == null)
             {

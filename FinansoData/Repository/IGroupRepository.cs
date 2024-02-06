@@ -1,11 +1,5 @@
 ﻿using FinansoData.DataViewModel.Group;
 using FinansoData.Models;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using static FinansoData.Repository.IGroupRepository;
 
 
 namespace FinansoData.Repository

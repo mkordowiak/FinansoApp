@@ -1,8 +1,7 @@
 ﻿using FinansoApp.Models;
+using FinansoData.Data;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
-using FinansoData.Repository;
-using FinansoData.Data;
 
 namespace FinansoApp.Controllers
 {
@@ -11,7 +10,7 @@ namespace FinansoApp.Controllers
         private readonly ILogger<HomeController> _logger;
         private readonly ISeed _seed;
 
-        public HomeController(ILogger<HomeController> logger,ISeed seed)
+        public HomeController(ILogger<HomeController> logger, ISeed seed)
         {
             _logger = logger;
             _seed = seed;

@@ -1,9 +1,8 @@
 ﻿using FinansoData.Models;
+using FinansoData.Repository;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
-using System.Net;
-using FinansoData.Repository;
 
 namespace FinansoData.Data
 {
@@ -27,7 +26,7 @@ namespace FinansoData.Data
         /// <returns></returns>
         /// <exception cref="InvalidOperationException"></exception>
         public static async Task SeedUsers(IApplicationBuilder applicationBuilder, string defaultPassword)
-            {
+        {
             using (var serviceScope = applicationBuilder.ApplicationServices.CreateScope())
             {
                 var roleManager = serviceScope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
@@ -64,7 +63,7 @@ namespace FinansoData.Data
 
                     var adminUserRoleAssign = await userManager.AddToRoleAsync(newAdminUser, UserRoles.Admin);
 
-                    if(adminUserRoleAssign.Succeeded == false)
+                    if (adminUserRoleAssign.Succeeded == false)
                     {
                         throw new InvalidOperationException(adminUserRoleAssign.Errors.ToString());
                     }
@@ -76,14 +75,14 @@ namespace FinansoData.Data
                 if (appUser == null)
                 {
                     var newRegularUser = new AppUser()
-                {
-                    UserName = "user1",
+                    {
+                        UserName = "user1",
                         Email = appUserEmail,
-                    EmailConfirmed = true,
-                    FirstName = "user",
-                    Created = DateTime.Now
+                        EmailConfirmed = true,
+                        FirstName = "user",
+                        Created = DateTime.Now
 
-                };
+                    };
                     var regularUserCreation = await userManager.CreateAsync(newRegularUser, defaultPassword);
                     if (regularUserCreation.Succeeded == false)
                     {
@@ -100,10 +99,10 @@ namespace FinansoData.Data
 
         public async Task<bool> SeedCurrencies()
         {
-            _currencyRepository.Add(new Currency { Name = "PLN", ExchangeRate=1,Updated = DateTime.Now});
-            _currencyRepository.Add(new Currency { Name = "EUR", ExchangeRate = 4.5, Updated = DateTime.Now});
-            _currencyRepository.Add(new Currency { Name = "USD", ExchangeRate = 4.2, Updated= DateTime.Now});
-            
+            _currencyRepository.Add(new Currency { Name = "PLN", ExchangeRate = 1, Updated = DateTime.Now });
+            _currencyRepository.Add(new Currency { Name = "EUR", ExchangeRate = 4.5, Updated = DateTime.Now });
+            _currencyRepository.Add(new Currency { Name = "USD", ExchangeRate = 4.2, Updated = DateTime.Now });
+
             _currencyRepository.Save();
 
             return true;

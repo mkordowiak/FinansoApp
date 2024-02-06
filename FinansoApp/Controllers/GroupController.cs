@@ -1,9 +1,8 @@
 ﻿using FinansoApp.ViewModels;
+using FinansoData.DataViewModel.Group;
 using FinansoData.Repository;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using FinansoData.DataViewModel;
-using FinansoData.DataViewModel.Group;
 
 namespace FinansoApp.Controllers
 {
@@ -19,7 +18,7 @@ namespace FinansoApp.Controllers
         [Authorize]
         public async Task<IActionResult> Index()
         {
-            IEnumerable< GetUserGroupsViewModel> data = await _groupRepository.GetUserGroups(User.Identity.Name);
+            IEnumerable<GetUserGroupsViewModel> data = await _groupRepository.GetUserGroups(User.Identity.Name);
             return View(data);
         }
 

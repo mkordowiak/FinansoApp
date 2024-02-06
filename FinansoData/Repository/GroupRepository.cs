@@ -1,13 +1,7 @@
 ﻿using FinansoData.Data;
+using FinansoData.DataViewModel.Group;
 using FinansoData.Models;
 using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography;
-using System.Text;
-using System.Threading.Tasks;
-using FinansoData.DataViewModel.Group;
 using static FinansoData.Repository.IGroupRepository;
 
 namespace FinansoData.Repository
@@ -22,7 +16,7 @@ namespace FinansoData.Repository
             _context = context;
             _igroupRepositoryErrorInfo = new GroupRepositoryErrorInfo();
         }
-        
+
         public IGroupRepository.IGroupRepositoryErrorInfo Error
         {
             get { return _igroupRepositoryErrorInfo; }
@@ -46,7 +40,7 @@ namespace FinansoData.Repository
             }
         }
 
-        
+
 
         public bool Delete(Group group)
         {
@@ -136,14 +130,14 @@ namespace FinansoData.Repository
                 return false;
             }
 
-            if(user == null)
+            if (user == null)
             {
                 _igroupRepositoryErrorInfo.NoUserFoundError = true;
                 return false;
             }
 
             // Check if user reached max group limit
-            int userGroupCount = await _context.Groups.CountAsync( x => x.OwnerAppUser.Equals (user) );
+            int userGroupCount = await _context.Groups.CountAsync(x => x.OwnerAppUser.Equals(user));
 
             if (userGroupCount >= 10)
             {
@@ -184,19 +178,19 @@ namespace FinansoData.Repository
 
 
             var query = from g in _context.Groups
-                                      join gu in _context.GroupUsers on g.Id equals gu.Group.Id
-                                      where gu.AppUser == user
-                                      && gu.Active == true
-                                      select new GetUserGroupsViewModel
-                                      {
-                                          Id = g.Id,
-                                          Name = g.Name,
-                                          IsOwner = (g.OwnerAppUser == user),
-                                          MembersCount = (from gusq in _context.GroupUsers
-                                               where gusq.Group.Id.Equals(g.Id)
-                                               && gusq.Active == true
-                                               select gusq.Id).Count()
-                                      };
+                        join gu in _context.GroupUsers on g.Id equals gu.Group.Id
+                        where gu.AppUser == user
+                        && gu.Active == true
+                        select new GetUserGroupsViewModel
+                        {
+                            Id = g.Id,
+                            Name = g.Name,
+                            IsOwner = (g.OwnerAppUser == user),
+                            MembersCount = (from gusq in _context.GroupUsers
+                                            where gusq.Group.Id.Equals(g.Id)
+                                            && gusq.Active == true
+                                            select gusq.Id).Count()
+                        };
 
             try
             {
