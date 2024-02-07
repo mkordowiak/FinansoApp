@@ -30,7 +30,7 @@ namespace FinansoApp.Tests.Controllers
 
             _accountRepositoryMock = new Mock<IAccountRepository>();
 
-            
+
 
             _signInManagerMock = new Mock<SignInManager<AppUser>>(
                 _userManagerMock.Object,
@@ -148,10 +148,6 @@ namespace FinansoApp.Tests.Controllers
 
 
             #region ACT
-
-
-
-
             Microsoft.AspNetCore.Mvc.IActionResult incorrectCredentialsRestult = await accountController.Login(incorrectViewModel);
             #endregion
 
@@ -167,5 +163,175 @@ namespace FinansoApp.Tests.Controllers
         }
 
 
+
+
+        [Fact]
+        public async Task AccountController_Register_ShouldReturnErrorWhenEmailAlreadyExists()
+        {
+            #region Arrange
+
+            // Input data
+            string email = "test@mail.com";
+            string password = "Password";
+            string confirmPassword = password;
+
+
+
+            // Input ViewModels
+            RegisterViewModel registerViewModel = new RegisterViewModel
+            {
+                Email = email,
+                Password = password,
+                ConfirmPassword = confirmPassword
+            };
+
+
+
+
+            // Mock 
+            _accountRepositoryMock.Setup(x => x.CreateAppUser(email, password))
+                .ReturnsAsync((AppUser)null);
+
+
+            // Arrange controller
+            AccountController accountController = new AccountController(
+                _userManagerMock.Object,
+                _accountRepositoryMock.Object,
+                _signInManagerMock.Object);
+
+            _accountRepositoryMock.Setup(x => x.Error.DatabaseError)
+                .Returns(false);                
+            _accountRepositoryMock.Setup(x => x.Error.RegisterError)
+                .Returns(false);
+            _accountRepositoryMock.Setup(x => x.Error.AssignUserRoleError)
+                .Returns(false);
+            _accountRepositoryMock.Setup(x => x.Error.EmailAlreadyExists)
+                .Returns(true);
+            #endregion
+
+
+            #region ACT
+            Microsoft.AspNetCore.Mvc.IActionResult registerActionResult = await accountController.Register(registerViewModel);
+            #endregion
+
+
+            #region ASSERT
+            registerActionResult.Should().BeOfType<Microsoft.AspNetCore.Mvc.ViewResult>();
+            RegisterViewModel? registerReturnedViewModel = (registerActionResult as Microsoft.AspNetCore.Mvc.ViewResult).Model as RegisterViewModel;
+            registerReturnedViewModel.Error.AlreadyExists.Should().BeTrue();
+            #endregion
+        }
+
+
+        [Fact]
+        public async Task AccountController_Register_ShouldReturnErrorWhenWhenAssignUserRoleError()
+        {
+            #region Arrange
+
+            // Input data
+            string email = "test@mail.com";
+            string password = "Password";
+            string confirmPassword = password;
+
+
+
+            // Input ViewModels
+            RegisterViewModel registerViewModel = new RegisterViewModel
+            {
+                Email = email,
+                Password = password,
+                ConfirmPassword = confirmPassword
+            };
+
+
+            // Mock 
+            _accountRepositoryMock.Setup(x => x.CreateAppUser(email, password))
+                .ReturnsAsync((AppUser)null);
+
+
+            // Arrange controller
+            AccountController accountController = new AccountController(
+                _userManagerMock.Object,
+                _accountRepositoryMock.Object,
+                _signInManagerMock.Object);
+
+            _accountRepositoryMock.Setup(x => x.Error.DatabaseError)
+                .Returns(false);
+            _accountRepositoryMock.Setup(x => x.Error.RegisterError)
+                .Returns(false);
+            _accountRepositoryMock.Setup(x => x.Error.EmailAlreadyExists)
+                .Returns(false);
+            _accountRepositoryMock.Setup(x => x.Error.AssignUserRoleError)
+                .Returns(true);
+            #endregion
+
+
+            #region ACT
+            Microsoft.AspNetCore.Mvc.IActionResult registerActionResult = await accountController.Register(registerViewModel);
+            #endregion
+
+
+            #region ASSERT
+            registerActionResult.Should().BeOfType<Microsoft.AspNetCore.Mvc.ViewResult>();
+            RegisterViewModel? registerReturnedViewModel = (registerActionResult as Microsoft.AspNetCore.Mvc.ViewResult).Model as RegisterViewModel;
+            registerReturnedViewModel.Error.CreateUserError.Should().BeTrue();
+            #endregion
+        }
+
+
+
+
+        [Fact]
+        public async Task AccountController_Register_ShouldReturnRedirectToActionWhenOK()
+        {
+            #region Arrange
+
+            // Input data
+            string email = "test@mail.com";
+            string password = "Password";
+            string confirmPassword = password;
+
+
+
+            // Input ViewModels
+            RegisterViewModel registerViewModel = new RegisterViewModel
+            {
+                Email = email,
+                Password = password,
+                ConfirmPassword = confirmPassword
+            };
+            AppUser user = new AppUser {};
+
+            // Mock 
+            _accountRepositoryMock.Setup(x => x.CreateAppUser(email, password))
+                .ReturnsAsync(user);
+
+
+            // Arrange controller
+            AccountController accountController = new AccountController(
+                _userManagerMock.Object,
+                _accountRepositoryMock.Object,
+                _signInManagerMock.Object);
+
+            _accountRepositoryMock.Setup(x => x.Error.DatabaseError)
+                .Returns(false);
+            _accountRepositoryMock.Setup(x => x.Error.RegisterError)
+                .Returns(false);
+            _accountRepositoryMock.Setup(x => x.Error.EmailAlreadyExists)
+                .Returns(false);
+            _accountRepositoryMock.Setup(x => x.Error.AssignUserRoleError)
+                .Returns(false);
+            #endregion
+
+
+            #region ACT
+            Microsoft.AspNetCore.Mvc.IActionResult registerActionResult = await accountController.Register(registerViewModel);
+            #endregion
+
+
+            #region ASSERT
+            registerActionResult.Should().BeOfType<Microsoft.AspNetCore.Mvc.RedirectToActionResult>();
+            #endregion
+        }
     }
 }

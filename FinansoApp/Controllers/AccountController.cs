@@ -115,8 +115,6 @@ namespace FinansoApp.Controllers
             }
 
 
-
-
             return RedirectToAction("Index", "Home");
         }
 
