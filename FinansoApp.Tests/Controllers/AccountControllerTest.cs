@@ -50,9 +50,6 @@ namespace FinansoApp.Tests.Controllers
             _signInManagerMock.Setup(x => x.PasswordSignInAsync(It.IsAny<AppUser>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()))
                 .ReturnsAsync(SignInResult.Success);
 
-
-
-
         }
 
 
@@ -200,7 +197,7 @@ namespace FinansoApp.Tests.Controllers
                 _signInManagerMock.Object);
 
             _accountRepositoryMock.Setup(x => x.Error.DatabaseError)
-                .Returns(false);                
+                .Returns(false);
             _accountRepositoryMock.Setup(x => x.Error.RegisterError)
                 .Returns(false);
             _accountRepositoryMock.Setup(x => x.Error.AssignUserRoleError)
@@ -300,7 +297,7 @@ namespace FinansoApp.Tests.Controllers
                 Password = password,
                 ConfirmPassword = confirmPassword
             };
-            AppUser user = new AppUser {};
+            AppUser user = new AppUser { };
 
             // Mock 
             _accountRepositoryMock.Setup(x => x.CreateAppUser(email, password))

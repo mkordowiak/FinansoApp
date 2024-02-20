@@ -38,13 +38,13 @@ namespace FinansoApp.Controllers
             if (createGroup == false
                 && _groupRepository.Error.MaxGroupsLimitReached)
             {
-                TempData["MaxGroupsLimitReached"] = true;
+                groupCreateViewModel.Error.MaxGroupsLimitReached = true;
                 return View(groupCreateViewModel);
             }
 
             if (createGroup == false)
             {
-                TempData["InternalError"] = true;
+                groupCreateViewModel.Error.InternalError = true;
                 return View(groupCreateViewModel);
             }
             return RedirectToAction("Index", "Home");
@@ -53,11 +53,13 @@ namespace FinansoApp.Controllers
 
         public async Task<IActionResult> EditMembers(int id)
         {
+            throw new NotImplementedException();
             return RedirectToAction("Index", "Home");
         }
 
         public async Task<IActionResult> DeleteGroup(int id)
         {
+            throw new NotImplementedException();
             return RedirectToAction("Index", "Home");
         }
     }
