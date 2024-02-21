@@ -28,7 +28,7 @@ namespace FinansoApp.Controllers
             return View();
         }
 
-        //[Authorize]
+        [Authorize]
         [HttpPost]
         public async Task<IActionResult> Create(GroupCreateViewModel groupCreateViewModel)
         {
