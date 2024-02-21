@@ -140,7 +140,7 @@ namespace FinansoApp.Tests.Controllers
             IActionResult createGroupResult = await groupController.Create(groupCreateVMInput);
 
             // Assert
-            createGroupResult.Should().BeOfType<RedirectToActionResult>();
+            createGroupResult.Should().BeOfType<RedirectToActionResult>("Method shoud redirect when ok");
         }
     }
 }
