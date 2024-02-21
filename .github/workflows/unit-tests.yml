@@ -22,10 +22,3 @@ jobs:
       run: dotnet tool restore
     - name: Test
       run: dotnet test ./FinansoApp.Tests --logger "trx;LogFileName=test_results.xml" --collect:"XPlat Code Coverage"
-    - name: Report Generator
-      run: dotnet tool run reportgenerator "-reports:**/coverage.cobertura.xml" "-targetdir:coverage" "-reporttypes:Html"
-    - name: Upload coverage report
-      uses: actions/upload-artifact@v3
-      with:
-        name: coverage-report
-        path: coverage/
