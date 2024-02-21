@@ -1,0 +1,31 @@
+name: .NET Core CI
+
+on:
+  push:
+    branches: [ "master" ]
+  pull_request:
+    branches: [ "master" ]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v3
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v2
+      with:
+        dotnet-version: '7.x'
+    - name: Restore dependencies
+      run: dotnet restore
+    - name: Install dependencies
+      run: dotnet tool restore
+    - name: Test
+      run: dotnet test ./FinansoApp.Tests --logger "trx;LogFileName=test_results.xml" --collect:"XPlat Code Coverage"
+    - name: Report Generator
+      run: dotnet tool run reportgenerator "-reports:**/coverage.cobertura.xml" "-targetdir:coverage" "-reporttypes:Html"
+    - name: Upload coverage report
+      uses: actions/upload-artifact@v3
+      with:
+        name: coverage-report
+        path: coverage/
