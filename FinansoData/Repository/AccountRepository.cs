@@ -41,7 +41,7 @@ namespace FinansoData.Repository
                 _iaccountRepositoryErrorInfo.DatabaseError = true;
                 return null;
             }
-            
+
         }
 
         public async Task<AppUser?> GetUserByEmailAsync(string email)
@@ -95,6 +95,7 @@ namespace FinansoData.Repository
                 return null;
             }
 
+
             // New user object
             AppUser newUser = new AppUser()
             {
@@ -102,11 +103,10 @@ namespace FinansoData.Repository
                 Email = Email,
                 EmailConfirmed = false,
                 Created = DateTime.Now
-
             };
 
-            // Create user
 
+            // Create user
             IdentityResult userCreation;
             try
             {
@@ -140,7 +140,7 @@ namespace FinansoData.Repository
             }
 
             // If can't assing user to role
-            if (userRoleAssign.Succeeded == false)
+            if (userRoleAssign == null || userRoleAssign.Succeeded == false)
             {
                 await DeleteUserAsync(newUser);
                 _iaccountRepositoryErrorInfo.AssignUserRoleError = true;
@@ -246,11 +246,11 @@ namespace FinansoData.Repository
             {
                 user = await this.GetUserAsync(username);
             }
-            catch(Exception ex) 
+            catch (Exception ex)
             {
                 throw ex;
             }
-            
+
 
 
             if (user == null)
