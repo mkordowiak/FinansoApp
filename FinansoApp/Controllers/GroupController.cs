@@ -3,6 +3,7 @@ using FinansoData.DataViewModel.Group;
 using FinansoData.Repository;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Identity.Client;
 
 namespace FinansoApp.Controllers
 {
@@ -47,14 +48,19 @@ namespace FinansoApp.Controllers
                 groupCreateViewModel.Error.InternalError = true;
                 return View(groupCreateViewModel);
             }
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("Index", "Group");
         }
 
 
+        [Authorize]
         public async Task<IActionResult> EditMembers(int id)
         {
-            throw new NotImplementedException();
-            return RedirectToAction("Index", "Home");
+
+            IEnumerable<GetGroupMembersViewModel> data = await _groupRepository.GetUserGroupMembers(id);
+
+            List<GroupMembersViewModel> members = new List<GroupMembersViewModel>();
+
+            return View(members);
         }
 
         public async Task<IActionResult> DeleteGroup(int id)
