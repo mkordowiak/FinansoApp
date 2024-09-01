@@ -1,4 +1,5 @@
-﻿using FinansoApp.Controllers;
+﻿using AutoMapper;
+using FinansoApp.Controllers;
 using FinansoApp.ViewModels;
 using FinansoData.Repository;
 using FluentAssertions;
@@ -14,11 +15,14 @@ namespace FinansoApp.Tests.Controllers
     public class GroupControllerTest
     {
         private readonly Mock<IGroupRepository> _groupRepositoryMock;
+        private readonly Mock<IMapper> _mapper;
 
         public GroupControllerTest()
         {
             _groupRepositoryMock = new Mock<IGroupRepository>();
+            _mapper = new Mock<IMapper>();
         }
+
 
         [Fact]
         public async Task GroupController_Create_ShoudBeAuthorized()
@@ -78,7 +82,8 @@ namespace FinansoApp.Tests.Controllers
             _groupRepositoryMock.Setup(x => x.Error.MaxGroupsLimitReached)
                 .Returns(true);
 
-            GroupController groupController = new GroupController(_groupRepositoryMock.Object)
+
+            GroupController groupController = new GroupController(_groupRepositoryMock.Object, _mapper.Object)
             {
                 ControllerContext = new ControllerContext
                 {
@@ -127,7 +132,8 @@ namespace FinansoApp.Tests.Controllers
             _groupRepositoryMock.Setup(x => x.Error.MaxGroupsLimitReached)
                 .Returns(false);
 
-            GroupController groupController = new GroupController(_groupRepositoryMock.Object)
+
+            GroupController groupController = new GroupController(_groupRepositoryMock.Object, _mapper.Object)
             {
                 ControllerContext = new ControllerContext
                 {

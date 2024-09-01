@@ -1,18 +1,22 @@
-﻿using FinansoApp.ViewModels;
+﻿using AutoMapper;
+using FinansoApp.ViewModels;
 using FinansoData.DataViewModel.Group;
 using FinansoData.Repository;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Identity.Client;
 
 namespace FinansoApp.Controllers
 {
     public class GroupController : Controller
     {
         private readonly IGroupRepository _groupRepository;
+        private readonly IMapper _mapper;
 
-        public GroupController(IGroupRepository groupRepository)
+        public GroupController(IGroupRepository groupRepository, IMapper mapper)
         {
             _groupRepository = groupRepository;
+            _mapper = mapper;
         }
 
         [Authorize]
@@ -47,14 +51,33 @@ namespace FinansoApp.Controllers
                 groupCreateViewModel.Error.InternalError = true;
                 return View(groupCreateViewModel);
             }
-            return RedirectToAction("Index", "Home");
+            return RedirectToAction("Index", "Group");
         }
 
 
+        [Authorize]
         public async Task<IActionResult> EditMembers(int id)
         {
-            throw new NotImplementedException();
-            return RedirectToAction("Index", "Home");
+            // check loggedin user access
+            var groupMemberInfo = await _groupRepository.GetUserMembershipInGroupAsync(id, User.Identity.Name);
+
+            if (groupMemberInfo.IsMember == false)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+
+            // get data
+            IEnumerable<GetGroupMembersViewModel> data = await _groupRepository.GetGroupMembersAsync(id);
+            List<GroupMembersViewModel> members = _mapper.Map<List<GroupMembersViewModel>>(data);
+
+            ListMembersViewModel listMembersViewModel = new ListMembersViewModel
+            {
+                IsOwner = groupMemberInfo.IsOwner,
+                GroupMembers = members
+            };
+
+            return View(listMembersViewModel);
         }
 
         public async Task<IActionResult> DeleteGroup(int id)

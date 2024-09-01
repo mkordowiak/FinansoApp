@@ -1,0 +1,24 @@
+﻿@using FinansoApp.ViewModels
+@model ListMembersViewModel
+
+@{
+    ViewData["Title"] = "Group members";
+}
+
+
+<div class="container">
+    @foreach (var i in Model.GroupMembers)
+    {
+        <div class="row">
+            <div class="col">@i.FirstName @i.LastName</div>
+            @if(Model.IsOwner) 
+            {
+            <div class="col">
+                <a class="btn btn-outline-secondary" asp-controller="Home" asp-action="Index">Cancel</a>
+            </div>
+            }
+            
+        </div>
+
+    }
+</div>

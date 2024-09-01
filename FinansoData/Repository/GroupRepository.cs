@@ -2,6 +2,7 @@
 using FinansoData.DataViewModel.Group;
 using FinansoData.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Identity.Client;
 using static FinansoData.Repository.IGroupRepository;
 
 namespace FinansoData.Repository
@@ -39,7 +40,6 @@ namespace FinansoData.Repository
                 return false;
             }
         }
-
 
 
         public bool Delete(Group group)
@@ -121,7 +121,7 @@ namespace FinansoData.Repository
             try
             {
 
-                user = await _context.AppUsers.FirstOrDefaultAsync(x => x.Email.Equals(appUser));
+                user = await _context.AppUsers.FirstOrDefaultAsync(x => x.UserName.Equals(appUser));
 
             }
             catch (Exception)
@@ -155,14 +155,50 @@ namespace FinansoData.Repository
             return Add(group) ? true : false;
         }
 
+        public async Task<IEnumerable<GetGroupMembersViewModel>> GetGroupMembersAsync(int id)
+        {
+            IQueryable<GetGroupMembersViewModel> query = (from gu in _context.GroupUsers
+                                                          join g in _context.Groups on gu.Group.Id equals g.Id
+                                                          join u in _context.AppUsers on gu.AppUser.Id equals u.Id
+                                                          where g.Id == id
+                                                          select new GetGroupMembersViewModel
+                                                          {
+                                                              Id = gu.Id,
+                                                              FirstName = u.FirstName,
+                                                              LastName = u.LastName,
+                                                              IsOwner = false
+                                                          })
+                                                       .Union(from g in _context.Groups
+                                                              join u in _context.AppUsers on g.OwnerAppUser.Id equals u.Id
+                                                              where g.Id == id
+                                                              select new GetGroupMembersViewModel
+                                                              {
+                                                                  Id = 0,
+                                                                  FirstName = u.FirstName,
+                                                                  LastName = u.LastName,
+                                                                  IsOwner = true
+                                                              });
+
+
+
+            try
+            {
+                return await query.ToListAsync();
+            }
+            catch (Exception)
+            {
+                _igroupRepositoryErrorInfo.DatabaseError = true;
+                return null;
+            }
+
+        }
+
         public async Task<IEnumerable<GetUserGroupsViewModel>?> GetUserGroups(string appUser)
         {
             AppUser user;
             try
             {
-
                 user = await _context.AppUsers.FirstOrDefaultAsync(x => x.Email.Equals(appUser));
-
             }
             catch (Exception)
             {
@@ -177,20 +213,21 @@ namespace FinansoData.Repository
             }
 
 
-            var query = from g in _context.Groups
-                        join gu in _context.GroupUsers on g.Id equals gu.Group.Id
-                        where gu.AppUser == user
-                        && gu.Active == true
-                        select new GetUserGroupsViewModel
-                        {
-                            Id = g.Id,
-                            Name = g.Name,
-                            IsOwner = (g.OwnerAppUser == user),
-                            MembersCount = (from gusq in _context.GroupUsers
-                                            where gusq.Group.Id.Equals(g.Id)
-                                            && gusq.Active == true
-                                            select gusq.Id).Count()
-                        };
+            IQueryable<GetUserGroupsViewModel> query = from g in _context.Groups
+                                                       join gu in _context.GroupUsers on g.Id equals gu.Group.Id
+                                                       where gu.AppUser == user
+                                                       && gu.Active == true
+                                                       select new GetUserGroupsViewModel
+                                                       {
+                                                           Id = g.Id,
+                                                           Name = g.Name,
+                                                           IsOwner = (g.OwnerAppUser == user),
+                                                           MembersCount = (from gusq in _context.GroupUsers
+                                                                           where gusq.Group.Id.Equals(g.Id)
+                                                                           && gusq.Active == true
+                                                                           select gusq.Id).Count()
+                                                       };
+
 
             try
             {
@@ -201,6 +238,62 @@ namespace FinansoData.Repository
                 _igroupRepositoryErrorInfo.DatabaseError = true;
                 return null;
             }
+        }
+
+        public async Task<bool> IsUserGroupOwner(int GroupId, string appUser)
+        {
+
+            IQueryable<Models.Group> query = from g in _context.Groups
+                                      join u in _context.AppUsers on g.OwnerAppUser.Id equals u.Id
+                                      where g.Id == GroupId && u.UserName == appUser
+                                      select g;
+
+            Models.Group? data = await query.FirstOrDefaultAsync();
+
+
+            if (data is null)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        public async Task<GetUserMembershipInGroupViewModel> GetUserMembershipInGroupAsync(int GroupId, string appUser)
+        {
+            GetUserMembershipInGroupViewModel output = new GetUserMembershipInGroupViewModel();
+
+            IQueryable<Models.Group> isUserAdminQuery = from g in _context.Groups
+                                                        join u in _context.AppUsers on g.OwnerAppUser.Id equals u.Id
+                                                        where g.Id == GroupId && u.UserName == appUser
+                                                        select g;
+
+            Models.Group isUserAdmin = isUserAdminQuery.FirstOrDefault();
+
+            if (isUserAdmin is not null)
+            {
+                output.IsMember = true;
+                output.IsOwner = true;
+                return output;
+            }
+
+
+            IQueryable<GroupUser> isUserMemberQuery = from gu in _context.GroupUsers
+                                                      join u in _context.AppUsers on gu.AppUser.Id equals u.Id
+                                                      where
+                                                        gu.Group.Id == GroupId
+                                                        && gu.Active == true
+                                                        && gu.AppUser.UserName == appUser
+                                                      select gu;
+
+            GroupUser? isUserMember = await isUserMemberQuery.FirstOrDefaultAsync();
+
+            if (isUserMember is not null)
+            {
+                output.IsMember = true;
+                return output;
+            }
+
+            return output;
         }
     }
 }

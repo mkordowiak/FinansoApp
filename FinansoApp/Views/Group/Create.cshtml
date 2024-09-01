@@ -10,7 +10,7 @@
         <p>
             <h4>Log in to your account</h4>
         </p>
-        @if(Model.Error.IsError())
+        @if(Model != null && Model.Error.IsError())
         {
             @if (Model.Error.InternalError)
             {
