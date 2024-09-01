@@ -1,4 +1,5 @@
-﻿using FinansoApp.ViewModels;
+﻿using AutoMapper;
+using FinansoApp.ViewModels;
 using FinansoData.DataViewModel.Group;
 using FinansoData.Repository;
 using Microsoft.AspNetCore.Authorization;
@@ -10,10 +11,12 @@ namespace FinansoApp.Controllers
     public class GroupController : Controller
     {
         private readonly IGroupRepository _groupRepository;
+        private readonly IMapper _mapper;
 
-        public GroupController(IGroupRepository groupRepository)
+        public GroupController(IGroupRepository groupRepository, IMapper mapper)
         {
             _groupRepository = groupRepository;
+            _mapper = mapper;
         }
 
         [Authorize]
@@ -58,7 +61,7 @@ namespace FinansoApp.Controllers
 
             IEnumerable<GetGroupMembersViewModel> data = await _groupRepository.GetUserGroupMembers(id);
 
-            List<GroupMembersViewModel> members = new List<GroupMembersViewModel>();
+            List<GroupMembersViewModel> members = _mapper.Map<List<GroupMembersViewModel>>(data);
 
             return View(members);
         }
