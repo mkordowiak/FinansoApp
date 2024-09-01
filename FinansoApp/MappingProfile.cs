@@ -9,7 +9,7 @@ namespace FinansoApp
         public MappingProfile()
         {
             CreateMap<GetGroupMembersViewModel, GroupMembersViewModel>();
-            
+
         }
     }
 }

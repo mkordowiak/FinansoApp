@@ -27,6 +27,8 @@ namespace FinansoData.Repository
         Task<bool> Add(string groupName, string appUser);
         Task<IEnumerable<GetUserGroupsViewModel>?> GetUserGroups(string appUser);
         Task<IEnumerable<GetGroupMembersViewModel>> GetUserGroupMembers(int id);
+        Task<bool> IsUserGroupOwner(int GroupId, string appUser);
+        Task<GetUserMembershipInGroupViewModel> GetUserMembershipInGroup(int GroupId, string appUser);
 
     }
 

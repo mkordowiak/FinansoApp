@@ -58,12 +58,26 @@ namespace FinansoApp.Controllers
         [Authorize]
         public async Task<IActionResult> EditMembers(int id)
         {
+            // check loggedin user access
+            var groupMemberInfo = await _groupRepository.GetUserMembershipInGroup(id, User.Identity.Name);
 
+            if (groupMemberInfo.IsMember == false)
+            {
+                return RedirectToAction("Index", "Home");
+            }
+
+
+            // get data
             IEnumerable<GetGroupMembersViewModel> data = await _groupRepository.GetUserGroupMembers(id);
-
             List<GroupMembersViewModel> members = _mapper.Map<List<GroupMembersViewModel>>(data);
 
-            return View(members);
+            ListMembersViewModel listMembersViewModel = new ListMembersViewModel
+            {
+                IsOwner = groupMemberInfo.IsOwner,
+                GroupMembers = members
+            };
+
+            return View(listMembersViewModel);
         }
 
         public async Task<IActionResult> DeleteGroup(int id)

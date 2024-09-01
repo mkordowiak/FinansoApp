@@ -158,25 +158,25 @@ namespace FinansoData.Repository
         public async Task<IEnumerable<GetGroupMembersViewModel>> GetUserGroupMembers(int id)
         {
             IQueryable<GetGroupMembersViewModel> query = (from gu in _context.GroupUsers
-                                                       join g in _context.Groups on gu.Group.Id equals g.Id
-                                                       join u in _context.AppUsers on gu.AppUser.Id equals u.Id
-                                                       where g.Id == id
-                                                       select new GetGroupMembersViewModel
-                                                       {
-                                                           Id = gu.Id,
-                                                           FirstName = u.FirstName,
-                                                           LastName = u.LastName,
-                                                           IsOwner = false
-                                                       })
+                                                          join g in _context.Groups on gu.Group.Id equals g.Id
+                                                          join u in _context.AppUsers on gu.AppUser.Id equals u.Id
+                                                          where g.Id == id
+                                                          select new GetGroupMembersViewModel
+                                                          {
+                                                              Id = gu.Id,
+                                                              FirstName = u.FirstName,
+                                                              LastName = u.LastName,
+                                                              IsOwner = false
+                                                          })
                                                        .Union(from g in _context.Groups
-                                                                join u in _context.AppUsers on g.OwnerAppUser.Id equals u.Id
-                                                                select new GetGroupMembersViewModel
-                                                                {
-                                                                    Id = 0,
-                                                                    FirstName = u.FirstName,
-                                                                    LastName = u.LastName,
-                                                                    IsOwner = true
-                                                                });
+                                                              join u in _context.AppUsers on g.OwnerAppUser.Id equals u.Id
+                                                              select new GetGroupMembersViewModel
+                                                              {
+                                                                  Id = 0,
+                                                                  FirstName = u.FirstName,
+                                                                  LastName = u.LastName,
+                                                                  IsOwner = true
+                                                              });
 
 
 
@@ -197,9 +197,7 @@ namespace FinansoData.Repository
             AppUser user;
             try
             {
-
                 user = await _context.AppUsers.FirstOrDefaultAsync(x => x.Email.Equals(appUser));
-
             }
             catch (Exception)
             {
@@ -239,6 +237,62 @@ namespace FinansoData.Repository
                 _igroupRepositoryErrorInfo.DatabaseError = true;
                 return null;
             }
+        }
+
+        public async Task<bool> IsUserGroupOwner(int GroupId, string appUser)
+        {
+
+            IQueryable<Models.Group> query = from g in _context.Groups
+                                      join u in _context.AppUsers on g.OwnerAppUser.Id equals u.Id
+                                      where g.Id == GroupId && u.UserName == appUser
+                                      select g;
+
+            Models.Group? data = await query.FirstOrDefaultAsync();
+
+
+            if (data is null)
+            {
+                return false;
+            }
+            return true;
+        }
+
+        public async Task<GetUserMembershipInGroupViewModel> GetUserMembershipInGroup(int GroupId, string appUser)
+        {
+            GetUserMembershipInGroupViewModel output = new GetUserMembershipInGroupViewModel();
+
+            IQueryable<Models.Group> isUserAdminQuery = from g in _context.Groups
+                                                        join u in _context.AppUsers on g.OwnerAppUser.Id equals u.Id
+                                                        where g.Id == GroupId && u.UserName == appUser
+                                                        select g;
+
+            Models.Group isUserAdmin = isUserAdminQuery.FirstOrDefault();
+
+            if (isUserAdmin is not null)
+            {
+                output.IsMember = true;
+                output.IsOwner = true;
+                return output;
+            }
+
+
+            IQueryable<GroupUser> isUserMemberQuery = from gu in _context.GroupUsers
+                                                      join u in _context.AppUsers on gu.AppUser.Id equals u.Id
+                                                      where
+                                                        gu.Group.Id == GroupId
+                                                        && gu.Active == true
+                                                        && gu.AppUser.UserName == appUser
+                                                      select gu;
+
+            GroupUser? isUserMember = await isUserMemberQuery.FirstOrDefaultAsync();
+
+            if (isUserMember is not null)
+            {
+                output.IsMember = true;
+                return output;
+            }
+
+            return output;
         }
     }
 }
