@@ -117,6 +117,9 @@ namespace FinansoData.Repository
 
         public async Task<bool> Add(string groupName, string appUser)
         {
+            return false;
+
+
             AppUser user;
             try
             {
