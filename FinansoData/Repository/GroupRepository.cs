@@ -155,7 +155,7 @@ namespace FinansoData.Repository
             return Add(group) ? true : false;
         }
 
-        public async Task<IEnumerable<GetGroupMembersViewModel>> GetUserGroupMembers(int id)
+        public async Task<IEnumerable<GetGroupMembersViewModel>> GetGroupMembersAsync(int id)
         {
             IQueryable<GetGroupMembersViewModel> query = (from gu in _context.GroupUsers
                                                           join g in _context.Groups on gu.Group.Id equals g.Id
@@ -170,6 +170,7 @@ namespace FinansoData.Repository
                                                           })
                                                        .Union(from g in _context.Groups
                                                               join u in _context.AppUsers on g.OwnerAppUser.Id equals u.Id
+                                                              where g.Id == id
                                                               select new GetGroupMembersViewModel
                                                               {
                                                                   Id = 0,
@@ -257,7 +258,7 @@ namespace FinansoData.Repository
             return true;
         }
 
-        public async Task<GetUserMembershipInGroupViewModel> GetUserMembershipInGroup(int GroupId, string appUser)
+        public async Task<GetUserMembershipInGroupViewModel> GetUserMembershipInGroupAsync(int GroupId, string appUser)
         {
             GetUserMembershipInGroupViewModel output = new GetUserMembershipInGroupViewModel();
 

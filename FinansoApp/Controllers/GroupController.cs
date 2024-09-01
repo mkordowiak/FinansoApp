@@ -59,7 +59,7 @@ namespace FinansoApp.Controllers
         public async Task<IActionResult> EditMembers(int id)
         {
             // check loggedin user access
-            var groupMemberInfo = await _groupRepository.GetUserMembershipInGroup(id, User.Identity.Name);
+            var groupMemberInfo = await _groupRepository.GetUserMembershipInGroupAsync(id, User.Identity.Name);
 
             if (groupMemberInfo.IsMember == false)
             {
@@ -68,7 +68,7 @@ namespace FinansoApp.Controllers
 
 
             // get data
-            IEnumerable<GetGroupMembersViewModel> data = await _groupRepository.GetUserGroupMembers(id);
+            IEnumerable<GetGroupMembersViewModel> data = await _groupRepository.GetGroupMembersAsync(id);
             List<GroupMembersViewModel> members = _mapper.Map<List<GroupMembersViewModel>>(data);
 
             ListMembersViewModel listMembersViewModel = new ListMembersViewModel

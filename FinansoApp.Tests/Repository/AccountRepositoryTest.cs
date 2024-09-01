@@ -36,7 +36,7 @@ namespace FinansoApp.Tests.Repository
 
 
             _dbContextOptions = new DbContextOptionsBuilder<ApplicationDbContext>()
-                .UseInMemoryDatabase(databaseName: "TestDb") // Keep It Unique To Avoid Collusions
+                .UseInMemoryDatabase(databaseName: "TestDb") 
             .Options;
 
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
@@ -54,6 +54,8 @@ namespace FinansoApp.Tests.Repository
                 context.SaveChanges();
             }
         }
+
+
         [Fact]
         public async Task AccountRepository_GetUserAsync_ShouldReturnUserWhenUsernameIsCorrect()
         {
