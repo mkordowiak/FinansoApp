@@ -198,7 +198,7 @@ namespace FinansoData.Repository
             AppUser user;
             try
             {
-                user = await _context.AppUsers.FirstOrDefaultAsync(x => x.Email.Equals(appUser));
+                user = await _context.AppUsers.FirstOrDefaultAsync(x => x.UserName.Equals(appUser));
             }
             catch (Exception)
             {

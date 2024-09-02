@@ -207,5 +207,81 @@ namespace FinansoApp.Tests.Repository
         }
 
         #endregion
+
+        #region GetUserGroups
+
+        [Fact]
+        public async Task GroupRepository_GetUserGroups_ReurnGroupWhenMemberPassed()
+        {
+            // Arrange
+            using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
+            {
+                GroupRepository groupRepository = new GroupRepository(context);
+                string userName = _groupMember.UserName;
+
+
+                // Act
+                IEnumerable<GetUserGroupsViewModel>? group = await groupRepository.GetUserGroups(userName);
+
+                // Destroy in-memory database to prevent running multiple instance
+                context.Database.EnsureDeleted();
+
+                // Assert
+                group.Should().NotBeEmpty();
+                group.Count().Should().Be(1);
+                List<GetUserGroupsViewModel> groupList = group.ToList();
+                groupList[0].IsOwner.Should().BeFalse();
+            }
+        }
+
+        [Fact]
+        public async Task GroupRepository_GetUserGroups_ReurnGroupWhenOwnerPassed()
+        {
+            // Arrange
+            using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
+            {
+                GroupRepository groupRepository = new GroupRepository(context);
+                string userName = _groupOwner.UserName;
+
+
+                // Act
+                IEnumerable<GetUserGroupsViewModel>? group = await groupRepository.GetUserGroups(userName);
+
+                // Destroy in-memory database to prevent running multiple instance
+                context.Database.EnsureDeleted();
+
+                // Assert
+                group.Should().NotBeEmpty();
+                group.Count().Should().Be(1);
+                List<GetUserGroupsViewModel> groupList = group.ToList();
+                groupList[0].IsOwner.Should().BeTrue();
+            }
+        }
+
+        [Fact]
+        public async Task GroupRepository_GetUserGroups_ReurnGroupWhenWrongIdIsPassed()
+        {
+            // Arrange
+            using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
+            {
+                GroupRepository groupRepository = new GroupRepository(context);
+                string userName = _groupMember.UserName;
+
+
+                // Act
+                IEnumerable<GetUserGroupsViewModel>? group = await groupRepository.GetUserGroups(userName);
+
+                // Destroy in-memory database to prevent running multiple instance
+                context.Database.EnsureDeleted();
+
+                // Assert
+                group.Should().NotBeEmpty();
+                group.Count().Should().Be(1);
+                List<GetUserGroupsViewModel> groupList = group.ToList();
+                groupList[0].IsOwner.Should().BeFalse();
+            }
+        }
+
+        #endregion
     }
 }
