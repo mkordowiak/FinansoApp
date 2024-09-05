@@ -16,15 +16,24 @@ namespace FinansoApp.Controllers
             _seed = seed;
         }
 
+        /// <summary>
+        /// Index page
+        /// </summary>
+        /// <returns></returns>
         public async Task<IActionResult> Index()
         {
             return View();
         }
 
+        /// <summary>
+        /// Privacy page
+        /// </summary>
+        /// <returns></returns>
         public IActionResult Privacy()
         {
             return View();
         }
+
 
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public IActionResult Error()
