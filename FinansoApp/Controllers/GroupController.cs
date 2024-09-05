@@ -18,6 +18,10 @@ namespace FinansoApp.Controllers
             _mapper = mapper;
         }
 
+        /// <summary>
+        /// Index page
+        /// </summary>
+        /// <returns></returns>
         [Authorize]
         public async Task<IActionResult> Index()
         {
@@ -25,12 +29,21 @@ namespace FinansoApp.Controllers
             return View(data.Value);
         }
 
+        /// <summary>
+        /// Create group page
+        /// </summary>
+        /// <returns></returns>
         [Authorize]
         public IActionResult Create()
         {
             return View();
         }
 
+        /// <summary>
+        /// Greate method
+        /// </summary>
+        /// <param name="groupCreateViewModel"></param>
+        /// <returns></returns>
         [Authorize]
         [HttpPost]
         public async Task<IActionResult> Create(GroupCreateViewModel groupCreateViewModel)
@@ -54,6 +67,11 @@ namespace FinansoApp.Controllers
         }
 
 
+        /// <summary>
+        /// Group edit page
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [Authorize]
         public async Task<IActionResult> EditMembers(int id)
         {
