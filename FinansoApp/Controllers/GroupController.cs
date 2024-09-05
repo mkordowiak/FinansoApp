@@ -4,7 +4,6 @@ using FinansoData.DataViewModel.Group;
 using FinansoData.Repository;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.Identity.Client;
 
 namespace FinansoApp.Controllers
 {
@@ -19,34 +18,47 @@ namespace FinansoApp.Controllers
             _mapper = mapper;
         }
 
+        /// <summary>
+        /// Index page
+        /// </summary>
+        /// <returns></returns>
         [Authorize]
         public async Task<IActionResult> Index()
         {
-            IEnumerable<GetUserGroupsViewModel> data = await _groupRepository.GetUserGroups(User.Identity.Name);
-            return View(data);
+            FinansoData.RepositoryResult<IEnumerable<GetUserGroupsViewModel>?> data = await _groupRepository.GetUserGroups(User.Identity.Name);
+            return View(data.Value);
         }
 
+        /// <summary>
+        /// Create group page
+        /// </summary>
+        /// <returns></returns>
         [Authorize]
         public IActionResult Create()
         {
             return View();
         }
 
+        /// <summary>
+        /// Greate method
+        /// </summary>
+        /// <param name="groupCreateViewModel"></param>
+        /// <returns></returns>
         [Authorize]
         [HttpPost]
         public async Task<IActionResult> Create(GroupCreateViewModel groupCreateViewModel)
         {
-            bool createGroup = await _groupRepository.Add(groupCreateViewModel.Name, User.Identity.Name);
+            FinansoData.RepositoryResult<bool?> createGroup = await _groupRepository.Add(groupCreateViewModel.Name, User.Identity.Name);
 
 
-            if (createGroup == false
-                && _groupRepository.Error.MaxGroupsLimitReached)
+            if (createGroup.IsSuccess == false
+                && createGroup.ErrorType == FinansoData.ErrorType.MaxGroupsLimitReached)
             {
                 groupCreateViewModel.Error.MaxGroupsLimitReached = true;
                 return View(groupCreateViewModel);
             }
 
-            if (createGroup == false)
+            if (createGroup.IsSuccess == false)
             {
                 groupCreateViewModel.Error.InternalError = true;
                 return View(groupCreateViewModel);
@@ -55,25 +67,30 @@ namespace FinansoApp.Controllers
         }
 
 
+        /// <summary>
+        /// Group edit page
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
         [Authorize]
         public async Task<IActionResult> EditMembers(int id)
         {
             // check loggedin user access
-            var groupMemberInfo = await _groupRepository.GetUserMembershipInGroupAsync(id, User.Identity.Name);
+            FinansoData.RepositoryResult<GetUserMembershipInGroupViewModel> groupMemberInfo = await _groupRepository.GetUserMembershipInGroupAsync(id, User.Identity.Name);
 
-            if (groupMemberInfo.IsMember == false)
+            if (groupMemberInfo.Value.IsMember == false)
             {
                 return RedirectToAction("Index", "Home");
             }
 
 
             // get data
-            IEnumerable<GetGroupMembersViewModel> data = await _groupRepository.GetGroupMembersAsync(id);
-            List<GroupMembersViewModel> members = _mapper.Map<List<GroupMembersViewModel>>(data);
+            FinansoData.RepositoryResult<IEnumerable<GetGroupMembersViewModel>> data = await _groupRepository.GetGroupMembersAsync(id);
+            List<GroupMembersViewModel> members = _mapper.Map<List<GroupMembersViewModel>>(data.Value);
 
             ListMembersViewModel listMembersViewModel = new ListMembersViewModel
             {
-                IsOwner = groupMemberInfo.IsOwner,
+                IsOwner = groupMemberInfo.Value.IsOwner,
                 GroupMembers = members
             };
 

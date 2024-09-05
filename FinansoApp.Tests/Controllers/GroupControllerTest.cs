@@ -1,6 +1,7 @@
 ﻿using AutoMapper;
 using FinansoApp.Controllers;
 using FinansoApp.ViewModels;
+using FinansoData;
 using FinansoData.Repository;
 using FluentAssertions;
 using Microsoft.AspNetCore.Authorization;
@@ -28,12 +29,12 @@ namespace FinansoApp.Tests.Controllers
         public async Task GroupController_Create_ShoudBeAuthorized()
         {
             // Arrange
-            var httpPostMethod = typeof(GroupController).GetMethod(nameof(GroupController.Create), new[] { typeof(GroupCreateViewModel) });
-            var httpGetMethod = typeof(GroupController).GetMethod(nameof(GroupController.Create), Type.EmptyTypes);
+            MethodInfo? httpPostMethod = typeof(GroupController).GetMethod(nameof(GroupController.Create), new[] { typeof(GroupCreateViewModel) });
+            MethodInfo? httpGetMethod = typeof(GroupController).GetMethod(nameof(GroupController.Create), Type.EmptyTypes);
 
             // Act
-            var httpPostAuthorizeAttribute = httpPostMethod.GetCustomAttribute<AuthorizeAttribute>();
-            var httpGetAuthorizeAttribute = httpGetMethod.GetCustomAttribute<AuthorizeAttribute>();
+            AuthorizeAttribute? httpPostAuthorizeAttribute = httpPostMethod.GetCustomAttribute<AuthorizeAttribute>();
+            AuthorizeAttribute? httpGetAuthorizeAttribute = httpGetMethod.GetCustomAttribute<AuthorizeAttribute>();
 
             // Assert
             httpPostAuthorizeAttribute.Should().NotBeNull("this method should be protected by authorization");
@@ -44,10 +45,10 @@ namespace FinansoApp.Tests.Controllers
         public async Task GroupController_Index_ShouldBeAuthorized()
         {
             // Arrange
-            var httpGetMethod = typeof(GroupController).GetMethod(nameof(GroupController.Index), Type.EmptyTypes);
+            MethodInfo? httpGetMethod = typeof(GroupController).GetMethod(nameof(GroupController.Index), Type.EmptyTypes);
 
             // Act
-            var httpGetAuthorizeAttribute = httpGetMethod.GetCustomAttribute<AuthorizeAttribute>();
+            AuthorizeAttribute? httpGetAuthorizeAttribute = httpGetMethod.GetCustomAttribute<AuthorizeAttribute>();
 
             // Assert
             httpGetAuthorizeAttribute.Should().NotBeNull("this method shoud be protected by authorization");
@@ -66,21 +67,17 @@ namespace FinansoApp.Tests.Controllers
             };
 
             //
-            var mockPrincipal = new Mock<ClaimsPrincipal>();
-            mockPrincipal.Setup(p => p.Identity.Name).Returns(appUser); 
+            Mock<ClaimsPrincipal> mockPrincipal = new Mock<ClaimsPrincipal>();
+            mockPrincipal.Setup(p => p.Identity.Name).Returns(appUser);
             mockPrincipal.Setup(p => p.Identity.IsAuthenticated).Returns(true);
 
 
 
-            var context = new Mock<HttpContext>();
+            Mock<HttpContext> context = new Mock<HttpContext>();
             context.SetupGet(ctx => ctx.User).Returns(mockPrincipal.Object);
 
 
-
-            _groupRepositoryMock.Setup(x => x.Add(groupName, appUser))
-                .ReturnsAsync(false);
-            _groupRepositoryMock.Setup(x => x.Error.MaxGroupsLimitReached)
-                .Returns(true);
+            _groupRepositoryMock.Setup(x => x.Add(groupName, appUser)).ReturnsAsync(RepositoryResult<bool?>.Failure(null, ErrorType.MaxGroupsLimitReached));
 
 
             GroupController groupController = new GroupController(_groupRepositoryMock.Object, _mapper.Object)
@@ -90,7 +87,7 @@ namespace FinansoApp.Tests.Controllers
                     HttpContext = context.Object
                 }
             };
-            
+
 
 
             // Act
@@ -116,21 +113,20 @@ namespace FinansoApp.Tests.Controllers
             };
 
             //
-            var mockPrincipal = new Mock<ClaimsPrincipal>();
+            Mock<ClaimsPrincipal> mockPrincipal = new Mock<ClaimsPrincipal>();
             mockPrincipal.Setup(p => p.Identity.Name).Returns(appUser);
             mockPrincipal.Setup(p => p.Identity.IsAuthenticated).Returns(true);
 
 
 
-            var context = new Mock<HttpContext>();
+            Mock<HttpContext> context = new Mock<HttpContext>();
             context.SetupGet(ctx => ctx.User).Returns(mockPrincipal.Object);
 
 
 
             _groupRepositoryMock.Setup(x => x.Add(groupName, appUser))
-                .ReturnsAsync(true);
-            _groupRepositoryMock.Setup(x => x.Error.MaxGroupsLimitReached)
-                .Returns(false);
+                .ReturnsAsync(RepositoryResult<bool?>.Success(true));
+
 
 
             GroupController groupController = new GroupController(_groupRepositoryMock.Object, _mapper.Object)

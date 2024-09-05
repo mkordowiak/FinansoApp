@@ -51,13 +51,13 @@ namespace FinansoApp.Tests.Repository
                 GroupRepository repository = new GroupRepository(context);
 
                 // Act 
-                IEnumerable<GetGroupMembersViewModel> groups = await repository.GetGroupMembersAsync(1);
+                FinansoData.RepositoryResult<IEnumerable<GetGroupMembersViewModel>> groups = await repository.GetGroupMembersAsync(1);
                 // Destroy in-memory database to prevent running multiple instances
                 context.Database.EnsureDeleted();
 
                 // Assert
-                groups.Should().NotBeNullOrEmpty();
-                groups.Count().Should().Be(2);
+                groups.Value.Should().NotBeNullOrEmpty();
+                groups.Value.Count().Should().Be(2);
             }
         }
 
@@ -70,12 +70,12 @@ namespace FinansoApp.Tests.Repository
                 GroupRepository repository = new GroupRepository(context);
 
                 // Act 
-                IEnumerable<GetGroupMembersViewModel> groups = await repository.GetGroupMembersAsync(33);
+                FinansoData.RepositoryResult<IEnumerable<GetGroupMembersViewModel>> groups = await repository.GetGroupMembersAsync(33);
                 // Destroy in-memory database to prevent running multiple instance
                 context.Database.EnsureDeleted();
 
                 // Assert
-                groups.Count().Should().Be(0);
+                groups.Value.Count().Should().Be(0);
             }
         }
 
@@ -93,13 +93,13 @@ namespace FinansoApp.Tests.Repository
                 GroupRepository repository = new GroupRepository(context);
 
                 // Act 
-                GetUserMembershipInGroupViewModel memberhip = await repository.GetUserMembershipInGroupAsync(1, "1");
+                FinansoData.RepositoryResult<GetUserMembershipInGroupViewModel> memberhip = await repository.GetUserMembershipInGroupAsync(1, "1");
                 // Destroy in-memory database to prevent running multiple instance
                 context.Database.EnsureDeleted();
 
                 // Assert 
-                memberhip.IsMember.Should().BeFalse();
-                memberhip.IsOwner.Should().BeFalse();
+                memberhip.Value.IsMember.Should().BeFalse();
+                memberhip.Value.IsOwner.Should().BeFalse();
             }
         }
 
@@ -112,14 +112,14 @@ namespace FinansoApp.Tests.Repository
                 GroupRepository repository = new GroupRepository(context);
 
                 // Act 
-                GetUserMembershipInGroupViewModel memberhip = await repository.GetUserMembershipInGroupAsync(99, "john@mail.com");
+                FinansoData.RepositoryResult<GetUserMembershipInGroupViewModel> memberhip = await repository.GetUserMembershipInGroupAsync(99, "john@mail.com");
                 // Destroy in-memory database to prevent running multiple instance
                 context.Database.EnsureDeleted();
 
 
                 // Assert 
-                memberhip.IsMember.Should().BeFalse();
-                memberhip.IsOwner.Should().BeFalse();
+                memberhip.Value.IsMember.Should().BeFalse();
+                memberhip.Value.IsOwner.Should().BeFalse();
             }
         }
 
@@ -132,14 +132,14 @@ namespace FinansoApp.Tests.Repository
                 GroupRepository repository = new GroupRepository(context);
 
                 // Act 
-                GetUserMembershipInGroupViewModel memberhip = await repository.GetUserMembershipInGroupAsync(1, "john@mail.com");
+                FinansoData.RepositoryResult<GetUserMembershipInGroupViewModel> memberhip = await repository.GetUserMembershipInGroupAsync(1, "john@mail.com");
                 // Destroy in-memory database to prevent running multiple instance
                 context.Database.EnsureDeleted();
 
 
                 // Assert 
-                memberhip.IsMember.Should().BeTrue();
-                memberhip.IsOwner.Should().BeTrue();
+                memberhip.Value.IsMember.Should().BeTrue();
+                memberhip.Value.IsOwner.Should().BeTrue();
             }
         }
 
@@ -152,14 +152,14 @@ namespace FinansoApp.Tests.Repository
                 GroupRepository repository = new GroupRepository(context);
 
                 // Act 
-                GetUserMembershipInGroupViewModel memberhip = await repository.GetUserMembershipInGroupAsync(1, "mark@mail.com");
+                FinansoData.RepositoryResult<GetUserMembershipInGroupViewModel> memberhip = await repository.GetUserMembershipInGroupAsync(1, "mark@mail.com");
                 // Destroy in-memory database to prevent running multiple instance
                 context.Database.EnsureDeleted();
 
 
                 // Assert 
-                memberhip.IsMember.Should().BeTrue();
-                memberhip.IsOwner.Should().BeFalse();
+                memberhip.Value.IsMember.Should().BeTrue();
+                memberhip.Value.IsOwner.Should().BeFalse();
             }
         }
 
@@ -177,17 +177,17 @@ namespace FinansoApp.Tests.Repository
                 string groupOwnerUserName = _groupOwner.UserName;
 
                 // Act
-                bool data = await groupRepository.Add(newGroupName, groupOwnerUserName);
+                FinansoData.RepositoryResult<bool?> data = await groupRepository.Add(newGroupName, groupOwnerUserName);
                 // Destroy in-memory database to prevent running multiple instance
                 context.Database.EnsureDeleted();
 
                 // Assert 
-                data.Should().BeTrue();
+                data.Value.Should().BeTrue();
             }
         }
 
         [Fact]
-        public async Task GroupRepository_Add_ShoudBeFalseIfWrongUserId()
+        public async Task GroupRepository_Add_ShoudBeFailureIfWrongUserId()
         {
             // Arrange
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
@@ -197,12 +197,89 @@ namespace FinansoApp.Tests.Repository
                 string groupOwnerUserName = "wrong username";
 
                 // Act
-                bool data = await groupRepository.Add(newGroupName, groupOwnerUserName);
+                FinansoData.RepositoryResult<bool?> data = await groupRepository.Add(newGroupName, groupOwnerUserName);
                 // Destroy in-memory database to prevent running multiple instance
                 context.Database.EnsureDeleted();
 
                 // Assert 
-                data.Should().BeFalse();
+                data.IsSuccess.Should().BeFalse();
+                data.Value.Should().BeNull();
+            }
+        }
+
+        #endregion
+
+        #region GetUserGroups
+
+        [Fact]
+        public async Task GroupRepository_GetUserGroups_ReurnGroupWhenMemberPassed()
+        {
+            // Arrange
+            using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
+            {
+                GroupRepository groupRepository = new GroupRepository(context);
+                string userName = _groupMember.UserName;
+
+
+                // Act
+                FinansoData.RepositoryResult<IEnumerable<GetUserGroupsViewModel>?> group = await groupRepository.GetUserGroups(userName);
+
+                // Destroy in-memory database to prevent running multiple instance
+                context.Database.EnsureDeleted();
+
+                // Assert
+                group.Value.Should().NotBeEmpty();
+                group.Value.Count().Should().Be(1);
+                List<GetUserGroupsViewModel> groupList = group.Value.ToList();
+                groupList[0].IsOwner.Should().BeFalse();
+            }
+        }
+
+        [Fact]
+        public async Task GroupRepository_GetUserGroups_ReurnGroupWhenOwnerPassed()
+        {
+            // Arrange
+            using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
+            {
+                GroupRepository groupRepository = new GroupRepository(context);
+                string userName = _groupOwner.UserName;
+
+
+                // Act
+                FinansoData.RepositoryResult<IEnumerable<GetUserGroupsViewModel>?> group = await groupRepository.GetUserGroups(userName);
+
+                // Destroy in-memory database to prevent running multiple instance
+                context.Database.EnsureDeleted();
+
+                // Assert
+                group.Value.Should().NotBeEmpty();
+                group.Value.Count().Should().Be(1);
+                List<GetUserGroupsViewModel> groupList = group.Value.ToList();
+                groupList[0].IsOwner.Should().BeTrue();
+            }
+        }
+
+        [Fact]
+        public async Task GroupRepository_GetUserGroups_ReurnGroupWhenWrongIdIsPassed()
+        {
+            // Arrange
+            using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
+            {
+                GroupRepository groupRepository = new GroupRepository(context);
+                string userName = _groupMember.UserName;
+
+
+                // Act
+                FinansoData.RepositoryResult<IEnumerable<GetUserGroupsViewModel>?> group = await groupRepository.GetUserGroups(userName);
+
+                // Destroy in-memory database to prevent running multiple instance
+                context.Database.EnsureDeleted();
+
+                // Assert
+                group.Value.Should().NotBeEmpty();
+                group.Value.Count().Should().Be(1);
+                List<GetUserGroupsViewModel> groupList = group.Value.ToList();
+                groupList[0].IsOwner.Should().BeFalse();
             }
         }
 
