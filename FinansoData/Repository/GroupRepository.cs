@@ -2,28 +2,18 @@
 using FinansoData.DataViewModel.Group;
 using FinansoData.Models;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Identity.Client;
-using static FinansoData.Repository.IGroupRepository;
 
 namespace FinansoData.Repository
 {
     public class GroupRepository : IGroupRepository
     {
         private readonly ApplicationDbContext _context;
-        private IGroupRepositoryErrorInfo _igroupRepositoryErrorInfo;
 
         public GroupRepository(ApplicationDbContext context)
         {
             _context = context;
-            _igroupRepositoryErrorInfo = new GroupRepositoryErrorInfo();
         }
 
-        public IGroupRepository.IGroupRepositoryErrorInfo Error
-        {
-            get { return _igroupRepositoryErrorInfo; }
-        }
-
-        IGroupRepositoryErrorInfo IGroupRepository.Error => throw new NotImplementedException();
 
 
         #region CRUD operations
@@ -36,7 +26,6 @@ namespace FinansoData.Repository
             }
             catch
             {
-                _igroupRepositoryErrorInfo.DatabaseError = true;
                 return false;
             }
         }
@@ -51,7 +40,6 @@ namespace FinansoData.Repository
             }
             catch
             {
-                _igroupRepositoryErrorInfo.DatabaseError = true;
                 return false;
             }
         }
@@ -66,7 +54,6 @@ namespace FinansoData.Repository
             }
             catch
             {
-                _igroupRepositoryErrorInfo.DatabaseError = true;
                 return false;
             }
         }
@@ -80,7 +67,6 @@ namespace FinansoData.Repository
             }
             catch
             {
-                _igroupRepositoryErrorInfo.DatabaseError = true;
                 return false;
             }
         }
@@ -94,7 +80,6 @@ namespace FinansoData.Repository
             }
             catch
             {
-                _igroupRepositoryErrorInfo.DatabaseError = true;
                 return false;
             }
         }
@@ -108,14 +93,13 @@ namespace FinansoData.Repository
             }
             catch
             {
-                _igroupRepositoryErrorInfo.DatabaseError = true;
                 return false;
             }
         }
 
         #endregion
 
-        public async Task<bool> Add(string groupName, string appUser)
+        public async Task<RepositoryResult<bool?>> Add(string groupName, string appUser)
         {
             AppUser user;
             try
@@ -126,14 +110,12 @@ namespace FinansoData.Repository
             }
             catch (Exception)
             {
-                _igroupRepositoryErrorInfo.DatabaseError = true;
-                return false;
+                return RepositoryResult<bool?>.Failure(null, ErrorType.ServerError);
             }
 
             if (user == null)
             {
-                _igroupRepositoryErrorInfo.NoUserFoundError = true;
-                return false;
+                return RepositoryResult<bool?>.Failure(null, ErrorType.NoUserFound);
             }
 
             // Check if user reached max group limit
@@ -141,8 +123,7 @@ namespace FinansoData.Repository
 
             if (userGroupCount >= 10)
             {
-                _igroupRepositoryErrorInfo.MaxGroupsLimitReached = true;
-                return false;
+                return RepositoryResult<bool?>.Failure(null, ErrorType.MaxGroupsLimitReached);
             }
 
             Group group = new Group
@@ -152,10 +133,13 @@ namespace FinansoData.Repository
                 OwnerAppUser = user
             };
 
-            return Add(group) ? true : false;
+            bool result = Add(group);
+
+            if (result) return RepositoryResult<bool?>.Success(true);
+            else return RepositoryResult<bool?>.Failure(null, ErrorType.ServerError);
         }
 
-        public async Task<IEnumerable<GetGroupMembersViewModel>> GetGroupMembersAsync(int id)
+        public async Task<RepositoryResult<IEnumerable<GetGroupMembersViewModel>>> GetGroupMembersAsync(int id)
         {
             IQueryable<GetGroupMembersViewModel> query = (from gu in _context.GroupUsers
                                                           join g in _context.Groups on gu.Group.Id equals g.Id
@@ -183,17 +167,17 @@ namespace FinansoData.Repository
 
             try
             {
-                return await query.ToListAsync();
+                List<GetGroupMembersViewModel> data = await query.ToListAsync();
+                return RepositoryResult<IEnumerable<GetGroupMembersViewModel>>.Success(data);
             }
             catch (Exception)
             {
-                _igroupRepositoryErrorInfo.DatabaseError = true;
-                return null;
+                return RepositoryResult<IEnumerable<GetGroupMembersViewModel>>.Failure(null, ErrorType.ServerError);
             }
 
         }
 
-        public async Task<IEnumerable<GetUserGroupsViewModel>?> GetUserGroups(string appUser)
+        public async Task<RepositoryResult<IEnumerable<GetUserGroupsViewModel>?>> GetUserGroups(string appUser)
         {
             AppUser user;
             try
@@ -202,21 +186,21 @@ namespace FinansoData.Repository
             }
             catch (Exception)
             {
-                _igroupRepositoryErrorInfo.DatabaseError = true;
-                return null;
+                return RepositoryResult<IEnumerable<GetUserGroupsViewModel>?>.Failure(null, ErrorType.ServerError);
             }
 
             if (user == null)
             {
-                _igroupRepositoryErrorInfo.NoUserFoundError = true;
-                return null;
+                return RepositoryResult<IEnumerable<GetUserGroupsViewModel>?>.Failure(null, ErrorType.NoUserFound);
             }
 
 
             IQueryable<GetUserGroupsViewModel> query = from g in _context.Groups
-                                                       join gu in _context.GroupUsers on g.Id equals gu.Group.Id
-                                                       where gu.AppUser == user
-                                                       && gu.Active == true
+                                                       join gu in _context.GroupUsers on g.Id equals gu.Group.Id into guj
+                                                       from gg in guj.DefaultIfEmpty()
+                                                       where
+                                                       (gg.AppUser == user && gg.Active == true)
+                                                       || (g.OwnerAppUser == user)
                                                        select new GetUserGroupsViewModel
                                                        {
                                                            Id = g.Id,
@@ -228,37 +212,47 @@ namespace FinansoData.Repository
                                                                            select gusq.Id).Count()
                                                        };
 
-
+            List<GetUserGroupsViewModel> data;
             try
             {
-                return await query.ToListAsync();
+                data = await query.ToListAsync();
             }
             catch (Exception)
             {
-                _igroupRepositoryErrorInfo.DatabaseError = true;
-                return null;
+                return RepositoryResult<IEnumerable<GetUserGroupsViewModel>?>.Failure(null, ErrorType.ServerError);
             }
+
+            return RepositoryResult<IEnumerable<GetUserGroupsViewModel>?>.Success(data);
         }
 
-        public async Task<bool> IsUserGroupOwner(int GroupId, string appUser)
+        public async Task<RepositoryResult<bool>> IsUserGroupOwner(int GroupId, string appUser)
         {
 
             IQueryable<Models.Group> query = from g in _context.Groups
-                                      join u in _context.AppUsers on g.OwnerAppUser.Id equals u.Id
-                                      where g.Id == GroupId && u.UserName == appUser
-                                      select g;
+                                             join u in _context.AppUsers on g.OwnerAppUser.Id equals u.Id
+                                             where g.Id == GroupId && u.UserName == appUser
+                                             select g;
 
-            Models.Group? data = await query.FirstOrDefaultAsync();
+            Models.Group? data;
+
+            try
+            {
+                data = await query.FirstOrDefaultAsync();
+            }
+            catch
+            {
+                return RepositoryResult<bool>.Failure(null, ErrorType.ServerError);
+            }
 
 
             if (data is null)
             {
-                return false;
+                return RepositoryResult<bool>.Success(false);
             }
-            return true;
+            return RepositoryResult<bool>.Success(true);
         }
 
-        public async Task<GetUserMembershipInGroupViewModel> GetUserMembershipInGroupAsync(int GroupId, string appUser)
+        public async Task<RepositoryResult<GetUserMembershipInGroupViewModel>> GetUserMembershipInGroupAsync(int GroupId, string appUser)
         {
             GetUserMembershipInGroupViewModel output = new GetUserMembershipInGroupViewModel();
 
@@ -266,14 +260,24 @@ namespace FinansoData.Repository
                                                         join u in _context.AppUsers on g.OwnerAppUser.Id equals u.Id
                                                         where g.Id == GroupId && u.UserName == appUser
                                                         select g;
+            Models.Group isUserAdmin;
 
-            Models.Group isUserAdmin = isUserAdminQuery.FirstOrDefault();
+
+            try
+            {
+                isUserAdmin = isUserAdminQuery.FirstOrDefault();
+            }
+            catch (Exception ex)
+            {
+                return RepositoryResult<GetUserMembershipInGroupViewModel>.Failure(null, ErrorType.ServerError);
+            }
+
 
             if (isUserAdmin is not null)
             {
                 output.IsMember = true;
                 output.IsOwner = true;
-                return output;
+                return RepositoryResult<GetUserMembershipInGroupViewModel>.Success(output);
             }
 
 
@@ -289,11 +293,15 @@ namespace FinansoData.Repository
 
             if (isUserMember is not null)
             {
+                output.IsOwner = false;
                 output.IsMember = true;
-                return output;
+                return RepositoryResult<GetUserMembershipInGroupViewModel>.Success(output);
             }
 
-            return output;
+            output.IsMember = false;
+            output.IsOwner = false;
+            return RepositoryResult<GetUserMembershipInGroupViewModel>.Success(output);
+
         }
     }
 }
