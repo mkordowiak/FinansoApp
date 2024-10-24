@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using AutoMapper;
+using FinansoData.Repository.Account;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -16,6 +17,12 @@ builder.Services.AddScoped<IBalanceRepository, BalanceRepository>();
 builder.Services.AddScoped<ISeed, Seed>();
 builder.Services.AddScoped<ICurrencyRepository, CurrencyRepository>(); 
 builder.Services.AddScoped<IGroupRepository, GroupRepository>();
+
+// Repository account
+builder.Services.AddScoped<IAuthentication, Authentication>();
+builder.Services.AddScoped<IUserManagement, UserManagement>();
+
+
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();

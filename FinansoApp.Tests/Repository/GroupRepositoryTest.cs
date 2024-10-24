@@ -24,6 +24,10 @@ namespace FinansoApp.Tests.Repository
 
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
+                context.Database.EnsureDeleted();
+                context.Database.EnsureCreated();
+
+
                 _groupOwner = new AppUser { Id = "1", UserName = "john@mail.com", FirstName = "John", LastName = "Doe" };
                 _groupMember = new AppUser { Id = "2", UserName = "mark@mail.com", FirstName = "Mark", LastName = "Knopfler" };
 
@@ -172,6 +176,7 @@ namespace FinansoApp.Tests.Repository
             // Arrange
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
+
                 GroupRepository groupRepository = new GroupRepository(context);
                 string newGroupName = "New group";
                 string groupOwnerUserName = _groupOwner.UserName;

@@ -1,7 +1,8 @@
 ﻿using FinansoApp.Controllers;
 using FinansoApp.ViewModels;
+using FinansoData;
 using FinansoData.Models;
-using FinansoData.Repository;
+using FinansoData.Repository.Account;
 using FluentAssertions;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
@@ -15,8 +16,10 @@ namespace FinansoApp.Tests.Controllers
         private readonly Mock<UserManager<AppUser>> _userManagerMock;
         private readonly Mock<IHttpContextAccessor> _contextAccessorMock;
         private readonly Mock<IUserClaimsPrincipalFactory<AppUser>> _userPrincipalFactoryMock;
-        private readonly Mock<IAccountRepository> _accountRepositoryMock;
         private readonly Mock<SignInManager<AppUser>> _signInManagerMock;
+        private readonly Mock<IAuthentication> _authenticationMock;
+        private readonly Mock<IUserManagement> _userManagementMock;
+
 
         public AccountControllerTest()
         {
@@ -28,7 +31,8 @@ namespace FinansoApp.Tests.Controllers
             _contextAccessorMock = new Mock<IHttpContextAccessor>();
             _userPrincipalFactoryMock = new Mock<IUserClaimsPrincipalFactory<AppUser>>();
 
-            _accountRepositoryMock = new Mock<IAccountRepository>();
+            _authenticationMock = new Mock<IAuthentication>();
+            _userManagementMock = new Mock<IUserManagement>();
 
 
 
@@ -40,8 +44,6 @@ namespace FinansoApp.Tests.Controllers
                 null,
                 null,
                 null);
-
-
 
 
             _signInManagerMock.Setup(m => m.PasswordSignInAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()))
@@ -72,23 +74,26 @@ namespace FinansoApp.Tests.Controllers
             };
 
 
-
+            RepositoryResult<AppUser?> loginAsyncUser = RepositoryResult<AppUser?>
+                .Success(new AppUser());
 
             // Mock 
-            _accountRepositoryMock.Setup(x => x.LoginAsync(email, correctPassword))
-                .ReturnsAsync(new AppUser());
+            _authenticationMock.Setup(x => x.LoginAsync(email, correctPassword))
+                .ReturnsAsync(loginAsyncUser);
 
 
             // Arrange controller
             AccountController accountController = new AccountController(
                 _userManagerMock.Object,
-                _accountRepositoryMock.Object,
+                _authenticationMock.Object,
+                _userManagementMock.Object,
                 _signInManagerMock.Object);
 
-            _accountRepositoryMock.Setup(x => x.Error.DatabaseError)
-                .Returns(false);
-            _accountRepositoryMock.Setup(x => x.Error.WrongPassword)
-                .Returns(false);
+
+            RepositoryResult<AppUser?> loginAsyncMock = RepositoryResult<AppUser?>.Success(new AppUser());
+
+            _authenticationMock.Setup(x => x.LoginAsync(It.IsAny<string>(), It.IsAny<string>()))
+                .ReturnsAsync(loginAsyncMock);
 
             #endregion
 
@@ -126,20 +131,18 @@ namespace FinansoApp.Tests.Controllers
 
 
             // Mock 
-            _accountRepositoryMock.Setup(x => x.LoginAsync(email, incorrectPassword))
-                .ReturnsAsync((AppUser)null);
+            RepositoryResult<AppUser?> loginAsyncMock = RepositoryResult<AppUser?>.Failure(null, ErrorType.WrongPassword);
+            _authenticationMock.Setup(x => x.LoginAsync(email, incorrectPassword))
+                .ReturnsAsync(loginAsyncMock);
 
 
             // Arrange controller
             AccountController accountController = new AccountController(
                 _userManagerMock.Object,
-                _accountRepositoryMock.Object,
+                _authenticationMock.Object,
+                _userManagementMock.Object,
                 _signInManagerMock.Object);
 
-            _accountRepositoryMock.Setup(x => x.Error.DatabaseError)
-                .Returns(false);
-            _accountRepositoryMock.Setup(x => x.Error.WrongPassword)
-                .Returns(true);
 
             #endregion
 
@@ -186,24 +189,17 @@ namespace FinansoApp.Tests.Controllers
 
 
             // Mock 
-            _accountRepositoryMock.Setup(x => x.CreateAppUser(email, password))
-                .ReturnsAsync((AppUser)null);
+            RepositoryResult<AppUser?> createAppUserResult = RepositoryResult<AppUser?>.Failure(null, ErrorType.EmailAlreadyExists);
+            _userManagementMock.Setup(x => x.CreateAppUser(email, password))
+                .ReturnsAsync(createAppUserResult);
 
 
             // Arrange controller
             AccountController accountController = new AccountController(
                 _userManagerMock.Object,
-                _accountRepositoryMock.Object,
+                _authenticationMock.Object,
+                _userManagementMock.Object,
                 _signInManagerMock.Object);
-
-            _accountRepositoryMock.Setup(x => x.Error.DatabaseError)
-                .Returns(false);
-            _accountRepositoryMock.Setup(x => x.Error.RegisterError)
-                .Returns(false);
-            _accountRepositoryMock.Setup(x => x.Error.AssignUserRoleError)
-                .Returns(false);
-            _accountRepositoryMock.Setup(x => x.Error.EmailAlreadyExists)
-                .Returns(true);
             #endregion
 
 
@@ -241,25 +237,21 @@ namespace FinansoApp.Tests.Controllers
             };
 
 
+            RepositoryResult<AppUser?> createUserMock = RepositoryResult<AppUser?>.Failure(null, ErrorType.AssignUserRoleError);
+
+
             // Mock 
-            _accountRepositoryMock.Setup(x => x.CreateAppUser(email, password))
-                .ReturnsAsync((AppUser)null);
+            _userManagementMock.Setup(x => x.CreateAppUser(email, password))
+                .ReturnsAsync(createUserMock);
 
 
             // Arrange controller
             AccountController accountController = new AccountController(
                 _userManagerMock.Object,
-                _accountRepositoryMock.Object,
+                _authenticationMock.Object,
+                _userManagementMock.Object,
                 _signInManagerMock.Object);
 
-            _accountRepositoryMock.Setup(x => x.Error.DatabaseError)
-                .Returns(false);
-            _accountRepositoryMock.Setup(x => x.Error.RegisterError)
-                .Returns(false);
-            _accountRepositoryMock.Setup(x => x.Error.EmailAlreadyExists)
-                .Returns(false);
-            _accountRepositoryMock.Setup(x => x.Error.AssignUserRoleError)
-                .Returns(true);
             #endregion
 
 
@@ -299,25 +291,21 @@ namespace FinansoApp.Tests.Controllers
             };
             AppUser user = new AppUser { };
 
+            RepositoryResult<AppUser?> createAppUserResult = RepositoryResult<AppUser?>.Success(new AppUser { });
+
+
             // Mock 
-            _accountRepositoryMock.Setup(x => x.CreateAppUser(email, password))
-                .ReturnsAsync(user);
+            _userManagementMock.Setup(x => x.CreateAppUser(email, password))
+                .ReturnsAsync(createAppUserResult);
 
 
             // Arrange controller
             AccountController accountController = new AccountController(
                 _userManagerMock.Object,
-                _accountRepositoryMock.Object,
+                _authenticationMock.Object,
+                _userManagementMock.Object,
                 _signInManagerMock.Object);
 
-            _accountRepositoryMock.Setup(x => x.Error.DatabaseError)
-                .Returns(false);
-            _accountRepositoryMock.Setup(x => x.Error.RegisterError)
-                .Returns(false);
-            _accountRepositoryMock.Setup(x => x.Error.EmailAlreadyExists)
-                .Returns(false);
-            _accountRepositoryMock.Setup(x => x.Error.AssignUserRoleError)
-                .Returns(false);
             #endregion
 
 
