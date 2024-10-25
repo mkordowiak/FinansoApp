@@ -8,6 +8,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using AutoMapper;
 using FinansoData.Repository.Account;
+using FinansoData.Repository.Group;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -15,8 +16,10 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 builder.Services.AddScoped<IBalanceRepository, BalanceRepository>();
 builder.Services.AddScoped<ISeed, Seed>();
-builder.Services.AddScoped<ICurrencyRepository, CurrencyRepository>(); 
-builder.Services.AddScoped<IGroupRepository, GroupRepository>();
+builder.Services.AddScoped<ICurrencyRepository, CurrencyRepository>();
+builder.Services.AddScoped<IGroupCrudRepository, GroupCrudRepository>();
+builder.Services.AddScoped<IGroupManagementRepository, GroupManagementRepository>();
+builder.Services.AddScoped<IGroupQueryRepository, GroupQueryRepository>();
 
 // Repository account
 builder.Services.AddScoped<IAuthentication, Authentication>();
