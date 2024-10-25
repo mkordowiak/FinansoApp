@@ -2,6 +2,7 @@
 using FinansoData.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.ChangeTracking;
 
 namespace FinansoData.Repository.Account
 {
@@ -40,7 +41,8 @@ namespace FinansoData.Repository.Account
             AppUser user;
             try
             {
-                user = await _context.AppUsers.FirstOrDefaultAsync(x => x.Email.Equals(email));
+                user = await _context.AppUsers.FirstOrDefaultAsync(x => x.NormalizedEmail.Equals(email));
+
             }
             catch
             {

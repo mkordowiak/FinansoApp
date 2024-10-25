@@ -1,16 +1,19 @@
-﻿using FinansoData;
-using FinansoData.Data;
+﻿using FinansoData.Data;
 using FinansoData.Models;
 using FinansoData.Repository.Account;
 using FluentAssertions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Moq;
-//using FinansoData.Repository;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace FinansoApp.Tests.Repository.Account
+namespace FinansoData.Tests.Repository.Account
 {
-    public class UserManagementTest
+    public class UserManagementTests
     {
         private readonly Mock<ApplicationDbContext> _contextMock;
         private readonly Mock<UserManager<AppUser>> _userManagerMock;
@@ -20,7 +23,7 @@ namespace FinansoApp.Tests.Repository.Account
         private readonly string _username;
         private readonly string _userEmail;
 
-        public UserManagementTest()
+        public UserManagementTests()
         {
             _contextMock = new Mock<ApplicationDbContext>();
             _userManagerMock = new Mock<UserManager<AppUser>>();
@@ -258,6 +261,5 @@ namespace FinansoApp.Tests.Repository.Account
                 result.ErrorType.Should().Be(ErrorType.None);
             }
         }
-
     }
 }

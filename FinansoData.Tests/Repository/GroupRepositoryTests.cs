@@ -4,10 +4,15 @@ using FinansoData.Models;
 using FinansoData.Repository;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
-namespace FinansoApp.Tests.Repository
+namespace FinansoData.Tests.Repository
 {
-    public class GroupRepositoryTest
+    public class GroupRepositoryTests
     {
         private readonly DbContextOptions<ApplicationDbContext> _dbContextOptions;
         private AppUser _groupOwner;
@@ -16,10 +21,10 @@ namespace FinansoApp.Tests.Repository
         private GroupUser _groupUser;
 
 
-        public GroupRepositoryTest()
+        public GroupRepositoryTests()
         {
             _dbContextOptions = new DbContextOptionsBuilder<ApplicationDbContext>()
-                .UseInMemoryDatabase(databaseName: "TestDb")
+                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
                 .Options;
 
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))

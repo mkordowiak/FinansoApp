@@ -1,15 +1,21 @@
-﻿using FinansoData;
-using FinansoData.Data;
+﻿using FinansoData.Data;
 using FinansoData.Models;
 using FinansoData.Repository.Account;
 using FluentAssertions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Moq;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using System.Text.Json;
 
-namespace FinansoApp.Tests.Repository.Account
+namespace FinansoData.Tests.Repository.Account
 {
-    public class AuthenticationTest
+    [CollectionDefinition("Non-Parallel Collection")]
+    public class AuthenticationTests
     {
         private readonly Mock<ApplicationDbContext> _contextMock;
         private readonly Mock<UserManager<AppUser>> _userManagerMock;
@@ -19,7 +25,10 @@ namespace FinansoApp.Tests.Repository.Account
         private readonly string _username;
         private readonly string _userEmail;
 
-        public AuthenticationTest()
+        private static readonly object _lock = new object();
+
+
+        public AuthenticationTests()
         {
             _contextMock = new Mock<ApplicationDbContext>();
             _userManagerMock = new Mock<UserManager<AppUser>>();
@@ -36,19 +45,25 @@ namespace FinansoApp.Tests.Repository.Account
 
 
             _dbContextOptions = new DbContextOptionsBuilder<ApplicationDbContext>()
-                .UseInMemoryDatabase(databaseName: "TestDb")
+                .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
             .Options;
 
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
+
                 context.Database.EnsureDeleted();
                 context.Database.EnsureCreated();
 
+                context.ChangeTracker.LazyLoadingEnabled = false;
+
+                string id  = Guid.NewGuid().ToString();
+
                 context.AppUsers.Add(new AppUser
                 {
-                    Id = "testId",
+                    Id = id,
                     UserName = _username,
                     Email = _userEmail,
+                    NormalizedEmail = _userEmail,
                     EmailConfirmed = true
                 });
 
@@ -104,14 +119,12 @@ namespace FinansoApp.Tests.Repository.Account
 
         [Fact]
         public async Task GetUserByEmailAsync_ShoudResultUserWhenEmailIsCorrect()
-        {
+        { 
             // Arrange 
-
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
                 Authentication repository = new Authentication(context, _userManagerMock.Object);
-
-
+                
                 // Act
                 RepositoryResult<AppUser?> user = await repository.GetUserByEmailAsync(_userEmail);
                 // DESTROY IN MEMORY DATABASE - prevent to run multiple instances of database
@@ -147,12 +160,5 @@ namespace FinansoApp.Tests.Repository.Account
                 user.Value.Should().BeNull();
             }
         }
-
-
-
-
-
-
-
     }
 }
