@@ -2,6 +2,7 @@
 using FinansoApp.ViewModels;
 using FinansoData.DataViewModel.Group;
 using FinansoData.Repository;
+using FinansoData.Repository.Group;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -9,13 +10,16 @@ namespace FinansoApp.Controllers
 {
     public class GroupController : Controller
     {
-        private readonly IGroupRepository _groupRepository;
+        //private readonly IGroupRepository _groupRepository;
         private readonly IMapper _mapper;
+        private readonly IGroupQueryRepository _groupQueryRepository;
+        private readonly IGroupManagementRepository _groupManagementRepository;
 
-        public GroupController(IGroupRepository groupRepository, IMapper mapper)
+        public GroupController(IMapper mapper, IGroupQueryRepository groupQueryRepository, IGroupManagementRepository groupManagementRepository)
         {
-            _groupRepository = groupRepository;
             _mapper = mapper;
+            _groupQueryRepository = groupQueryRepository;
+            _groupManagementRepository = groupManagementRepository;
         }
 
         /// <summary>
@@ -25,7 +29,7 @@ namespace FinansoApp.Controllers
         [Authorize]
         public async Task<IActionResult> Index()
         {
-            FinansoData.RepositoryResult<IEnumerable<GetUserGroupsViewModel>?> data = await _groupRepository.GetUserGroups(User.Identity.Name);
+            FinansoData.RepositoryResult<IEnumerable<GetUserGroupsViewModel>?> data = await _groupQueryRepository.GetUserGroups(User.Identity.Name);
             return View(data.Value);
         }
 
@@ -48,7 +52,7 @@ namespace FinansoApp.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(GroupCreateViewModel groupCreateViewModel)
         {
-            FinansoData.RepositoryResult<bool?> createGroup = await _groupRepository.Add(groupCreateViewModel.Name, User.Identity.Name);
+            FinansoData.RepositoryResult<bool?> createGroup = await _groupManagementRepository.Add(groupCreateViewModel.Name, User.Identity.Name);
 
 
             if (createGroup.IsSuccess == false
@@ -76,7 +80,7 @@ namespace FinansoApp.Controllers
         public async Task<IActionResult> EditMembers(int id)
         {
             // check loggedin user access
-            FinansoData.RepositoryResult<GetUserMembershipInGroupViewModel> groupMemberInfo = await _groupRepository.GetUserMembershipInGroupAsync(id, User.Identity.Name);
+            FinansoData.RepositoryResult<GetUserMembershipInGroupViewModel> groupMemberInfo = await _groupQueryRepository.GetUserMembershipInGroupAsync(id, User.Identity.Name);
 
             if (groupMemberInfo.Value.IsMember == false)
             {
@@ -85,7 +89,7 @@ namespace FinansoApp.Controllers
 
 
             // get data
-            FinansoData.RepositoryResult<IEnumerable<GetGroupMembersViewModel>> data = await _groupRepository.GetGroupMembersAsync(id);
+            FinansoData.RepositoryResult<IEnumerable<GetGroupMembersViewModel>> data = await _groupQueryRepository.GetGroupMembersAsync(id);
             List<GroupMembersViewModel> members = _mapper.Map<List<GroupMembersViewModel>>(data.Value);
 
             ListMembersViewModel listMembersViewModel = new ListMembersViewModel
