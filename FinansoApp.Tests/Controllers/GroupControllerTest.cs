@@ -3,6 +3,7 @@ using FinansoApp.Controllers;
 using FinansoApp.ViewModels;
 using FinansoData;
 using FinansoData.Repository;
+using FinansoData.Repository.Group;
 using FluentAssertions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -15,12 +16,14 @@ namespace FinansoApp.Tests.Controllers
 {
     public class GroupControllerTest
     {
-        private readonly Mock<IGroupRepository> _groupRepositoryMock;
+        private readonly Mock<IGroupQueryRepository> _groupQueryRepositoryMock;
+        private readonly Mock<IGroupManagementRepository> _groupManagementRepositoryMock;
         private readonly Mock<IMapper> _mapper;
 
         public GroupControllerTest()
         {
-            _groupRepositoryMock = new Mock<IGroupRepository>();
+            _groupQueryRepositoryMock = new Mock<IGroupQueryRepository>();
+            _groupManagementRepositoryMock = new Mock<IGroupManagementRepository>();
             _mapper = new Mock<IMapper>();
         }
 
@@ -77,10 +80,10 @@ namespace FinansoApp.Tests.Controllers
             context.SetupGet(ctx => ctx.User).Returns(mockPrincipal.Object);
 
 
-            _groupRepositoryMock.Setup(x => x.Add(groupName, appUser)).ReturnsAsync(RepositoryResult<bool?>.Failure(null, ErrorType.MaxGroupsLimitReached));
+            _groupManagementRepositoryMock.Setup(x => x.Add(groupName, appUser)).ReturnsAsync(RepositoryResult<bool?>.Failure(null, ErrorType.MaxGroupsLimitReached));
 
 
-            GroupController groupController = new GroupController(_groupRepositoryMock.Object, _mapper.Object)
+            GroupController groupController = new GroupController(_mapper.Object, _groupQueryRepositoryMock.Object, _groupManagementRepositoryMock.Object)
             {
                 ControllerContext = new ControllerContext
                 {
@@ -124,12 +127,12 @@ namespace FinansoApp.Tests.Controllers
 
 
 
-            _groupRepositoryMock.Setup(x => x.Add(groupName, appUser))
+            _groupManagementRepositoryMock.Setup(x => x.Add(groupName, appUser))
                 .ReturnsAsync(RepositoryResult<bool?>.Success(true));
 
 
 
-            GroupController groupController = new GroupController(_groupRepositoryMock.Object, _mapper.Object)
+            GroupController groupController = new GroupController(_mapper.Object, _groupQueryRepositoryMock.Object, _groupManagementRepositoryMock.Object)
             {
                 ControllerContext = new ControllerContext
                 {
