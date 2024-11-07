@@ -9,7 +9,6 @@ namespace FinansoApp.Controllers
 {
     public class GroupController : Controller
     {
-        //private readonly IGroupRepository _groupRepository;
         private readonly IMapper _mapper;
         private readonly IGroupQueryRepository _groupQueryRepository;
         private readonly IGroupManagementRepository _groupManagementRepository;
@@ -102,15 +101,14 @@ namespace FinansoApp.Controllers
 
 
         /// <summary>
-        /// Delete group
+        /// Delete group confirmation page
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        /// <exception cref="NotImplementedException"></exception>
         [Authorize]
         public async Task<IActionResult> DeleteGroup(int id)
         {
-            // check if groups exits
+            // Check if group exists
             FinansoData.RepositoryResult<bool> isGroupExists = await _groupQueryRepository.IsGroupExists(id);
 
             if (!isGroupExists.IsSuccess)
@@ -123,8 +121,7 @@ namespace FinansoApp.Controllers
                 return NotFound();
             }
 
-
-            // check if user is group owner
+            // Check if user is group owner
             FinansoData.RepositoryResult<bool> userGroupOwner = await _groupQueryRepository.IsUserGroupOwner(id, User.Identity.Name);
 
             if (!userGroupOwner.IsSuccess)
@@ -137,14 +134,52 @@ namespace FinansoApp.Controllers
                 return Unauthorized();
             }
 
+            // Show confirmation view
+            return View("ConfirmDelete", id);
+        }
 
+        /// <summary>
+        /// Delete group after confirmation
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> DeleteGroupConfirmed(int id)
+        {
+            // Check if group exists
+            FinansoData.RepositoryResult<bool> isGroupExists = await _groupQueryRepository.IsGroupExists(id);
+
+            if (!isGroupExists.IsSuccess)
+            {
+                return BadRequest();
+            }
+
+            if (isGroupExists.Value == false)
+            {
+                return NotFound();
+            }
+
+            // Check if user is group owner
+            FinansoData.RepositoryResult<bool> userGroupOwner = await _groupQueryRepository.IsUserGroupOwner(id, User.Identity.Name);
+
+            if (!userGroupOwner.IsSuccess)
+            {
+                return BadRequest();
+            }
+
+            if (userGroupOwner.Value == false)
+            {
+                return Unauthorized();
+            }
+
+            // Delete the group
             FinansoData.RepositoryResult<bool> result = await _groupManagementRepository.DeleteGroup(id);
 
             if (!result.IsSuccess)
             {
                 return BadRequest();
             }
-
 
             return RedirectToAction("Index", "Group");
         }

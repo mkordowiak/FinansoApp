@@ -168,7 +168,50 @@ namespace FinansoApp.Tests.Controllers
         }
 
         [Fact]
-        public async Task GroupController_Delete_ShouldReturnRedirectToActionWhenOK()
+        public async Task GroupController_DeleteGroupConfirmed_ShouldRunDeleteGroupMethod()
+        {
+            #region Arrange
+            // Principal
+            string appUser = "appuser";
+            Mock<ClaimsPrincipal> mockPrincipal = new Mock<ClaimsPrincipal>();
+            mockPrincipal.Setup(p => p.Identity.Name).Returns(appUser);
+            mockPrincipal.Setup(p => p.Identity.IsAuthenticated).Returns(true);
+
+
+            // Repository
+            _groupQueryRepositoryMock.Setup(x => x.IsGroupExists(It.IsAny<int>()))
+                .ReturnsAsync(RepositoryResult<bool>.Success(true));
+            _groupQueryRepositoryMock.Setup(x => x.IsUserGroupOwner(It.IsAny<int>(), appUser))
+                .ReturnsAsync(RepositoryResult<bool>.Success(true));
+
+            _groupManagementRepositoryMock.Setup(x => x.DeleteGroup(It.IsAny<int>()))
+                .ReturnsAsync(RepositoryResult<bool>.Success(true));
+
+
+
+            Mock<HttpContext> context = new Mock<HttpContext>();
+            context.SetupGet(ctx => ctx.User).Returns(mockPrincipal.Object);
+
+
+            GroupController groupController = new GroupController(_mapper.Object, _groupQueryRepositoryMock.Object, _groupManagementRepositoryMock.Object)
+            {
+                ControllerContext = new ControllerContext
+                {
+                    HttpContext = context.Object
+                }
+            };
+            #endregion
+
+
+            // Act
+            IActionResult deleteGroupResult = await groupController.DeleteGroupConfirmed(It.IsAny<int>());
+
+            // Assert
+            _groupManagementRepositoryMock.Verify( x => x.DeleteGroup(It.IsAny<int>()), Times.Once);
+        }
+
+        [Fact]
+        public async Task GroupController_Delete_ShouldReturnViewDeleteConfirmedWhenOK()
         {
             // Arrange
 
@@ -206,7 +249,10 @@ namespace FinansoApp.Tests.Controllers
             IActionResult deleteGroupResult = await groupController.DeleteGroup(1);
 
             // Assert
-            deleteGroupResult.Should().BeOfType<RedirectToActionResult>("Controller should return redirect to action when everything is ok");
+            deleteGroupResult.Should().BeOfType<Microsoft.AspNetCore.Mvc.ViewResult>();
+
+            var viewResult = deleteGroupResult as ViewResult;
+            viewResult.ViewName.Should().Be("ConfirmDelete");
         }
 
 
