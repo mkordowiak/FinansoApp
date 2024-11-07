@@ -2,7 +2,6 @@
 using FinansoApp.Controllers;
 using FinansoApp.ViewModels;
 using FinansoData;
-using FinansoData.Repository;
 using FinansoData.Repository.Group;
 using FluentAssertions;
 using Microsoft.AspNetCore.Authorization;
@@ -102,6 +101,113 @@ namespace FinansoApp.Tests.Controllers
             groupCreateVMResult.Error.MaxGroupsLimitReached.Should().Be(true);
         }
 
+        [Fact]
+        public async Task GroupController_Delete_ShouldReturn404WhenGroupIdIsWrong()
+        {
+            // Arrange
+            _groupQueryRepositoryMock.Setup(x => x.IsGroupExists(It.IsAny<int>()))
+                .ReturnsAsync(RepositoryResult<bool>.Success(false));
+            Mock<ClaimsPrincipal> mockPrincipal = new Mock<ClaimsPrincipal>();
+
+            Mock<HttpContext> context = new Mock<HttpContext>();
+            context.SetupGet(ctx => ctx.User).Returns(mockPrincipal.Object);
+
+            GroupController groupController = new GroupController(_mapper.Object, _groupQueryRepositoryMock.Object, _groupManagementRepositoryMock.Object)
+            {
+                ControllerContext = new ControllerContext
+                {
+                    HttpContext = context.Object
+                }
+            };
+
+            // Act
+            IActionResult deleteGroupResult = await groupController.DeleteGroup(1);
+
+            // Assert
+            deleteGroupResult.Should().BeOfType<Microsoft.AspNetCore.Mvc.NotFoundResult>("Controller should return not found when group does not exist");
+        }
+
+
+        [Fact]
+        public async Task GroupController_Delete_ShouldReturnUnauthorizedWhenUserIsNotGroupOwner()
+        {
+            // Arrange
+
+            // Principal
+            string appUser = "appuser";
+            Mock<ClaimsPrincipal> mockPrincipal = new Mock<ClaimsPrincipal>();
+            mockPrincipal.Setup(p => p.Identity.Name).Returns(appUser);
+            mockPrincipal.Setup(p => p.Identity.IsAuthenticated).Returns(true);
+
+
+            // Repository
+            _groupQueryRepositoryMock.Setup(x => x.IsGroupExists(It.IsAny<int>()))
+                .ReturnsAsync(RepositoryResult<bool>.Success(true));
+            _groupQueryRepositoryMock.Setup(x => x.IsUserGroupOwner(It.IsAny<int>(), appUser))
+                .ReturnsAsync(RepositoryResult<bool>.Success(false));
+
+
+
+            Mock<HttpContext> context = new Mock<HttpContext>();
+            context.SetupGet(ctx => ctx.User).Returns(mockPrincipal.Object);
+
+
+            GroupController groupController = new GroupController(_mapper.Object, _groupQueryRepositoryMock.Object, _groupManagementRepositoryMock.Object)
+            {
+                ControllerContext = new ControllerContext
+                {
+                    HttpContext = context.Object
+                }
+            };
+
+            // Act
+            IActionResult deleteGroupResult = await groupController.DeleteGroup(1);
+
+            // Assert
+            deleteGroupResult.Should().BeOfType<Microsoft.AspNetCore.Mvc.UnauthorizedResult>("Controller should return unauthorized when user is not group owner");
+        }
+
+        [Fact]
+        public async Task GroupController_Delete_ShouldReturnRedirectToActionWhenOK()
+        {
+            // Arrange
+
+            // Principal
+            string appUser = "appuser";
+            Mock<ClaimsPrincipal> mockPrincipal = new Mock<ClaimsPrincipal>();
+            mockPrincipal.Setup(p => p.Identity.Name).Returns(appUser);
+            mockPrincipal.Setup(p => p.Identity.IsAuthenticated).Returns(true);
+
+
+            // Repository
+            _groupQueryRepositoryMock.Setup(x => x.IsGroupExists(It.IsAny<int>()))
+                .ReturnsAsync(RepositoryResult<bool>.Success(true));
+            _groupQueryRepositoryMock.Setup(x => x.IsUserGroupOwner(It.IsAny<int>(), appUser))
+                .ReturnsAsync(RepositoryResult<bool>.Success(true));
+
+            _groupManagementRepositoryMock.Setup(x => x.DeleteGroup(It.IsAny<int>()))
+                .ReturnsAsync(RepositoryResult<bool>.Success(true));
+
+
+
+            Mock<HttpContext> context = new Mock<HttpContext>();
+            context.SetupGet(ctx => ctx.User).Returns(mockPrincipal.Object);
+
+
+            GroupController groupController = new GroupController(_mapper.Object, _groupQueryRepositoryMock.Object, _groupManagementRepositoryMock.Object)
+            {
+                ControllerContext = new ControllerContext
+                {
+                    HttpContext = context.Object
+                }
+            };
+
+            // Act
+            IActionResult deleteGroupResult = await groupController.DeleteGroup(1);
+
+            // Assert
+            deleteGroupResult.Should().BeOfType<RedirectToActionResult>("Controller should return redirect to action when everything is ok");
+        }
 
 
         [Fact]
