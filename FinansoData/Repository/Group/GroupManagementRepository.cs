@@ -52,5 +52,48 @@ namespace FinansoData.Repository.Group
             if (result) return RepositoryResult<bool?>.Success(true);
             else return RepositoryResult<bool?>.Failure(null, ErrorType.ServerError);
         }
+
+        public Task<RepositoryResult<bool>> DeleteAllGroupUsers(int groupId)
+        {
+            throw new NotImplementedException();
+        }
+
+
+        public async Task<RepositoryResult<bool>> DeleteGroup(int groupId)
+        {
+            Models.Group? group = new Models.Group();
+            try
+            {
+                group = await _context.Groups
+                                        .Include(g => g.GroupUser)
+                                        .SingleOrDefaultAsync(g => g.Id == groupId);
+            }
+            catch
+            {
+                
+            }
+
+            if (group == null)
+            {
+                return RepositoryResult<bool>.Failure(null, ErrorType.NotFound);
+            }
+
+            try
+            {
+                _context.Groups.Remove(group);
+                _context.SaveChanges();
+            }
+            catch
+            {
+                return RepositoryResult<bool>.Failure(null, ErrorType.ServerError);
+            }
+
+            return RepositoryResult<bool>.Success(true);
+        }
+
+        public Task<RepositoryResult<bool>> DeleteGroupUser(int groupId, string appUser)
+        {
+            throw new NotImplementedException();
+        }
     }
 }
