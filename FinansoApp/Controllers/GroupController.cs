@@ -1,7 +1,6 @@
 ﻿using AutoMapper;
 using FinansoApp.ViewModels;
 using FinansoData.DataViewModel.Group;
-using FinansoData.Repository;
 using FinansoData.Repository.Group;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -101,10 +100,53 @@ namespace FinansoApp.Controllers
             return View(listMembersViewModel);
         }
 
+
+        /// <summary>
+        /// Delete group
+        /// </summary>
+        /// <param name="id"></param>
+        /// <returns></returns>
+        /// <exception cref="NotImplementedException"></exception>
+        [Authorize]
         public async Task<IActionResult> DeleteGroup(int id)
         {
-            throw new NotImplementedException();
-            return RedirectToAction("Index", "Home");
+            // check if groups exits
+            var isGroupExists = await _groupQueryRepository.IsGroupExists(id);
+
+            if (!isGroupExists.IsSuccess)
+            {
+                return BadRequest();
+            }
+
+            if(isGroupExists.Value == false)
+            {
+                return NotFound();
+            }
+
+
+            // check if user is group owner
+            FinansoData.RepositoryResult<bool> userGroupOwner = await _groupQueryRepository.IsUserGroupOwner(id, User.Identity.Name);
+
+            if (!userGroupOwner.IsSuccess)
+            {
+                return BadRequest();
+            }
+
+            if (userGroupOwner.Value == false)
+            {
+                return Unauthorized();
+            }
+
+
+            var result = await _groupManagementRepository.DeleteGroup(id);
+
+            if (!result.IsSuccess)
+            {
+                return BadRequest();
+            }
+
+
+            return RedirectToAction("Index", "Group");
         }
     }
 }
