@@ -151,9 +151,46 @@ namespace FinansoData.Repository.Group
             return RepositoryResult<GetUserMembershipInGroupViewModel>.Success(output);
         }
 
-        public Task<RepositoryResult<bool>> IsUserGroupOwner(int groupId, string appUser)
+        public async Task<RepositoryResult<bool>> IsGroupExists(int groupId)
         {
-            throw new NotImplementedException();
+            IQueryable<Models.Group> query = from g in _context.Groups
+                                             where g.Id == groupId
+                                             select g;
+
+            bool queryResult = false;
+            try
+            {
+                queryResult = await query.AnyAsync();
+            }
+            catch
+            {
+                return RepositoryResult<bool>.Failure(null, ErrorType.ServerError);
+            }
+
+            return RepositoryResult<bool>.Success(queryResult);
+        }
+
+        public async Task<RepositoryResult<bool>> IsUserGroupOwner(int groupId, string appUser)
+        {
+            IQueryable<Models.Group> query = from g in _context.Groups
+                                             join a in _context.AppUsers on g.OwnerAppUser.Id equals a.Id
+                                             where g.Id == groupId && a.NormalizedEmail == appUser
+                                             select g;
+
+            bool queryResult = false;
+            try
+            {
+                queryResult = await query.AnyAsync();
+            }
+            catch
+            {
+                return RepositoryResult<bool>.Failure(null, ErrorType.ServerError);
+            }
+
+
+            return RepositoryResult<bool>.Success(queryResult);
+
+
         }
     }
 }
