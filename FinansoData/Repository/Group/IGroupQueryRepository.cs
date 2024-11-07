@@ -37,6 +37,7 @@ namespace FinansoData.Repository.Group
         /// IsMember
         /// </returns>
         Task<RepositoryResult<GetUserMembershipInGroupViewModel>> GetUserMembershipInGroupAsync(int groupId, string appUser);
+        Task<RepositoryResult<bool>> IsGroupExists(int groupId);
     }
 
 }

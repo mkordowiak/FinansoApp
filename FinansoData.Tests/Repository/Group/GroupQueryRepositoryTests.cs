@@ -9,10 +9,12 @@ namespace FinansoData.Tests.Repository.Group
     public class GroupQueryRepositoryTests
     {
         private readonly DbContextOptions<ApplicationDbContext> _dbContextOptions;
-        private AppUser _groupOwner;
-        private AppUser _groupMember;
-        private FinansoData.Models.Group _group;
-        private GroupUser _groupUser;
+        private AppUser _group1Owner;
+        private AppUser _group1Member;
+        private AppUser _group2Member;
+        private Models.Group _group1;
+        private Models.Group _group2;
+
 
         public GroupQueryRepositoryTests()
         {
@@ -25,59 +27,122 @@ namespace FinansoData.Tests.Repository.Group
                 context.Database.EnsureDeleted();
                 context.Database.EnsureCreated();
 
+                _group1Owner = NormalizeAppUserEmail(new AppUser { Id = "1", UserName = "john@mail.com", FirstName = "John", LastName = "Doe" });
+                _group1Member = NormalizeAppUserEmail(new AppUser { Id = "2", UserName = "mark@mail.com", FirstName = "Mark", LastName = "Knopfler" });
+                _group2Member = NormalizeAppUserEmail(new AppUser { Id = "3", UserName = "andrew@mail.com", FirstName = "Andrew", LastName = "Kmicic" });
 
-                _groupOwner = new AppUser { Id = "1", UserName = "john@mail.com", FirstName = "John", LastName = "Doe" };
-                _groupMember = new AppUser { Id = "2", UserName = "mark@mail.com", FirstName = "Mark", LastName = "Knopfler" };
 
-                _group = new FinansoData.Models.Group { Id = 1, Name = "Test _group 1", OwnerAppUser = _groupOwner };
 
-                _groupUser = new GroupUser { Id = 1, Group = _group, AppUser = _groupMember };
+                _group1 = new FinansoData.Models.Group { Id = 1, Name = "Group 1", OwnerAppUser = _group1Owner };
+                _group2 = new FinansoData.Models.Group { Id = 2, Name = "Group 2", OwnerAppUser = _group1Member };
 
-                context.AppUsers.Add(_groupOwner);
-                context.AppUsers.Add(_groupMember);
-                context.Groups.Add(_group);
-                context.GroupUsers.Add(_groupUser);
+                GroupUser group1UserMember = new GroupUser { Id = 1, Group = _group1, AppUser = _group1Member };
+                GroupUser group2UserMember = new GroupUser { Id = 2, Group = _group2, AppUser = _group2Member };
+
+
+                context.AppUsers.Add(_group1Owner);
+                context.AppUsers.Add(_group1Member);
+                context.AppUsers.Add(_group2Member);
+
+
+                context.Groups.Add(_group1);
+                context.Groups.Add(_group2);
+
+
+                context.GroupUsers.Add(group1UserMember);
+                context.GroupUsers.Add(group2UserMember);
+
 
                 context.SaveChanges();
             }
         }
 
-        [Fact]
-        public async Task GetGroupMembersAsync_ShouldReturnValues()
+
+        private AppUser NormalizeAppUserEmail(AppUser appUser)
         {
-            // Arrange 
+            appUser.NormalizedEmail = appUser.UserName;
+            return appUser;
+        }
+
+        [Fact]
+        public async Task GroupRepository_IsUserGroupOwner_ShouldReturnTrueIfUserIsGroupOwner()
+        {
+            // Arrange
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
-                GroupQueryRepository groupQueryRepository = new GroupQueryRepository(context);
 
-                RepositoryResult<IEnumerable<DataViewModel.Group.GetGroupMembersViewModel>> result = await groupQueryRepository.GetGroupMembersAsync(1);
+                GroupQueryRepository repository = new GroupQueryRepository(context);
+
+                // Act 
+                RepositoryResult<bool> result = await repository.IsUserGroupOwner(_group1.Id, _group1Owner.UserName);
+                context.Database.EnsureDeleted();
 
                 // Assert
                 result.IsSuccess.Should().BeTrue();
-                result.Value.Should().NotBeNull();
+                result.Value.Should().BeTrue();
+            }
+
+        }
+
+        [Fact]
+        public async Task GroupRepository_IsUserGroupOwner_ShouldReturnFalseIfUserIsNOTGroupOwner()
+        {
+            // Arrange
+            using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
+            {
+
+                GroupQueryRepository repository = new GroupQueryRepository(context);
+
+                // Act 
+                RepositoryResult<bool> result = await repository.IsUserGroupOwner(_group1.Id, _group1Member.UserName);
+                context.Database.EnsureDeleted();
+
+                // Assert
+                result.IsSuccess.Should().BeTrue();
+                result.Value.Should().BeFalse();
             }
         }
 
 
         [Fact]
-        public async Task GetGroupMembersAsync_ShoudReturnNullWhenIdIsWrong()
+        public async Task GroupRepository_IsGroupExists_ShouldReturnTrueIfGroupExists()
         {
-            // Arrange 
+            // Arrange
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
-                GroupQueryRepository groupQueryRepository = new GroupQueryRepository(context);
 
-                RepositoryResult<IEnumerable<DataViewModel.Group.GetGroupMembersViewModel>> result = await groupQueryRepository.GetGroupMembersAsync(10);
+                GroupQueryRepository repository = new GroupQueryRepository(context);
+
+                // Act 
+                RepositoryResult<bool> result = await repository.IsGroupExists(_group1.Id);
+                context.Database.EnsureDeleted();
 
                 // Assert
                 result.IsSuccess.Should().BeTrue();
-
-                IEnumerable<DataViewModel.Group.GetGroupMembersViewModel> value = result.Value;
-                value.Should().NotBeNull();
-                value.Should().BeEmpty();
+                result.Value.Should().BeTrue();
             }
         }
 
+        [Fact]
+        public async Task GroupRepository_IsGroupExists_ShouldReturnFalseIfGroupDoesNotExists()
+        {
+            // Arrange
+            using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
+            {
+
+                GroupQueryRepository repository = new GroupQueryRepository(context);
+
+                // Act 
+                RepositoryResult<bool> result = await repository.IsGroupExists(999);
+                context.Database.EnsureDeleted();
+
+                // Assert
+                result.IsSuccess.Should().BeTrue();
+                result.Value.Should().BeFalse();
+            }
+        }
+      
+      
 
     }
 }
