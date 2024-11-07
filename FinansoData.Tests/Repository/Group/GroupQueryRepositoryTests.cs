@@ -3,7 +3,6 @@ using FinansoData.Models;
 using FinansoData.Repository.Group;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
-using Microsoft.Identity.Client;
 
 namespace FinansoData.Tests.Repository.Group
 {
@@ -72,7 +71,8 @@ namespace FinansoData.Tests.Repository.Group
                 GroupQueryRepository repository = new GroupQueryRepository(context);
 
                 // Act 
-                var result = await repository.IsUserGroupOwner(_group1.Id, _group1Owner.UserName);
+                RepositoryResult<bool> result = await repository.IsUserGroupOwner(_group1.Id, _group1Owner.UserName);
+                context.Database.EnsureDeleted();
 
                 // Assert
                 result.IsSuccess.Should().BeTrue();
@@ -91,7 +91,8 @@ namespace FinansoData.Tests.Repository.Group
                 GroupQueryRepository repository = new GroupQueryRepository(context);
 
                 // Act 
-                var result = await repository.IsUserGroupOwner(_group1.Id, _group1Member.UserName);
+                RepositoryResult<bool> result = await repository.IsUserGroupOwner(_group1.Id, _group1Member.UserName);
+                context.Database.EnsureDeleted();
 
                 // Assert
                 result.IsSuccess.Should().BeTrue();
@@ -101,7 +102,7 @@ namespace FinansoData.Tests.Repository.Group
 
 
         [Fact]
-        public async Task GroupRepository_IsGroupExistsShouldReturnTrueIfGroupExists()
+        public async Task GroupRepository_IsGroupExists_ShouldReturnTrueIfGroupExists()
         {
             // Arrange
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
@@ -110,7 +111,8 @@ namespace FinansoData.Tests.Repository.Group
                 GroupQueryRepository repository = new GroupQueryRepository(context);
 
                 // Act 
-                var result = await repository.IsGroupExists(_group1.Id);
+                RepositoryResult<bool> result = await repository.IsGroupExists(_group1.Id);
+                context.Database.EnsureDeleted();
 
                 // Assert
                 result.IsSuccess.Should().BeTrue();
@@ -119,7 +121,7 @@ namespace FinansoData.Tests.Repository.Group
         }
 
         [Fact]
-        public async Task GroupRepository_IsGroupExistsShouldReturnFalseIfGroupDoesNotExists()
+        public async Task GroupRepository_IsGroupExists_ShouldReturnFalseIfGroupDoesNotExists()
         {
             // Arrange
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
@@ -128,7 +130,8 @@ namespace FinansoData.Tests.Repository.Group
                 GroupQueryRepository repository = new GroupQueryRepository(context);
 
                 // Act 
-                var result = await repository.IsGroupExists(999);
+                RepositoryResult<bool> result = await repository.IsGroupExists(999);
+                context.Database.EnsureDeleted();
 
                 // Assert
                 result.IsSuccess.Should().BeTrue();
