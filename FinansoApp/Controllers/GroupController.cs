@@ -111,14 +111,14 @@ namespace FinansoApp.Controllers
         public async Task<IActionResult> DeleteGroup(int id)
         {
             // check if groups exits
-            var isGroupExists = await _groupQueryRepository.IsGroupExists(id);
+            FinansoData.RepositoryResult<bool> isGroupExists = await _groupQueryRepository.IsGroupExists(id);
 
             if (!isGroupExists.IsSuccess)
             {
                 return BadRequest();
             }
 
-            if(isGroupExists.Value == false)
+            if (isGroupExists.Value == false)
             {
                 return NotFound();
             }
@@ -138,7 +138,7 @@ namespace FinansoApp.Controllers
             }
 
 
-            var result = await _groupManagementRepository.DeleteGroup(id);
+            FinansoData.RepositoryResult<bool> result = await _groupManagementRepository.DeleteGroup(id);
 
             if (!result.IsSuccess)
             {
