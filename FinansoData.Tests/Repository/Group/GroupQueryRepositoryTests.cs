@@ -15,6 +15,7 @@ namespace FinansoData.Tests.Repository.Group
         private Models.Group _group1;
         private Models.Group _group2;
 
+
         public GroupQueryRepositoryTests()
         {
             _dbContextOptions = new DbContextOptionsBuilder<ApplicationDbContext>()
@@ -51,9 +52,11 @@ namespace FinansoData.Tests.Repository.Group
                 context.GroupUsers.Add(group1UserMember);
                 context.GroupUsers.Add(group2UserMember);
 
+
                 context.SaveChanges();
             }
         }
+
 
         private AppUser NormalizeAppUserEmail(AppUser appUser)
         {
@@ -138,5 +141,8 @@ namespace FinansoData.Tests.Repository.Group
                 result.Value.Should().BeFalse();
             }
         }
+      
+      
+
     }
 }

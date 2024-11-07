@@ -78,7 +78,7 @@ namespace FinansoApp.Controllers
         [Authorize]
         public async Task<IActionResult> EditMembers(int id)
         {
-            // check loggedin user access
+            // check logged in user access
             FinansoData.RepositoryResult<GetUserMembershipInGroupViewModel> groupMemberInfo = await _groupQueryRepository.GetUserMembershipInGroupAsync(id, User.Identity.Name);
 
             if (groupMemberInfo.Value.IsMember == false)

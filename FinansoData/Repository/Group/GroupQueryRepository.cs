@@ -113,7 +113,7 @@ namespace FinansoData.Repository.Group
 
             try
             {
-                isUserAdmin = isUserAdminQuery.FirstOrDefault();
+                isUserAdmin = await isUserAdminQuery.FirstOrDefaultAsync();
             }
             catch (Exception ex)
             {
