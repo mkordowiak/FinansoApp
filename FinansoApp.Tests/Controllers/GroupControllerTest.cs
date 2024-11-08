@@ -252,7 +252,7 @@ namespace FinansoApp.Tests.Controllers
             deleteGroupResult.Should().BeOfType<Microsoft.AspNetCore.Mvc.ViewResult>();
 
             var viewResult = deleteGroupResult as ViewResult;
-            viewResult.ViewName.Should().Be("ConfirmDelete");
+            viewResult.ViewName.Should().Be("ConfirmGroupDelete");
         }
 
 
