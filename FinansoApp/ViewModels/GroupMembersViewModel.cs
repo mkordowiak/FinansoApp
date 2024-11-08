@@ -4,6 +4,7 @@
     {
         public string FirstName { get; set; }
         public string LastName { get; set; }
+        public bool IsOwner { get; set; }
     }
 
     public class ListMembersViewModel 
