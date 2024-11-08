@@ -1,4 +1,5 @@
 ﻿using FinansoData.Data;
+using FinansoData.DataViewModel.Group;
 using FinansoData.Models;
 using FinansoData.Repository.Group;
 using FluentAssertions;
@@ -14,6 +15,7 @@ namespace FinansoData.Tests.Repository.Group
         private AppUser _group2Member;
         private Models.Group _group1;
         private Models.Group _group2;
+        private Models.Group _group3;
 
 
         public GroupQueryRepositoryTests()
@@ -35,6 +37,7 @@ namespace FinansoData.Tests.Repository.Group
 
                 _group1 = new FinansoData.Models.Group { Id = 1, Name = "Group 1", OwnerAppUser = _group1Owner };
                 _group2 = new FinansoData.Models.Group { Id = 2, Name = "Group 2", OwnerAppUser = _group1Member };
+                _group3 = new FinansoData.Models.Group { Id = 3, Name = "Group 3", OwnerAppUser = _group2Member };
 
                 GroupUser group1UserMember = new GroupUser { Id = 1, Group = _group1, AppUser = _group1Member };
                 GroupUser group2UserMember = new GroupUser { Id = 2, Group = _group2, AppUser = _group2Member };
@@ -47,6 +50,7 @@ namespace FinansoData.Tests.Repository.Group
 
                 context.Groups.Add(_group1);
                 context.Groups.Add(_group2);
+                context.Groups.Add(_group3);
 
 
                 context.GroupUsers.Add(group1UserMember);
@@ -54,6 +58,50 @@ namespace FinansoData.Tests.Repository.Group
 
 
                 context.SaveChanges();
+            }
+        }
+
+
+
+
+        [Fact]
+        public async Task GetGroupMembersAsync_ShouldReturnOwnerAndUser()
+        {
+            // Arrange
+            using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
+            {
+
+                GroupQueryRepository repository = new GroupQueryRepository(context);
+
+                // Act 
+                RepositoryResult<IEnumerable<GetGroupMembersViewModel>> result = await repository.GetGroupMembersAsync(_group1.Id);
+                context.Database.EnsureDeleted();
+
+                // Assert
+                result.IsSuccess.Should().BeTrue();
+                result.Value.Should().HaveCount(2);
+
+                result.Value.Should().Contain(x => x.FirstName == _group1Owner.FirstName && x.LastName == _group1Owner.LastName && x.IsOwner == true);
+                result.Value.Should().Contain(x => x.FirstName == _group1Member.FirstName && x.LastName == _group1Member.LastName && x.IsOwner == false);
+            }
+        }
+
+        [Fact]
+        public async Task GetGroupMembersAsync_ShouldRetyrnOnlyOwner()
+        {
+            // Arrange
+            using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
+            {
+
+                GroupQueryRepository repository = new GroupQueryRepository(context);
+
+                // Act 
+                RepositoryResult<IEnumerable<GetGroupMembersViewModel>> result = await repository.GetGroupMembersAsync(_group3.Id);
+                context.Database.EnsureDeleted();
+
+                // Assert
+                result.IsSuccess.Should().BeTrue();
+                result.Value.Should().Contain(x => x.FirstName == _group2Member.FirstName && x.LastName == _group2Member.LastName && x.IsOwner == true);
             }
         }
 
@@ -141,8 +189,8 @@ namespace FinansoData.Tests.Repository.Group
                 result.Value.Should().BeFalse();
             }
         }
-      
-      
+
+
 
     }
 }

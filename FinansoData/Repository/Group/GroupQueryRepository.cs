@@ -14,35 +14,36 @@ namespace FinansoData.Repository.Group
             _context = context;
         }
 
+
         public async Task<RepositoryResult<IEnumerable<GetGroupMembersViewModel>>> GetGroupMembersAsync(int id)
         {
-            IQueryable<GetGroupMembersViewModel> query = (from gu in _context.GroupUsers
-                                                          join g in _context.Groups on gu.Group.Id equals g.Id
-                                                          join u in _context.AppUsers on gu.AppUser.Id equals u.Id
-                                                          where g.Id == id
-                                                          select new GetGroupMembersViewModel
-                                                          {
-                                                              Id = gu.Id,
-                                                              FirstName = u.FirstName,
-                                                              LastName = u.LastName,
-                                                              IsOwner = false
-                                                          })
-            .Union(from g in _context.Groups
-                   join u in _context.AppUsers on g.OwnerAppUser.Id equals u.Id
-                   where g.Id == id
-                   select new GetGroupMembersViewModel
-                   {
-                       Id = 0,
-                       FirstName = u.FirstName,
-                       LastName = u.LastName,
-                       IsOwner = true
-                   });
+            IQueryable<GetGroupMembersViewModel> ownerQuery = from g in _context.Groups
+                                                              join u in _context.AppUsers on g.OwnerAppUser.Id equals u.Id
+                                                              where g.Id == id
+                                                              select new GetGroupMembersViewModel
+                                                              {
+                                                                  Id = 0,
+                                                                  FirstName = u.FirstName,
+                                                                  LastName = u.LastName,
+                                                                  IsOwner = true
+                                                              };
 
+            IQueryable<GetGroupMembersViewModel> memberQuery = from g in _context.Groups
+                                                               join gu in _context.GroupUsers on g.Id equals gu.Group.Id
+                                                               join u in _context.AppUsers on gu.AppUser.Id equals u.Id
+                                                               where g.Id == id
+                                                               select new GetGroupMembersViewModel
+                                                               {
+                                                                   Id = gu.Id,
+                                                                   FirstName = u.FirstName,
+                                                                   LastName = u.LastName,
+                                                                   IsOwner = false
+                                                               };
 
 
             try
             {
-                List<GetGroupMembersViewModel> data = await query.ToListAsync();
+                List<GetGroupMembersViewModel> data = await ownerQuery.Union(memberQuery).OrderBy(x => x.FirstName).ToListAsync();
 
                 return RepositoryResult<IEnumerable<GetGroupMembersViewModel>>.Success(data);
             }
@@ -54,43 +55,41 @@ namespace FinansoData.Repository.Group
 
         public async Task<RepositoryResult<IEnumerable<GetUserGroupsViewModel>?>> GetUserGroups(string appUser)
         {
-            AppUser user;
-            try
-            {
-                user = await _context.AppUsers.FirstOrDefaultAsync(x => x.UserName.Equals(appUser));
-            }
-            catch (Exception)
-            {
-                return RepositoryResult<IEnumerable<GetUserGroupsViewModel>?>.Failure(null, ErrorType.ServerError);
-            }
+            // Query to get all groups where user is owner
+            IQueryable<GetUserGroupsViewModel> ownerQuery = from g in _context.Groups
+                                                            join u in _context.AppUsers on g.OwnerAppUser.Id equals u.Id into gu
+                                                            from u in gu.DefaultIfEmpty()
+                                                            where u.UserName == appUser
+                                                            select new GetUserGroupsViewModel
+                                                            {
+                                                                Id = g.Id,
+                                                                Name = g.Name,
+                                                                IsOwner = true,
+                                                                MembersCount = (from sqgu in _context.GroupUsers
+                                                                                where sqgu.Group.Id == g.Id
+                                                                                select sqgu.Id).Count() + 1
+                                                            };
 
-            if (user == null)
-            {
-                return RepositoryResult<IEnumerable<GetUserGroupsViewModel>?>.Failure(null, ErrorType.NoUserFound);
-            }
-
-
-            IQueryable<GetUserGroupsViewModel> query = from g in _context.Groups
-                                                       join gu in _context.GroupUsers on g.Id equals gu.Group.Id into guj
-                                                       from gg in guj.DefaultIfEmpty()
-                                                       where
-                                                       (gg.AppUser == user && gg.Active == true)
-                                                       || (g.OwnerAppUser == user)
-                                                       select new GetUserGroupsViewModel
-                                                       {
-                                                           Id = g.Id,
-                                                           Name = g.Name,
-                                                           IsOwner = (g.OwnerAppUser == user),
-                                                           MembersCount = (from gusq in _context.GroupUsers
-                                                                           where gusq.Group.Id.Equals(g.Id)
-                                                                           && gusq.Active == true
-                                                                           select gusq.Id).Count()
-                                                       };
+            // Query to get all groups where user is member
+            IQueryable<GetUserGroupsViewModel> memberQuery = from g in _context.Groups
+                                                             join gu in _context.GroupUsers on g.Id equals gu.Group.Id
+                                                             join u in _context.AppUsers on gu.AppUser.Id equals u.Id
+                                                             where u.UserName == appUser
+                                                             select new GetUserGroupsViewModel
+                                                             {
+                                                                 Id = g.Id,
+                                                                 Name = g.Name,
+                                                                 IsOwner = false,
+                                                                 MembersCount = (from sqgu in _context.GroupUsers
+                                                                                 where sqgu.Group.Id == g.Id
+                                                                                 select sqgu.Id).Count() + 1
+                                                             };
 
             List<GetUserGroupsViewModel> data;
             try
             {
-                data = await query.ToListAsync();
+                //data = await query.ToListAsync();
+                data = await ownerQuery.Union(memberQuery).OrderBy(x => x.Name).ToListAsync();
             }
             catch (Exception)
             {
