@@ -16,30 +16,23 @@ namespace FinansoData.Repository.Group
 
         public async Task<RepositoryResult<IEnumerable<GetGroupMembersViewModel>>> GetGroupMembersAsync(int id)
         {
-            IQueryable<GetGroupMembersViewModel> query = (from gu in _context.GroupUsers
-                                                          join g in _context.Groups on gu.Group.Id equals g.Id
-                                                          join u in _context.AppUsers on gu.AppUser.Id equals u.Id
-                                                          where g.Id == id
-                                                          select new GetGroupMembersViewModel
-                                                          {
-                                                              Id = gu.Id,
-                                                              FirstName = u.FirstName,
-                                                              LastName = u.LastName,
-                                                              IsOwner = false
-                                                          })
-            .Union(from g in _context.Groups
-                   join u in _context.AppUsers on g.OwnerAppUser.Id equals u.Id
-                   where g.Id == id
-                   select new GetGroupMembersViewModel
-                   {
-                       Id = 0,
-                       FirstName = u.FirstName,
-                       LastName = u.LastName,
-                       IsOwner = true
-                   });
-
-
-
+            var query = from g in _context.Groups
+                        from gu in _context.GroupUsers
+                        from u in _context.AppUsers
+                        where g.Id == id
+                        &&
+                        (
+                           g.OwnerAppUser.Id == u.Id
+                           || gu.AppUser.Id == u.Id
+                        )
+                        select new GetGroupMembersViewModel
+                        {
+                            Id = (g.OwnerAppUser.Id == u.Id) ? 0 : gu.Id,
+                            FirstName = u.FirstName,
+                            LastName = u.LastName,
+                            IsOwner = (g.OwnerAppUser.Id == u.Id) ? true : false
+                        };
+            
             try
             {
                 List<GetGroupMembersViewModel> data = await query.ToListAsync();
@@ -84,7 +77,7 @@ namespace FinansoData.Repository.Group
                                                            MembersCount = (from gusq in _context.GroupUsers
                                                                            where gusq.Group.Id.Equals(g.Id)
                                                                            && gusq.Active == true
-                                                                           select gusq.Id).Count()
+                                                                           select gusq.Id).Count() + 1
                                                        };
 
             List<GetUserGroupsViewModel> data;
