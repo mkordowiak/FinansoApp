@@ -119,7 +119,7 @@ namespace FinansoData.Tests.Repository.Group
 
 
         [Fact]
-        public async Task GroupManagementRepository_DeleteGroup_ShouldRetrurnFailureWhenGroupIsIdIsIncorrect()
+        public async Task GroupManagementRepository_DeleteGroupUser_ShouldRetrurnFailureWhenGroupIsIdIsIncorrect()
         {
             // Arrange
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
@@ -160,7 +160,7 @@ namespace FinansoData.Tests.Repository.Group
         }
 
         [Fact]
-        public async Task DeleteGroupUser_ShouldRemoveGroupUser()
+        public async Task GroupManagementRepository_DeleteGroupUser_ShouldRemoveGroupUser()
         {
             // Arrange
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))

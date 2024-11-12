@@ -188,7 +188,6 @@ namespace FinansoApp.Controllers
         {
             FinansoData.RepositoryResult<DeleteGroupUserViewModel> data = await _groupQueryRepository.GetUserDeleteInfo(id);
 
-
             if (!data.IsSuccess)
             {
                 return BadRequest();
@@ -206,14 +205,28 @@ namespace FinansoApp.Controllers
             // Check if user is group owner
             FinansoData.RepositoryResult<bool> userGroupOwner = await _groupQueryRepository.IsUserGroupOwner(groupId, User.Identity.Name);
 
-            if (!userGroupOwner.IsSuccess ||
-                userGroupOwner.Value == false)
+            // Return bad request if something went wrong
+            if (!userGroupOwner.IsSuccess)
             {
                 return BadRequest();
             }
 
-            var aaaa = await _groupManagementRepository.DeleteGroupUser(groupUserId);
+            // Return unauthorized if user is not group owner
+            if (userGroupOwner.Value == false)
+            {
+                return Unauthorized();
+            }
 
+            // Delete the user from group
+            FinansoData.RepositoryResult<bool> deleteGroupUserResult = await _groupManagementRepository.DeleteGroupUser(groupUserId);
+
+            // Return bad request if something went wrong
+            if (!deleteGroupUserResult.IsSuccess)
+            {
+                return BadRequest();
+            }
+
+            // Redirect to group page
             return RedirectToAction("Index", "Group");
         }
     }
