@@ -2,6 +2,7 @@
 {
     public class GroupMembersViewModel
     {
+        public int GroupUserId { get; set; }
         public string FirstName { get; set; }
         public string LastName { get; set; }
         public bool IsOwner { get; set; }

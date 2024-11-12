@@ -26,6 +26,13 @@
         Task<RepositoryResult<bool>> DeleteAllGroupUsers(int groupId);
 
         /// <summary>
+        /// Remove user from group
+        /// </summary>
+        /// <param name="groupUserId"></param>
+        /// <returns></returns>
+        Task<RepositoryResult<bool>> DeleteGroupUser(int groupUserId);
+
+        /// <summary>
         /// Removes group
         /// </summary>
         /// <param name="groupId"></param>

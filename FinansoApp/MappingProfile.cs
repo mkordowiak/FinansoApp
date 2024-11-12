@@ -8,7 +8,10 @@ namespace FinansoApp
     {
         public MappingProfile()
         {
-            CreateMap<GetGroupMembersViewModel, GroupMembersViewModel>();
+            CreateMap<GetGroupMembersViewModel, GroupMembersViewModel>()
+                .ForMember(dest => dest.GroupUserId, opt => opt.MapFrom(src => src.Id));
+
+            CreateMap<DeleteGroupUserViewModel, ConfirmGroupUserDeleteViewModel>();
 
         }
     }

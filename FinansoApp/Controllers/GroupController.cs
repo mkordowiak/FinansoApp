@@ -135,7 +135,7 @@ namespace FinansoApp.Controllers
             }
 
             // Show confirmation view
-            return View("ConfirmDelete", id);
+            return View("ConfirmGroupDelete", id);
         }
 
         /// <summary>
@@ -181,6 +181,52 @@ namespace FinansoApp.Controllers
                 return BadRequest();
             }
 
+            return RedirectToAction("Index", "Group");
+        }
+
+        public async Task<IActionResult> DeleteGroupUser(int id, int groupId)
+        {
+            FinansoData.RepositoryResult<DeleteGroupUserViewModel> data = await _groupQueryRepository.GetUserDeleteInfo(id);
+
+            if (!data.IsSuccess)
+            {
+                return BadRequest();
+            }
+
+
+            ConfirmGroupUserDeleteViewModel vm = _mapper.Map<ConfirmGroupUserDeleteViewModel>(data.Value);
+
+            // Show confirmation view
+            return View("ConfirmGroupUserDelete", vm);
+        }
+
+        public async Task<IActionResult> DeleteGroupUserConfirmed(int groupUserId, int groupId)
+        {
+            // Check if user is group owner
+            FinansoData.RepositoryResult<bool> userGroupOwner = await _groupQueryRepository.IsUserGroupOwner(groupId, User.Identity.Name);
+
+            // Return bad request if something went wrong
+            if (!userGroupOwner.IsSuccess)
+            {
+                return BadRequest();
+            }
+
+            // Return unauthorized if user is not group owner
+            if (userGroupOwner.Value == false)
+            {
+                return Unauthorized();
+            }
+
+            // Delete the user from group
+            FinansoData.RepositoryResult<bool> deleteGroupUserResult = await _groupManagementRepository.DeleteGroupUser(groupUserId);
+
+            // Return bad request if something went wrong
+            if (!deleteGroupUserResult.IsSuccess)
+            {
+                return BadRequest();
+            }
+
+            // Redirect to group page
             return RedirectToAction("Index", "Group");
         }
     }

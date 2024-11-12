@@ -63,7 +63,6 @@ namespace FinansoData.Tests.Repository.Group
 
 
 
-
         [Fact]
         public async Task GetGroupMembersAsync_ShouldReturnOwnerAndUser()
         {
@@ -189,8 +188,5 @@ namespace FinansoData.Tests.Repository.Group
                 result.Value.Should().BeFalse();
             }
         }
-
-
-
     }
 }
