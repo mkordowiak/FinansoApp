@@ -53,6 +53,33 @@ namespace FinansoData.Repository.Group
             }
         }
 
+        public async Task<RepositoryResult<DeleteGroupUserViewModel>> GetUserDeleteInfo(int groupUserId)
+        {
+            IQueryable<DeleteGroupUserViewModel> query = from g in _context.Groups
+                                                         join gu in _context.GroupUsers on g.Id equals gu.Group.Id
+                                                         join u in _context.AppUsers on gu.AppUser.Id equals u.Id
+                                                         where gu.Id == groupUserId
+                                                         select new DeleteGroupUserViewModel
+                                                         {
+                                                             GroupId = g.Id,
+                                                             GroupUserId = gu.Id,
+                                                             GroupName = g.Name,
+                                                             UserFirstName = u.FirstName,
+                                                             UserLastName = u.LastName
+                                                         };
+
+            try
+            {
+                DeleteGroupUserViewModel? data = await query.FirstOrDefaultAsync();
+                return RepositoryResult<DeleteGroupUserViewModel>.Success(data);
+            }
+            catch
+            {
+                return RepositoryResult<DeleteGroupUserViewModel>.Failure(null, ErrorType.ServerError);
+
+            }
+        }
+
         public async Task<RepositoryResult<IEnumerable<GetUserGroupsViewModel>?>> GetUserGroups(string appUser)
         {
             // Query to get all groups where user is owner

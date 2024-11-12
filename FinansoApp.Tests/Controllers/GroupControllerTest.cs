@@ -26,6 +26,19 @@ namespace FinansoApp.Tests.Controllers
             _mapper = new Mock<IMapper>();
         }
 
+        [Fact]
+        public async Task GroupController_DeleteGroupUser_()
+        {
+            Assert.True(false, "This test needs an implementation");
+        
+        }
+
+        [Fact]
+        public async Task GroupController_DeleteGroupUserConfirmed_()
+        {
+            Assert.True(false, "This test needs an implementation");
+        }
+
 
         [Fact]
         public async Task GroupController_Create_ShoudBeAuthorized()

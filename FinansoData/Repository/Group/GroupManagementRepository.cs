@@ -53,11 +53,6 @@ namespace FinansoData.Repository.Group
             else return RepositoryResult<bool?>.Failure(null, ErrorType.ServerError);
         }
 
-        public Task<RepositoryResult<bool>> DeleteAllGroupUsers(int groupId)
-        {
-            throw new NotImplementedException();
-        }
-
 
         public async Task<RepositoryResult<bool>> DeleteGroup(int groupId)
         {
@@ -70,7 +65,7 @@ namespace FinansoData.Repository.Group
             }
             catch
             {
-                
+
             }
 
             if (group == null)
@@ -81,7 +76,7 @@ namespace FinansoData.Repository.Group
             try
             {
                 _context.Groups.Remove(group);
-                _context.SaveChanges();
+                await _context.SaveChangesAsync();
             }
             catch
             {
@@ -92,6 +87,33 @@ namespace FinansoData.Repository.Group
         }
 
         public Task<RepositoryResult<bool>> DeleteGroupUser(int groupId, string appUser)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task<RepositoryResult<bool>> DeleteGroupUser(int groupUserId)
+        {
+            GroupUser? groupUser = await _context.GroupUsers.Where(x => x.Id == groupUserId).SingleOrDefaultAsync();
+
+            if(groupUser == null)
+            {
+                return RepositoryResult<bool>.Failure(null, ErrorType.NotFound);
+            }
+
+            
+            try
+            {
+                _context.GroupUsers.Remove(groupUser);
+                await _context.SaveChangesAsync();
+            }
+            catch
+            {
+                return RepositoryResult<bool>.Failure(null, ErrorType.ServerError);
+            }
+            return RepositoryResult<bool>.Success(true);
+        }
+
+        public Task<RepositoryResult<bool>> DeleteAllGroupUsers(int groupId)
         {
             throw new NotImplementedException();
         }

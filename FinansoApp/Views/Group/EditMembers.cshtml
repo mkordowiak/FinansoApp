@@ -14,7 +14,7 @@
             @if(Model.IsOwner && !i.IsOwner) 
             {
             <div class="col">
-                <a class="btn btn-outline-secondary" asp-controller="Home" asp-action="RemoveUser">Remove</a>
+                    <a class="btn btn-outline-secondary" asp-controller="Group" asp-action="DeleteGroupUser" asp-route-id="@i.GroupUserId">Remove</a>
             </div>
             }
             

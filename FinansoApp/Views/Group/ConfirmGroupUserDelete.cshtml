@@ -1,0 +1,18 @@
+﻿@using FinansoApp.ViewModels
+@model ConfirmGroupUserDeleteViewModel
+
+@{
+    ViewData["Title"] = "Confirm Delete";
+}
+
+
+<h2>Confirm Delete</h2>
+
+<p>Are you sure you want to delete @Model.UserFirstName @Model.UserLastName from @Model.GroupName?</p>
+
+<form asp-action="DeleteGroupUserConfirmed" method="post">
+    <input type="hidden" name="groupUserId" value="@Model.GroupUserId" />
+    <input type="hidden" name="groupId" value="@Model.GroupId" />
+    <button type="submit">Yes, delete it</button>
+    <a asp-controller="Group" asp-action="EditMembers" asp-route-id="@Model.GroupId">No, take me back</a>
+</form>
