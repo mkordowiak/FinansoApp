@@ -12,12 +12,14 @@ namespace FinansoApp.Controllers
         private readonly IMapper _mapper;
         private readonly IGroupQueryRepository _groupQueryRepository;
         private readonly IGroupManagementRepository _groupManagementRepository;
+        private readonly IGroupUsersQuery _groupUsersQuery;
 
-        public GroupController(IMapper mapper, IGroupQueryRepository groupQueryRepository, IGroupManagementRepository groupManagementRepository)
+        public GroupController(IMapper mapper, IGroupQueryRepository groupQueryRepository, IGroupManagementRepository groupManagementRepository, IGroupUsersQuery groupUsersQuery)
         {
             _mapper = mapper;
             _groupQueryRepository = groupQueryRepository;
             _groupManagementRepository = groupManagementRepository;
+            _groupUsersQuery = groupUsersQuery;
         }
 
         /// <summary>
@@ -78,7 +80,7 @@ namespace FinansoApp.Controllers
         public async Task<IActionResult> EditMembers(int id)
         {
             // check logged in user access
-            FinansoData.RepositoryResult<GetUserMembershipInGroupViewModel> groupMemberInfo = await _groupQueryRepository.GetUserMembershipInGroupAsync(id, User.Identity.Name);
+            FinansoData.RepositoryResult<GetUserMembershipInGroupViewModel> groupMemberInfo = await _groupUsersQuery.GetUserMembershipInGroupAsync(id, User.Identity.Name);
 
             if (groupMemberInfo.Value.IsMember == false)
             {
@@ -87,7 +89,7 @@ namespace FinansoApp.Controllers
 
 
             // get data
-            FinansoData.RepositoryResult<IEnumerable<GetGroupMembersViewModel>> data = await _groupQueryRepository.GetGroupMembersAsync(id);
+            FinansoData.RepositoryResult<IEnumerable<GetGroupMembersViewModel>> data = await _groupUsersQuery.GetGroupMembersAsync(id);
             List<GroupMembersViewModel> members = _mapper.Map<List<GroupMembersViewModel>>(data.Value);
 
             ListMembersViewModel listMembersViewModel = new ListMembersViewModel
@@ -122,7 +124,7 @@ namespace FinansoApp.Controllers
             }
 
             // Check if user is group owner
-            FinansoData.RepositoryResult<bool> userGroupOwner = await _groupQueryRepository.IsUserGroupOwner(id, User.Identity.Name);
+            FinansoData.RepositoryResult<bool> userGroupOwner = await _groupUsersQuery.IsUserGroupOwner(id, User.Identity.Name);
 
             if (!userGroupOwner.IsSuccess)
             {
@@ -161,7 +163,7 @@ namespace FinansoApp.Controllers
             }
 
             // Check if user is group owner
-            FinansoData.RepositoryResult<bool> userGroupOwner = await _groupQueryRepository.IsUserGroupOwner(id, User.Identity.Name);
+            FinansoData.RepositoryResult<bool> userGroupOwner = await _groupUsersQuery.IsUserGroupOwner(id, User.Identity.Name);
 
             if (!userGroupOwner.IsSuccess)
             {
@@ -186,7 +188,7 @@ namespace FinansoApp.Controllers
 
         public async Task<IActionResult> DeleteGroupUser(int id, int groupId)
         {
-            FinansoData.RepositoryResult<DeleteGroupUserViewModel> data = await _groupQueryRepository.GetUserDeleteInfo(id);
+            FinansoData.RepositoryResult<DeleteGroupUserViewModel> data = await _groupUsersQuery.GetUserDeleteInfo(id);
 
             if (!data.IsSuccess)
             {
@@ -203,7 +205,7 @@ namespace FinansoApp.Controllers
         public async Task<IActionResult> DeleteGroupUserConfirmed(int groupUserId, int groupId)
         {
             // Check if user is group owner
-            FinansoData.RepositoryResult<bool> userGroupOwner = await _groupQueryRepository.IsUserGroupOwner(groupId, User.Identity.Name);
+            FinansoData.RepositoryResult<bool> userGroupOwner = await _groupUsersQuery.IsUserGroupOwner(groupId, User.Identity.Name);
 
             // Return bad request if something went wrong
             if (!userGroupOwner.IsSuccess)

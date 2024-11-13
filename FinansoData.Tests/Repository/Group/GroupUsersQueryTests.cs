@@ -1,4 +1,5 @@
 ﻿using FinansoData.Data;
+using FinansoData.DataViewModel.Group;
 using FinansoData.Models;
 using FinansoData.Repository.Group;
 using FluentAssertions;
@@ -6,7 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FinansoData.Tests.Repository.Group
 {
-    public class GroupQueryRepositoryTests
+    public class GroupUsersQueryTests
     {
         private readonly DbContextOptions<ApplicationDbContext> _dbContextOptions;
         private AppUser _group1Owner;
@@ -16,8 +17,7 @@ namespace FinansoData.Tests.Repository.Group
         private Models.Group _group2;
         private Models.Group _group3;
 
-
-        public GroupQueryRepositoryTests()
+        public GroupUsersQueryTests()
         {
             _dbContextOptions = new DbContextOptionsBuilder<ApplicationDbContext>()
                 .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
@@ -59,23 +59,65 @@ namespace FinansoData.Tests.Repository.Group
                 context.SaveChanges();
             }
         }
+
         private AppUser NormalizeAppUserEmail(AppUser appUser)
         {
             appUser.NormalizedEmail = appUser.UserName;
             return appUser;
         }
 
+
         [Fact]
-        public async Task GroupRepository_IsGroupExists_ShouldReturnTrueIfGroupExists()
+        public async Task GetGroupMembersAsync_ShouldReturnOwnerAndUser()
+        {
+            // Arrange
+            using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
+            {
+                GroupUsersQuery repository = new GroupUsersQuery(context);
+
+                // Act 
+                RepositoryResult<IEnumerable<GetGroupMembersViewModel>> result = await repository.GetGroupMembersAsync(_group1.Id);
+                context.Database.EnsureDeleted();
+
+                // Assert
+                result.IsSuccess.Should().BeTrue();
+                result.Value.Should().HaveCount(2);
+
+                result.Value.Should().Contain(x => x.FirstName == _group1Owner.FirstName && x.LastName == _group1Owner.LastName && x.IsOwner == true);
+                result.Value.Should().Contain(x => x.FirstName == _group1Member.FirstName && x.LastName == _group1Member.LastName && x.IsOwner == false);
+            }
+        }
+
+        [Fact]
+        public async Task GetGroupMembersAsync_ShouldRetyrnOnlyOwner()
         {
             // Arrange
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
 
-                GroupQueryRepository repository = new GroupQueryRepository(context);
+                GroupUsersQuery repository = new GroupUsersQuery(context);
 
                 // Act 
-                RepositoryResult<bool> result = await repository.IsGroupExists(_group1.Id);
+                RepositoryResult<IEnumerable<GetGroupMembersViewModel>> result = await repository.GetGroupMembersAsync(_group3.Id);
+                context.Database.EnsureDeleted();
+
+                // Assert
+                result.IsSuccess.Should().BeTrue();
+                result.Value.Should().Contain(x => x.FirstName == _group2Member.FirstName && x.LastName == _group2Member.LastName && x.IsOwner == true);
+            }
+        }
+
+        [Fact]
+        public async Task GroupRepository_IsUserGroupOwner_ShouldReturnTrueIfUserIsGroupOwner()
+        {
+            // Arrange
+            using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
+            {
+
+                GroupUsersQuery repository = new GroupUsersQuery(context);
+
+                // Act 
+                RepositoryResult<bool> result = await repository.IsUserGroupOwner(_group1.Id, _group1Owner.UserName);
                 context.Database.EnsureDeleted();
 
                 // Assert
@@ -84,17 +126,18 @@ namespace FinansoData.Tests.Repository.Group
             }
         }
 
+
         [Fact]
-        public async Task GroupRepository_IsGroupExists_ShouldReturnFalseIfGroupDoesNotExists()
+        public async Task GroupRepository_IsUserGroupOwner_ShouldReturnFalseIfUserIsNOTGroupOwner()
         {
             // Arrange
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
 
-                GroupQueryRepository repository = new GroupQueryRepository(context);
+                GroupUsersQuery repository = new GroupUsersQuery(context);
 
                 // Act 
-                RepositoryResult<bool> result = await repository.IsGroupExists(999);
+                RepositoryResult<bool> result = await repository.IsUserGroupOwner(_group1.Id, _group1Member.UserName);
                 context.Database.EnsureDeleted();
 
                 // Assert

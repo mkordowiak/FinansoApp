@@ -20,6 +20,7 @@ builder.Services.AddScoped<ICurrencyRepository, CurrencyRepository>();
 builder.Services.AddScoped<IGroupCrudRepository, GroupCrudRepository>();
 builder.Services.AddScoped<IGroupManagementRepository, GroupManagementRepository>();
 builder.Services.AddScoped<IGroupQueryRepository, GroupQueryRepository>();
+builder.Services.AddScoped<IGroupUsersQuery, GroupUsersQuery>();
 
 // Repository account
 builder.Services.AddScoped<IAuthentication, Authentication>();
