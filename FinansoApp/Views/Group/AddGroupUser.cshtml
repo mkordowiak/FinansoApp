@@ -1,0 +1,80 @@
+﻿@using FinansoApp.ViewModels
+@model AddGroupUserViemModel
+
+@{
+    ViewData["Title"] = "Create group";
+}
+
+<div class="row">
+    <div class="col-md-6 offset-3">
+        <p>
+            <h4>Log in to your account</h4>
+        </p>
+        @if (Model != null && Model.Error.IsError())
+        {
+            @if (Model.Error.InternalError)
+            {
+                <div class="col-md-12 alert alert-danger">
+                    <span>
+                        <b>Sorry!</b> An error occurred while creating group, please try again later
+                    </span>
+                </div>
+            }
+            @if (Model.Error.MaxGroupUsersLimitReached)
+            {
+                <div class="col-md-12 alert alert-danger">
+                    <span>
+                        <b>Sorry!</b> You reached max groups limit
+                    </span>
+                </div>
+            }
+
+            @if (Model.Error.UserAlreadyInGroup)
+            {
+                <div class="col-md-12 alert alert-danger">
+                    <span>
+                        <b>Sorry!</b> This user is already in group
+                    </span>
+                </div>
+            }
+
+            @if (Model.Error.UserNotFound)
+            {
+                <div class="col-md-12 alert alert-danger">
+                    <span>
+                        <b>Sorry!</b> Can't find user
+                    </span>
+                </div>
+            }
+
+            @if (Model.Error.CantAddYourself)
+            {
+                <div class="col-md-12 alert alert-danger">
+                    <span>
+                        <b>Sorry!</b> You cant add yourself
+                    </span>
+                </div>
+            }
+        }
+
+
+        <div class="row">
+            <div class="col-md-8 offset-2">
+                <form asp-action="AddGroupUser">
+                    <input type="hidden" asp-for="GroupId" />
+                    <div asp-validation-summary="All" class="text-danger"></div>
+                    <div class="form-group">
+                        <label asp-for="UserName" class="control-label"></label>
+                        <input asp-for="UserName" class="form-control">
+                        <span asp-validation-for="UserName" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <input class="btn btn-outline-success float right" type="submit" value="Add" />
+                        <a class="btn btn-outline-secondary" asp-controller="Group" asp-action="Index">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

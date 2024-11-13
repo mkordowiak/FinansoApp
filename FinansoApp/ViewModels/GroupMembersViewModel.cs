@@ -10,6 +10,7 @@
 
     public class ListMembersViewModel 
     {
+        public int GroupId { get; set; }
         public bool IsOwner { get; set; }
         public List<GroupMembersViewModel> GroupMembers { get; set; }
     }

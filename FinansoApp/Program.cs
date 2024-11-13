@@ -22,6 +22,7 @@ builder.Services.AddScoped<IGroupManagementRepository, GroupManagementRepository
 builder.Services.AddScoped<IGroupQueryRepository, GroupQueryRepository>();
 builder.Services.AddScoped<IGroupUsersQueryRepository, GroupUsersQuery>();
 builder.Services.AddScoped<IGroupUsersManagementRepository, GroupUsersManagementRepository>();
+builder.Services.AddScoped<IUserQuery, UserQuery>();
 
 // Repository account
 builder.Services.AddScoped<IAuthentication, Authentication>();

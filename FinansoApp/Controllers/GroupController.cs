@@ -1,6 +1,8 @@
 ﻿using AutoMapper;
 using FinansoApp.ViewModels;
 using FinansoData.DataViewModel.Group;
+using FinansoData.Models;
+using FinansoData.Repository.Account;
 using FinansoData.Repository.Group;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -14,14 +16,22 @@ namespace FinansoApp.Controllers
         private readonly IGroupManagementRepository _groupManagementRepository;
         private readonly IGroupUsersQueryRepository _groupUsersQuery;
         private readonly IGroupUsersManagementRepository _groupUsersManagementRepository;
+        private readonly IUserQuery _userQuery;
 
-        public GroupController(IMapper mapper, IGroupQueryRepository groupQueryRepository, IGroupManagementRepository groupManagementRepository, IGroupUsersQueryRepository groupUsersQuery, IGroupUsersManagementRepository groupUsersManagementRepository)
+        public GroupController(
+            IMapper mapper, 
+            IGroupQueryRepository groupQueryRepository, 
+            IGroupManagementRepository groupManagementRepository, 
+            IGroupUsersQueryRepository groupUsersQuery, 
+            IGroupUsersManagementRepository groupUsersManagementRepository, 
+            IUserQuery userQuery)
         {
             _mapper = mapper;
             _groupQueryRepository = groupQueryRepository;
             _groupManagementRepository = groupManagementRepository;
             _groupUsersQuery = groupUsersQuery;
             _groupUsersManagementRepository = groupUsersManagementRepository;
+            _userQuery = userQuery;
         }
 
         /// <summary>
@@ -97,7 +107,8 @@ namespace FinansoApp.Controllers
             ListMembersViewModel listMembersViewModel = new ListMembersViewModel
             {
                 IsOwner = groupMemberInfo.Value.IsOwner,
-                GroupMembers = members
+                GroupMembers = members,
+                GroupId = id
             };
 
             return View(listMembersViewModel);
@@ -188,6 +199,7 @@ namespace FinansoApp.Controllers
             return RedirectToAction("Index", "Group");
         }
 
+        [Authorize]
         public async Task<IActionResult> DeleteGroupUser(int id, int groupId)
         {
             FinansoData.RepositoryResult<DeleteGroupUserViewModel> data = await _groupUsersQuery.GetUserDeleteInfo(id);
@@ -204,6 +216,7 @@ namespace FinansoApp.Controllers
             return View("ConfirmGroupUserDelete", vm);
         }
 
+        [Authorize]
         public async Task<IActionResult> DeleteGroupUserConfirmed(int groupUserId, int groupId)
         {
             // Check if user is group owner
@@ -232,6 +245,130 @@ namespace FinansoApp.Controllers
 
             // Redirect to group page
             return RedirectToAction("Index", "Group");
+        }
+
+        [Authorize]
+        public async Task<IActionResult> AddGroupUser(int id)
+        {
+            // Check if user is group owner
+            FinansoData.RepositoryResult<bool> userGroupOwner = await _groupUsersQuery.IsUserGroupOwner(id, User.Identity.Name);
+
+            // Return bad request if something went wrong
+            if (!userGroupOwner.IsSuccess)
+            {
+                return BadRequest();
+            }
+
+            // Return unauthorized if user is not group owner
+            if (userGroupOwner.Value == false)
+            {
+                return Unauthorized();
+            }
+
+            AddGroupUserViemModel vm = new AddGroupUserViemModel
+            {
+                GroupId = id
+            };
+
+            return View("AddGroupUser", vm);
+        }
+
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> AddGroupUser(AddGroupUserViemModel model)
+        {
+            // Check if user is trying to add himself
+            if (model.UserName == User.Identity.Name)
+            {
+                return View("AddGroupUser", new AddGroupUserViemModel
+                {
+                    GroupId = model.GroupId,
+                    UserName = model.UserName,
+                    Error = new AddGroupUserViemModel.AddGroupUserErrorInfo { CantAddYourself = true }
+                });
+            }
+
+            // Check if user is group owner
+            FinansoData.RepositoryResult<bool> userGroupOwner = await _groupUsersQuery.IsUserGroupOwner(model.GroupId, User.Identity.Name);
+
+            // Return bad request if something went wrong
+            if (!userGroupOwner.IsSuccess)
+            {
+                return View("AddGroupUser", new AddGroupUserViemModel
+                {
+                    GroupId = model.GroupId,
+                    UserName = model.UserName,
+                    Error = new AddGroupUserViemModel.AddGroupUserErrorInfo { InternalError = true }
+                });
+            }
+
+            // Return unauthorized if user is not group owner
+            if (userGroupOwner.Value == false)
+            {
+                return Unauthorized();
+            }
+
+
+            // Check if user is already in group
+            FinansoData.RepositoryResult<GetUserMembershipInGroupViewModel> userInGroupMembership = await _groupUsersQuery.GetUserMembershipInGroupAsync(model.GroupId, model.UserName);
+
+            // Return bad request if something went wrong
+            if (!userInGroupMembership.IsSuccess)
+            {
+                return View("AddGroupUser", new AddGroupUserViemModel
+                {
+                    GroupId = model.GroupId,
+                    UserName = model.UserName,
+                    Error = new AddGroupUserViemModel.AddGroupUserErrorInfo { InternalError = true }
+                });
+            }
+
+            if (userInGroupMembership.Value.IsMember)
+            {
+                return View("AddGroupUser", new AddGroupUserViemModel
+                {
+                    GroupId = model.GroupId,
+                    UserName = model.UserName,
+                    Error = new AddGroupUserViemModel.AddGroupUserErrorInfo { UserAlreadyInGroup = true }
+                });
+            }
+
+
+
+            // Get user by email
+            FinansoData.RepositoryResult<AppUser?> getUserByEmailResult = await _userQuery.GetUserByEmail(model.UserName);
+
+            if (!getUserByEmailResult.IsSuccess)
+            {
+                return View("AddGroupUser", new AddGroupUserViemModel
+                {
+                    GroupId = model.GroupId,
+                    UserName = model.UserName,
+                    Error = new AddGroupUserViemModel.AddGroupUserErrorInfo { InternalError = true }
+                });
+            }
+
+            if (getUserByEmailResult.Value == null)
+            {
+                return View("AddGroupUser", new AddGroupUserViemModel
+                {
+                    GroupId = model.GroupId,
+                    UserName = model.UserName,
+                    Error = new AddGroupUserViemModel.AddGroupUserErrorInfo { UserNotFound = true }
+                });
+            }
+
+            // Add user to group
+            FinansoData.RepositoryResult<bool> result = await _groupUsersManagementRepository.AddUserToGroup(model.GroupId, getUserByEmailResult.Value);
+
+            // Return bad request if something went wrong
+            if (!result.IsSuccess)
+            {
+                return BadRequest();
+            }
+
+            // Redirect to group page
+            return RedirectToAction("EditMembers", "Group", new { id = model.GroupId });
         }
     }
 }
