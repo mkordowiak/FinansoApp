@@ -16,9 +16,38 @@ namespace FinansoData.Repository.Group
         }
 
 
-        public Task<RepositoryResult<bool>> AddUserToGroup(int groupId, string appUser)
+        public async Task<RepositoryResult<bool>> AddUserToGroup(int groupId, AppUser appUser)
         {
-            throw new NotImplementedException();
+            Models.Group group;
+            try
+            {
+                group = await _context.Groups.SingleOrDefaultAsync(x => x.Id == groupId);
+            }
+            catch
+            {
+                return RepositoryResult<bool>.Failure(null, ErrorType.ServerError);
+            }
+
+            if(group == null)
+            {
+                return RepositoryResult<bool>.Failure(null, ErrorType.NotFound);
+            }
+
+            try
+            {
+                await _context.GroupUsers.AddAsync(new GroupUser
+                {
+                    AppUser = appUser,
+                    Group = group
+                });
+                await _context.SaveChangesAsync();
+            }
+            catch
+            {
+                return RepositoryResult<bool>.Failure(null, ErrorType.ServerError);
+            }
+
+            return RepositoryResult<bool>.Success(true);
         }
 
         public Task<RepositoryResult<bool>> RemoveAllUsersFromGroup(int groupId)

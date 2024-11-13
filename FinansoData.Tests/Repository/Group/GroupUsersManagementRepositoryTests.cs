@@ -11,7 +11,7 @@ using System.Threading.Tasks;
 
 namespace FinansoData.Tests.Repository.Group
 {
-    public class GroupusersManagementRepository
+    public class GroupUsersManagementRepositoryTests
     {
         private readonly DbContextOptions<ApplicationDbContext> _dbContextOptions;
         private AppUser _group1Owner;
@@ -20,7 +20,7 @@ namespace FinansoData.Tests.Repository.Group
         private Models.Group _group2;
         private GroupUser _groupUser;
 
-        public GroupusersManagementRepository()
+        public GroupUsersManagementRepositoryTests()
         {
             _dbContextOptions = new DbContextOptionsBuilder<ApplicationDbContext>()
                 .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
@@ -87,6 +87,47 @@ namespace FinansoData.Tests.Repository.Group
                 // Assert
                 context.GroupUsers.Should().HaveCount(0);
 
+
+                // Destroy in-memory database to prevent running multiple instance
+                context.Database.EnsureDeleted();
+            }
+        }
+
+        [Fact]
+        public async Task GroupManagementRepository_AddUserToGroup_ShouldAddUserToGroup()
+        {
+            // Arrange
+            using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
+            {
+                IGroupCrudRepository groupCrudRepository = new GroupCrudRepository(context);
+                GroupUsersManagementRepository groupManagementRepository = new GroupUsersManagementRepository(context, groupCrudRepository);
+
+                // Act
+                RepositoryResult<bool> result = await groupManagementRepository.AddUserToGroup(_group1.Id, _group1Member);
+
+                // Assert
+                context.GroupUsers.Should().HaveCount(2);
+
+                // Destroy in-memory database to prevent running multiple instance
+                context.Database.EnsureDeleted();
+            }
+        }
+
+        [Fact]
+        public async Task GroupManagementRepository_AddUserToGroup_ShouldReturnErrorWhenGroupNotFound()
+        {
+            // Arrange
+            using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
+            {
+                IGroupCrudRepository groupCrudRepository = new GroupCrudRepository(context);
+                GroupUsersManagementRepository groupManagementRepository = new GroupUsersManagementRepository(context, groupCrudRepository);
+
+                // Act
+                RepositoryResult<bool> result = await groupManagementRepository.AddUserToGroup(100, _group1Member);
+
+                // Assert
+                result.IsSuccess.Should().BeFalse();
+                result.ErrorType.Should().Be(ErrorType.NotFound);
 
                 // Destroy in-memory database to prevent running multiple instance
                 context.Database.EnsureDeleted();

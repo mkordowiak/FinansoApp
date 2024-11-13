@@ -1,4 +1,6 @@
-﻿namespace FinansoData.Repository.Group
+﻿using FinansoData.Models;
+
+namespace FinansoData.Repository.Group
 {
     public interface IGroupUsersManagementRepository
     {
@@ -8,7 +10,7 @@
         /// <param name="groupId"></param>
         /// <param name="appUser"></param>
         /// <returns></returns>
-        Task<RepositoryResult<bool>> AddUserToGroup(int groupId, string appUser);
+        Task<RepositoryResult<bool>> AddUserToGroup(int groupId, AppUser appUser);
 
         /// <summary>
         /// Remove user from group
