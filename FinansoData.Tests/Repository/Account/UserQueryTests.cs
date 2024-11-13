@@ -65,6 +65,21 @@ namespace FinansoData.Tests.Repository.Account
             }
         }
 
-        
+        [Fact]
+        public async Task GetUserByEmail_ShouldReturnErrorWhenDbIssue()
+        {
+            // Arrange
+            var contextMock = new Mock<ApplicationDbContext>(_dbContextOptions);
+            var query = new UserQuery(contextMock.Object);
+
+            // Act
+            var result = await query.GetUserByEmail("email");
+
+            // Assert
+            Assert.False(result.IsSuccess);
+            Assert.Null(result.Value);
+            Assert.Equal(ErrorType.ServerError, result.ErrorType);
+        }
+
     }
 }
