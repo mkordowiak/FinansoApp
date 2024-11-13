@@ -2,7 +2,7 @@
 
 namespace FinansoData.Repository.Group
 {
-    public interface IGroupUsersQuery
+    public interface IGroupUsersQueryRepository
     {
         /// <summary>
         /// Get all group members

@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FinansoData.Repository.Group
 {
-    public class GroupUsersQuery : IGroupUsersQuery
+    public class GroupUsersQuery : IGroupUsersQueryRepository
     {
         private readonly ApplicationDbContext _context;
 

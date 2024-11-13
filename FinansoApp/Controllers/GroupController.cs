@@ -12,14 +12,16 @@ namespace FinansoApp.Controllers
         private readonly IMapper _mapper;
         private readonly IGroupQueryRepository _groupQueryRepository;
         private readonly IGroupManagementRepository _groupManagementRepository;
-        private readonly IGroupUsersQuery _groupUsersQuery;
+        private readonly IGroupUsersQueryRepository _groupUsersQuery;
+        private readonly IGroupUsersManagementRepository _groupUsersManagementRepository;
 
-        public GroupController(IMapper mapper, IGroupQueryRepository groupQueryRepository, IGroupManagementRepository groupManagementRepository, IGroupUsersQuery groupUsersQuery)
+        public GroupController(IMapper mapper, IGroupQueryRepository groupQueryRepository, IGroupManagementRepository groupManagementRepository, IGroupUsersQueryRepository groupUsersQuery, IGroupUsersManagementRepository groupUsersManagementRepository)
         {
             _mapper = mapper;
             _groupQueryRepository = groupQueryRepository;
             _groupManagementRepository = groupManagementRepository;
             _groupUsersQuery = groupUsersQuery;
+            _groupUsersManagementRepository = groupUsersManagementRepository;
         }
 
         /// <summary>
@@ -220,7 +222,7 @@ namespace FinansoApp.Controllers
             }
 
             // Delete the user from group
-            FinansoData.RepositoryResult<bool> deleteGroupUserResult = await _groupManagementRepository.DeleteGroupUser(groupUserId);
+            FinansoData.RepositoryResult<bool> deleteGroupUserResult = await _groupUsersManagementRepository.RemoveUserFromGroup(groupUserId);
 
             // Return bad request if something went wrong
             if (!deleteGroupUserResult.IsSuccess)

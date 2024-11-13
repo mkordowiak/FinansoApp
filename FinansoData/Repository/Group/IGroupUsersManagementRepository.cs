@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace FinansoData.Repository.Group
+﻿namespace FinansoData.Repository.Group
 {
-    public interface IGroupUsersManagement
+    public interface IGroupUsersManagementRepository
     {
         /// <summary>
         /// Add user to group
@@ -23,6 +17,13 @@ namespace FinansoData.Repository.Group
         /// <param name="appUser"></param>
         /// <returns></returns>
         Task<RepositoryResult<bool>> RemoveUserFromGroup(int groupId, string appUser);
+
+        /// <summary>
+        /// Remove user from group
+        /// </summary>
+        /// <param name="groupUserId"></param>
+        /// <returns></returns>
+        Task<RepositoryResult<bool>> RemoveUserFromGroup(int groupUserId);
 
         /// <summary>
         /// Remove all users from group
