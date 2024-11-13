@@ -17,8 +17,6 @@ namespace FinansoData.Repository.Account
         {
             _context = context;
             _userManager = userManager;
-
-            _errorHandling = new AccountErrorHandling();
         }
 
         public async Task<RepositoryResult<AppUser?>> GetUserAsync(string username)
