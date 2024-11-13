@@ -94,6 +94,26 @@ namespace FinansoData.Tests.Repository.Group
         }
 
         [Fact]
+        public async Task GroupManagementRepository_AddUserToGroup_ShouldReturnnnn()
+        {
+            // Arrange
+            using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
+            {
+                IGroupCrudRepository groupCrudRepository = new GroupCrudRepository(context);
+                GroupUsersManagementRepository groupManagementRepository = new GroupUsersManagementRepository(context, groupCrudRepository);
+
+                // Act
+                RepositoryResult<bool> result = await groupManagementRepository.AddUserToGroup(_group1, _group1Member);
+
+                // Assert
+                context.GroupUsers.Should().HaveCount(2);
+
+                // Destroy in-memory database to prevent running multiple instance
+                context.Database.EnsureDeleted();
+            }
+        }
+
+        [Fact]
         public async Task GroupManagementRepository_AddUserToGroup_ShouldAddUserToGroup()
         {
             // Arrange

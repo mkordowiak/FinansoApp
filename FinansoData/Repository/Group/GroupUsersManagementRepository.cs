@@ -28,11 +28,16 @@ namespace FinansoData.Repository.Group
                 return RepositoryResult<bool>.Failure(null, ErrorType.ServerError);
             }
 
-            if(group == null)
+            if (group == null)
             {
                 return RepositoryResult<bool>.Failure(null, ErrorType.NotFound);
             }
 
+            return await AddUserToGroup(group, appUser);
+        }
+
+        public async Task<RepositoryResult<bool>> AddUserToGroup(FinansoData.Models.Group group, AppUser appUser)
+        {
             try
             {
                 await _context.GroupUsers.AddAsync(new GroupUser
@@ -49,6 +54,8 @@ namespace FinansoData.Repository.Group
 
             return RepositoryResult<bool>.Success(true);
         }
+
+
 
         public Task<RepositoryResult<bool>> RemoveAllUsersFromGroup(int groupId)
         {

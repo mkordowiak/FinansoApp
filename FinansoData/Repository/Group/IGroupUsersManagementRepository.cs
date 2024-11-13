@@ -13,6 +13,14 @@ namespace FinansoData.Repository.Group
         Task<RepositoryResult<bool>> AddUserToGroup(int groupId, AppUser appUser);
 
         /// <summary>
+        /// Add user to group
+        /// </summary>
+        /// <param name="group"></param>
+        /// <param name="appUser"></param>
+        /// <returns></returns>
+        Task<RepositoryResult<bool>> AddUserToGroup(FinansoData.Models.Group group, AppUser appUser);
+
+        /// <summary>
         /// Remove user from group
         /// </summary>
         /// <param name="groupId"></param>
