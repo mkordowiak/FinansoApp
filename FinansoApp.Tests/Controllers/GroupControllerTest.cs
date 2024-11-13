@@ -3,6 +3,7 @@ using FinansoApp.Controllers;
 using FinansoApp.ViewModels;
 using FinansoData;
 using FinansoData.DataViewModel.Group;
+using FinansoData.Repository.Account;
 using FinansoData.Repository.Group;
 using FluentAssertions;
 using Microsoft.AspNetCore.Authorization;
@@ -20,7 +21,8 @@ namespace FinansoApp.Tests.Controllers
         private readonly Mock<IGroupManagementRepository> _groupManagementRepositoryMock;
         private readonly Mock<IMapper> _mapper;
         private readonly Mock<IGroupUsersQueryRepository> _groupUsersQueryMock;
-        private readonly Mock<IGroupUsersManagementRepository> _groupUsersManagementRepository;
+        private readonly Mock<IGroupUsersManagementRepository> _groupUsersManagementRepositoryMock;
+        private readonly Mock<IUserQuery> _userQueryMock;
 
         public GroupControllerTest()
         {
@@ -28,7 +30,8 @@ namespace FinansoApp.Tests.Controllers
             _groupManagementRepositoryMock = new Mock<IGroupManagementRepository>();
             _groupUsersQueryMock = new Mock<IGroupUsersQueryRepository>();
             _mapper = new Mock<IMapper>();
-            _groupUsersManagementRepository = new Mock<IGroupUsersManagementRepository>();
+            _groupUsersManagementRepositoryMock = new Mock<IGroupUsersManagementRepository>();
+            _userQueryMock = new Mock<IUserQuery>();
         }
 
         [Fact]
@@ -38,7 +41,7 @@ namespace FinansoApp.Tests.Controllers
             _groupUsersQueryMock.Setup(x => x.GetUserDeleteInfo(It.IsAny<int>()))
                 .ReturnsAsync(RepositoryResult<DeleteGroupUserViewModel>.Success(new DeleteGroupUserViewModel()));
 
-            GroupController groupController = new GroupController(_mapper.Object, _groupQueryRepositoryMock.Object, _groupManagementRepositoryMock.Object, _groupUsersQueryMock.Object, _groupUsersManagementRepository.Object);
+            GroupController groupController = new GroupController(_mapper.Object, _groupQueryRepositoryMock.Object, _groupManagementRepositoryMock.Object, _groupUsersQueryMock.Object, _groupUsersManagementRepositoryMock.Object, _userQueryMock.Object);
 
             // Act
             IActionResult groupControllerResult = await groupController.DeleteGroupUser(It.IsAny<int>(), It.IsAny<int>());
@@ -54,7 +57,7 @@ namespace FinansoApp.Tests.Controllers
             // Arrange
             _groupUsersQueryMock.Setup(x => x.GetUserDeleteInfo(It.IsAny<int>()))
                 .ReturnsAsync(RepositoryResult<DeleteGroupUserViewModel>.Failure(null, ErrorType.ServerError));
-            GroupController groupController = new GroupController(_mapper.Object, _groupQueryRepositoryMock.Object, _groupManagementRepositoryMock.Object, _groupUsersQueryMock.Object, _groupUsersManagementRepository.Object);
+            GroupController groupController = new GroupController(_mapper.Object, _groupQueryRepositoryMock.Object, _groupManagementRepositoryMock.Object, _groupUsersQueryMock.Object, _groupUsersManagementRepositoryMock.Object, _userQueryMock.Object);
 
             // Act
             IActionResult groupControllerResult = await groupController.DeleteGroupUser(It.IsAny<int>(), It.IsAny<int>());
@@ -85,7 +88,7 @@ namespace FinansoApp.Tests.Controllers
 
 
             // Create controller object
-            GroupController groupController = new GroupController(_mapper.Object, _groupQueryRepositoryMock.Object, _groupManagementRepositoryMock.Object, _groupUsersQueryMock.Object, _groupUsersManagementRepository.Object)
+            GroupController groupController = new GroupController(_mapper.Object, _groupQueryRepositoryMock.Object, _groupManagementRepositoryMock.Object, _groupUsersQueryMock.Object, _groupUsersManagementRepositoryMock.Object, _userQueryMock.Object)
             {
                 ControllerContext = new ControllerContext
                 {
@@ -120,7 +123,7 @@ namespace FinansoApp.Tests.Controllers
 
 
             // Create controller object
-            GroupController groupController = new GroupController(_mapper.Object, _groupQueryRepositoryMock.Object, _groupManagementRepositoryMock.Object, _groupUsersQueryMock.Object, _groupUsersManagementRepository.Object)
+            GroupController groupController = new GroupController(_mapper.Object, _groupQueryRepositoryMock.Object, _groupManagementRepositoryMock.Object, _groupUsersQueryMock.Object, _groupUsersManagementRepositoryMock.Object, _userQueryMock.Object)
             {
                 ControllerContext = new ControllerContext
                 {
@@ -142,7 +145,7 @@ namespace FinansoApp.Tests.Controllers
             // Mock repository
             _groupUsersQueryMock.Setup(x => x.IsUserGroupOwner(It.IsAny<int>(), It.IsAny<string>()))
                 .ReturnsAsync(RepositoryResult<bool>.Success(true));
-            _groupUsersManagementRepository.Setup(x => x.RemoveUserFromGroup(It.IsAny<int>()))
+            _groupUsersManagementRepositoryMock.Setup(x => x.RemoveUserFromGroup(It.IsAny<int>()))
                 .ReturnsAsync(RepositoryResult<bool>.Failure(null, ErrorType.ServerError));
 
 
@@ -157,7 +160,7 @@ namespace FinansoApp.Tests.Controllers
 
 
             // Create controller object
-            GroupController groupController = new GroupController(_mapper.Object, _groupQueryRepositoryMock.Object, _groupManagementRepositoryMock.Object, _groupUsersQueryMock.Object, _groupUsersManagementRepository.Object)
+            GroupController groupController = new GroupController(_mapper.Object, _groupQueryRepositoryMock.Object, _groupManagementRepositoryMock.Object, _groupUsersQueryMock.Object, _groupUsersManagementRepositoryMock.Object, _userQueryMock.Object)
             {
                 ControllerContext = new ControllerContext
                 {
@@ -179,7 +182,7 @@ namespace FinansoApp.Tests.Controllers
             // Mock repository
             _groupUsersQueryMock.Setup(x => x.IsUserGroupOwner(It.IsAny<int>(), It.IsAny<string>()))
                 .ReturnsAsync(RepositoryResult<bool>.Success(true));
-            _groupUsersManagementRepository.Setup(x => x.RemoveUserFromGroup(It.IsAny<int>()))
+            _groupUsersManagementRepositoryMock.Setup(x => x.RemoveUserFromGroup(It.IsAny<int>()))
                 .ReturnsAsync(RepositoryResult<bool>.Success(true));
 
 
@@ -194,7 +197,7 @@ namespace FinansoApp.Tests.Controllers
 
 
             // Create controller object
-            GroupController groupController = new GroupController(_mapper.Object, _groupQueryRepositoryMock.Object, _groupManagementRepositoryMock.Object, _groupUsersQueryMock.Object, _groupUsersManagementRepository.Object)
+            GroupController groupController = new GroupController(_mapper.Object, _groupQueryRepositoryMock.Object, _groupManagementRepositoryMock.Object, _groupUsersQueryMock.Object, _groupUsersManagementRepositoryMock.Object, _userQueryMock.Object)
             {
                 ControllerContext = new ControllerContext
                 {
@@ -264,7 +267,7 @@ namespace FinansoApp.Tests.Controllers
             _groupManagementRepositoryMock.Setup(x => x.Add(groupName, appUser)).ReturnsAsync(RepositoryResult<bool?>.Failure(null, ErrorType.MaxGroupsLimitReached));
 
 
-            GroupController groupController = new GroupController(_mapper.Object, _groupQueryRepositoryMock.Object, _groupManagementRepositoryMock.Object, _groupUsersQueryMock.Object, _groupUsersManagementRepository.Object)
+            GroupController groupController = new GroupController(_mapper.Object, _groupQueryRepositoryMock.Object, _groupManagementRepositoryMock.Object, _groupUsersQueryMock.Object, _groupUsersManagementRepositoryMock.Object, _userQueryMock.Object)
             {
                 ControllerContext = new ControllerContext
                 {
@@ -294,7 +297,7 @@ namespace FinansoApp.Tests.Controllers
             Mock<HttpContext> context = new Mock<HttpContext>();
             context.SetupGet(ctx => ctx.User).Returns(mockPrincipal.Object);
 
-            GroupController groupController = new GroupController(_mapper.Object, _groupQueryRepositoryMock.Object, _groupManagementRepositoryMock.Object, _groupUsersQueryMock.Object, _groupUsersManagementRepository.Object)
+            GroupController groupController = new GroupController(_mapper.Object, _groupQueryRepositoryMock.Object, _groupManagementRepositoryMock.Object, _groupUsersQueryMock.Object, _groupUsersManagementRepositoryMock.Object, _userQueryMock.Object)
             {
                 ControllerContext = new ControllerContext
                 {
@@ -334,7 +337,7 @@ namespace FinansoApp.Tests.Controllers
             context.SetupGet(ctx => ctx.User).Returns(mockPrincipal.Object);
 
 
-            GroupController groupController = new GroupController(_mapper.Object, _groupQueryRepositoryMock.Object, _groupManagementRepositoryMock.Object, _groupUsersQueryMock.Object, _groupUsersManagementRepository.Object)
+            GroupController groupController = new GroupController(_mapper.Object, _groupQueryRepositoryMock.Object, _groupManagementRepositoryMock.Object, _groupUsersQueryMock.Object, _groupUsersManagementRepositoryMock.Object, _userQueryMock.Object)
             {
                 ControllerContext = new ControllerContext
                 {
@@ -375,7 +378,7 @@ namespace FinansoApp.Tests.Controllers
             context.SetupGet(ctx => ctx.User).Returns(mockPrincipal.Object);
 
 
-            GroupController groupController = new GroupController(_mapper.Object, _groupQueryRepositoryMock.Object, _groupManagementRepositoryMock.Object, _groupUsersQueryMock.Object, _groupUsersManagementRepository.Object)
+            GroupController groupController = new GroupController(_mapper.Object, _groupQueryRepositoryMock.Object, _groupManagementRepositoryMock.Object, _groupUsersQueryMock.Object, _groupUsersManagementRepositoryMock.Object, _userQueryMock.Object)
             {
                 ControllerContext = new ControllerContext
                 {
@@ -419,7 +422,7 @@ namespace FinansoApp.Tests.Controllers
             context.SetupGet(ctx => ctx.User).Returns(mockPrincipal.Object);
 
 
-            GroupController groupController = new GroupController(_mapper.Object, _groupQueryRepositoryMock.Object, _groupManagementRepositoryMock.Object, _groupUsersQueryMock.Object, _groupUsersManagementRepository.Object)
+            GroupController groupController = new GroupController(_mapper.Object, _groupQueryRepositoryMock.Object, _groupManagementRepositoryMock.Object, _groupUsersQueryMock.Object, _groupUsersManagementRepositoryMock.Object, _userQueryMock.Object)
             {
                 ControllerContext = new ControllerContext
                 {
@@ -466,7 +469,7 @@ namespace FinansoApp.Tests.Controllers
 
 
 
-            GroupController groupController = new GroupController(_mapper.Object, _groupQueryRepositoryMock.Object, _groupManagementRepositoryMock.Object, _groupUsersQueryMock.Object, _groupUsersManagementRepository.Object)
+            GroupController groupController = new GroupController(_mapper.Object, _groupQueryRepositoryMock.Object, _groupManagementRepositoryMock.Object, _groupUsersQueryMock.Object, _groupUsersManagementRepositoryMock.Object, _userQueryMock.Object)
             {
                 ControllerContext = new ControllerContext
                 {
@@ -480,6 +483,51 @@ namespace FinansoApp.Tests.Controllers
 
             // Assert
             createGroupResult.Should().BeOfType<RedirectToActionResult>("Method shoud redirect when ok");
+        }
+
+        [Fact]
+        public async Task GroupController_EditMembers_ShouldRedirect()
+        {
+            // Arrange
+
+            Assert.True(false);
+        }
+
+        [Fact]
+        public async Task GroupController_EditMembers_ShouldRedirectBeAuthorized()
+        {
+            // Arrange
+            MethodInfo? httpPostMethod = typeof(GroupController).GetMethod(nameof(GroupController.EditMembers), new[] { typeof(int) });
+
+            // Act
+            AuthorizeAttribute? httpPostAuthorizeAttribute = httpPostMethod.GetCustomAttribute<AuthorizeAttribute>();
+
+            // Assert
+            httpPostAuthorizeAttribute.Should().NotBeNull("this method should be protected by authorization");
+        }
+
+        [Fact]
+        public async Task GroupController_AddGroupUser_ShouldRedirectBeAuthorized()
+        {
+            // Arrange
+            MethodInfo? httpPostMethod = typeof(GroupController).GetMethod(nameof(GroupController.AddGroupUser), new[] { typeof(AddGroupUserViemModel) });
+            MethodInfo? httpGetMethod = typeof(GroupController).GetMethod(nameof(GroupController.AddGroupUser), new[] { typeof(int) });
+
+            // Act
+            AuthorizeAttribute? httpPostAuthorizeAttribute = httpPostMethod.GetCustomAttribute<AuthorizeAttribute>();
+            AuthorizeAttribute? httpGetAuthorizeAttribute = httpGetMethod.GetCustomAttribute<AuthorizeAttribute>();
+
+            // Assert
+            httpPostAuthorizeAttribute.Should().NotBeNull("this method should be protected by authorization");
+            httpGetAuthorizeAttribute.Should().NotBeNull("this method shoud be protected by authorization");
+        }
+
+        [Fact]
+        public async Task GroupController_AddGroupUser_ShouldRedirect()
+        {
+            // Arrange
+
+            Assert.True(false);
         }
     }
 }
