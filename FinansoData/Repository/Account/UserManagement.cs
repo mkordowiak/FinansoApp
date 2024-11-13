@@ -7,7 +7,6 @@ namespace FinansoData.Repository.Account
     public class UserManagement : IUserManagement
     {
         private readonly ApplicationDbContext _context;
-        private readonly IAccountErrorHandling _errorHandling;
         private readonly UserManager<AppUser> _userManager;
         private readonly IAuthentication _authentication;
 
