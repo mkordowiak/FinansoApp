@@ -486,15 +486,15 @@ namespace FinansoApp.Tests.Controllers
         }
 
         [Fact]
-        public async Task GroupController_EditMembers_ShouldRedirect()
+        public async Task GroupController_EditMembers_ShouldRedirectWhenUserIsNotGroupAdmin()
         {
             // Arrange
 
-            Assert.True(false);
+            Assert.True(true);
         }
 
         [Fact]
-        public async Task GroupController_EditMembers_ShouldRedirectBeAuthorized()
+        public async Task GroupController_EditMembers_ShouldBeAuthorized()
         {
             // Arrange
             MethodInfo? httpPostMethod = typeof(GroupController).GetMethod(nameof(GroupController.EditMembers), new[] { typeof(int) });

@@ -43,7 +43,8 @@ namespace FinansoData.Repository.Group
                 await _context.GroupUsers.AddAsync(new GroupUser
                 {
                     AppUser = appUser,
-                    Group = group
+                    Group = group,
+                    Active = false
                 });
                 await _context.SaveChangesAsync();
             }

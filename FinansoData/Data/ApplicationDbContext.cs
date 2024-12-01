@@ -14,12 +14,51 @@ namespace FinansoData.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             base.OnModelCreating(modelBuilder);
+
             modelBuilder
                 .Entity<BalanceTransaction>()
                 .HasOne(a => a.Currency)
                 .WithMany()
                 .OnDelete(DeleteBehavior.NoAction);
 
+            modelBuilder
+                .Entity<GroupUser>()
+                .HasIndex(gu => new { gu.AppUserId, gu.GroupId })
+                .IsUnique();
+
+            modelBuilder
+                .Entity<GroupUser>()
+                .HasOne(gu => gu.AppUser)
+                .WithMany()
+                .HasForeignKey(gu => gu.AppUserId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder
+                .Entity<GroupUser>()
+                .HasOne(gu => gu.Group)
+                .WithMany(g => g.GroupUser)
+                .HasForeignKey(gu => gu.GroupId)
+                .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder
+                .Entity<Group>()
+                .Property(g => g.Created)
+                .HasDefaultValueSql("GETDATE()");
+
+            modelBuilder
+                .Entity<GroupUser>()
+                .Property(gu => gu.Created)
+                .HasDefaultValueSql("GETDATE()");
+
+            modelBuilder
+                .Entity<AppUser>()
+                .Property(u => u.Created)
+                .HasDefaultValueSql("GETDATE()");
+
+            modelBuilder
+                .Entity<Balance>()
+                .Property(b => b.Created)
+                .HasDefaultValueSql("GETDATE()");
 
 
         }

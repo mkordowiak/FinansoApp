@@ -29,5 +29,17 @@ namespace FinansoData.Models
         /// Group
         /// </summary>
         public Group Group { get; set; }
+
+        /// <summary>
+        /// Creation datetime
+        /// </summary>
+        [Required]
+        public DateTime Created { get; set; }
+
+        /// <summary>
+        /// Modification datetime
+        /// </summary>
+        public DateTime? Modified { get; set; }
+
     }
 }

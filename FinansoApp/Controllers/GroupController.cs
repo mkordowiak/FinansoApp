@@ -323,6 +323,8 @@ namespace FinansoApp.Controllers
                 });
             }
 
+
+            // Checks if user try to add user that is already in group
             if (userInGroupMembership.Value.IsMember)
             {
                 return View("AddGroupUser", new AddGroupUserViemModel
@@ -348,6 +350,7 @@ namespace FinansoApp.Controllers
                 });
             }
 
+            // Checks if user exists
             if (getUserByEmailResult.Value == null)
             {
                 return View("AddGroupUser", new AddGroupUserViemModel

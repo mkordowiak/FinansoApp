@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FinansoData.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20231109164350_init2")]
-    partial class init2
+    [Migration("20241201170854_init")]
+    partial class init
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -38,7 +38,9 @@ namespace FinansoData.Migrations
                         .HasColumnType("nvarchar(max)");
 
                     b.Property<DateTime>("Created")
-                        .HasColumnType("datetime2");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<string>("Email")
                         .HasMaxLength(256)
@@ -121,11 +123,19 @@ namespace FinansoData.Migrations
                     b.Property<double>("Amount")
                         .HasColumnType("float");
 
+                    b.Property<DateTime>("Created")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETDATE()");
+
                     b.Property<int>("CurrencyId")
                         .HasColumnType("int");
 
                     b.Property<int>("GroupId")
                         .HasColumnType("int");
+
+                    b.Property<DateTime?>("Modified")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Name")
                         .IsRequired()
@@ -210,7 +220,9 @@ namespace FinansoData.Migrations
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
 
                     b.Property<DateTime>("Created")
-                        .HasColumnType("datetime2");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETDATE()");
 
                     b.Property<DateTime?>("Modified")
                         .HasColumnType("datetime2");
@@ -246,9 +258,11 @@ namespace FinansoData.Migrations
                         .HasColumnType("nvarchar(450)");
 
                     b.Property<DateTime>("Created")
-                        .HasColumnType("datetime2");
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("datetime2")
+                        .HasDefaultValueSql("GETDATE()");
 
-                    b.Property<int?>("GroupId")
+                    b.Property<int>("GroupId")
                         .HasColumnType("int");
 
                     b.Property<DateTime?>("Updated")
@@ -256,9 +270,10 @@ namespace FinansoData.Migrations
 
                     b.HasKey("Id");
 
-                    b.HasIndex("AppUserId");
-
                     b.HasIndex("GroupId");
+
+                    b.HasIndex("AppUserId", "GroupId")
+                        .IsUnique();
 
                     b.ToTable("GroupUsers");
                 });
@@ -477,14 +492,18 @@ namespace FinansoData.Migrations
                     b.HasOne("FinansoData.Models.AppUser", "AppUser")
                         .WithMany()
                         .HasForeignKey("AppUserId")
-                        .OnDelete(DeleteBehavior.Cascade)
+                        .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
-                    b.HasOne("FinansoData.Models.Group", null)
+                    b.HasOne("FinansoData.Models.Group", "Group")
                         .WithMany("GroupUser")
-                        .HasForeignKey("GroupId");
+                        .HasForeignKey("GroupId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
 
                     b.Navigation("AppUser");
+
+                    b.Navigation("Group");
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
