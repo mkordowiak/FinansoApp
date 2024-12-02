@@ -365,3 +365,6 @@ FodyWeavers.xsd
 # appSettings
 FinansoApp/appsettings.json
 *.yaml
+
+# Migrations
+FinansoData/Migrations
