@@ -14,6 +14,33 @@ namespace FinansoData.Repository.Group
             _context = context;
         }
 
+        public async Task<RepositoryResult<IEnumerable<GetGroupInvitationsViewModel>>> GetGroupInvitations(string appUser)
+        {
+            IQueryable<GetGroupInvitationsViewModel> query = from gu in _context.GroupUsers
+                                                             join g in _context.Groups on gu.Group.Id equals g.Id
+                                                             join u in _context.AppUsers on gu.AppUser.Id equals u.Id
+                                                             where gu.Active == false
+                                                             select new GetGroupInvitationsViewModel
+                                                             {
+                                                                 GroupUserId = gu.Id,
+                                                                 GroupName = g.Name,
+                                                                 GroupOwnerFirstName = g.OwnerAppUser.FirstName,
+                                                                 GroupOwnerLastName = g.OwnerAppUser.LastName,
+                                                                 GroupMembersNum = g.GroupUser.Count()
+                                                             };
+
+            try
+            {
+                List<GetGroupInvitationsViewModel> result = await query.ToListAsync();
+                return RepositoryResult<IEnumerable<GetGroupInvitationsViewModel>>.Success(result);
+            }
+            catch
+            {
+                return RepositoryResult<IEnumerable<GetGroupInvitationsViewModel>>.Failure(null, ErrorType.ServerError);
+            }
+
+        }
+
         public async Task<RepositoryResult<IEnumerable<GetGroupMembersViewModel>>> GetGroupMembersAsync(int id)
         {
             IQueryable<GetGroupMembersViewModel> ownerQuery = from g in _context.Groups
@@ -30,7 +57,7 @@ namespace FinansoData.Repository.Group
             IQueryable<GetGroupMembersViewModel> memberQuery = from g in _context.Groups
                                                                join gu in _context.GroupUsers on g.Id equals gu.Group.Id
                                                                join u in _context.AppUsers on gu.AppUser.Id equals u.Id
-                                                               where g.Id == id
+                                                               where g.Id == id && gu.Active == true
                                                                select new GetGroupMembersViewModel
                                                                {
                                                                    Id = gu.Id,
@@ -49,6 +76,24 @@ namespace FinansoData.Repository.Group
             catch (Exception)
             {
                 return RepositoryResult<IEnumerable<GetGroupMembersViewModel>>.Failure(null, ErrorType.ServerError);
+            }
+        }
+
+        public async Task<RepositoryResult<int>> GetInvitationCountForGroup(string appUser)
+        {
+            IQueryable<GroupUser> query = from gu in _context.GroupUsers
+                                          join g in _context.Groups on gu.Group.Id equals g.Id
+                                          where gu.AppUser.UserName == appUser && gu.Active == false
+                                          select gu;
+
+            try
+            {
+                int count = await query.CountAsync();
+                return RepositoryResult<int>.Success(count);
+            }
+            catch
+            {
+                return RepositoryResult<int>.Failure(null, ErrorType.ServerError);
             }
         }
 
