@@ -21,6 +21,7 @@ namespace FinansoData.Data
                 .WithMany()
                 .OnDelete(DeleteBehavior.NoAction);
 
+
             modelBuilder
                 .Entity<GroupUser>()
                 .HasIndex(gu => new { gu.AppUserId, gu.GroupId })
@@ -32,6 +33,15 @@ namespace FinansoData.Data
                 .WithMany()
                 .HasForeignKey(gu => gu.AppUserId)
                 .OnDelete(DeleteBehavior.NoAction);
+
+            modelBuilder
+                .Entity<GroupUser>()
+                .HasOne(gu => gu.Group)
+                .WithMany(g => g.GroupUser)
+                .HasForeignKey(gu => gu.GroupId)
+                .OnDelete(DeleteBehavior.Cascade);
+
+
 
             modelBuilder
                 .Entity<GroupUser>()
