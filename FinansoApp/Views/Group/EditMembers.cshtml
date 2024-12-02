@@ -5,20 +5,40 @@
     ViewData["Title"] = "Group members";
 }
 
-
-<div class="container">
-    @foreach (var i in Model.GroupMembers)
-    {
+@if(Model.IsOwner)
+{
+    <div class="container">
         <div class="row">
-            <div class="col">@i.FirstName @i.LastName</div>
-            @if(Model.IsOwner && !i.IsOwner) 
-            {
             <div class="col">
-                    <a class="btn btn-outline-secondary" asp-controller="Group" asp-action="DeleteGroupUser" asp-route-id="@i.GroupUserId">Remove</a>
+                <a class="btn btn-outline-secondary" asp-controller="Group" asp-action="AddGroupUser" asp-route-id="@Model.GroupId">Add member</a>
             </div>
-            }
-            
         </div>
+    </div>
+}
 
-    }
-</div>
+@if(Model.GroupMembers.Count == 0)
+{
+    <div class="alert alert-info" role="alert">
+        No members in this group
+    </div>
+}
+else
+{
+    <div class="container">
+        @foreach (var i in Model.GroupMembers)
+        {
+            <div class="row">
+                <div class="col">@i.FirstName @i.LastName</div>
+                @if (Model.IsOwner && !i.IsOwner)
+                {
+                    <div class="col">
+                        <a class="btn btn-outline-secondary" asp-controller="Group" asp-action="DeleteGroupUser" asp-route-id="@i.GroupUserId">Remove</a>
+                    </div>
+                }
+
+            </div>
+
+        }
+    </div>
+}
+

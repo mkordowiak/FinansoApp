@@ -1,4 +1,6 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace FinansoData.Models
 {
@@ -10,13 +12,22 @@ namespace FinansoData.Models
         [Key]
         public int Id { get; set; }
 
+        [Required]
+        public int GroupId { get; set; }
+
+        [ForeignKey(nameof(GroupId))]
         public Group Group { get; set; }
+
+        [Required]
+        public string AppUserId { get; set; }
 
         /// <summary>
         /// AppUser foreign key
         /// </summary>
-        [Required]
+        [ForeignKey(nameof(AppUserId))]
         public AppUser AppUser { get; set; }
+
+        
 
         /// <summary>
         /// Is user active

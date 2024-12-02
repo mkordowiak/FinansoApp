@@ -57,15 +57,18 @@ namespace FinansoData.Repository.Group
         public async Task<RepositoryResult<bool>> DeleteGroup(int groupId)
         {
             Models.Group? group = new Models.Group();
+            List<GroupUser> groupUsers = new List<GroupUser>();
             try
             {
                 group = await _context.Groups
-                                        .Include(g => g.GroupUser)
-                                        .SingleOrDefaultAsync(g => g.Id == groupId);
+                                      .SingleOrDefaultAsync(g => g.Id == groupId);
+                groupUsers = await _context.GroupUsers
+                        .Where(gu => gu.Group.Id == groupId)
+                                        .ToListAsync();
             }
             catch
             {
-
+                return RepositoryResult<bool>.Failure(null, ErrorType.ServerError);
             }
 
             if (group == null)
@@ -75,6 +78,7 @@ namespace FinansoData.Repository.Group
 
             try
             {
+                _context.GroupUsers.RemoveRange(groupUsers);
                 _context.Groups.Remove(group);
                 await _context.SaveChangesAsync();
             }
@@ -84,38 +88,6 @@ namespace FinansoData.Repository.Group
             }
 
             return RepositoryResult<bool>.Success(true);
-        }
-
-        public Task<RepositoryResult<bool>> DeleteGroupUser(int groupId, string appUser)
-        {
-            throw new NotImplementedException();
-        }
-
-        public async Task<RepositoryResult<bool>> DeleteGroupUser(int groupUserId)
-        {
-            GroupUser? groupUser = await _context.GroupUsers.Where(x => x.Id == groupUserId).SingleOrDefaultAsync();
-
-            if(groupUser == null)
-            {
-                return RepositoryResult<bool>.Failure(null, ErrorType.NotFound);
-            }
-
-            
-            try
-            {
-                _context.GroupUsers.Remove(groupUser);
-                await _context.SaveChangesAsync();
-            }
-            catch
-            {
-                return RepositoryResult<bool>.Failure(null, ErrorType.ServerError);
-            }
-            return RepositoryResult<bool>.Success(true);
-        }
-
-        public Task<RepositoryResult<bool>> DeleteAllGroupUsers(int groupId)
-        {
-            throw new NotImplementedException();
         }
     }
 }

@@ -7,7 +7,6 @@ namespace FinansoData.Repository.Account
     public class UserManagement : IUserManagement
     {
         private readonly ApplicationDbContext _context;
-        private readonly IAccountErrorHandling _errorHandling;
         private readonly UserManager<AppUser> _userManager;
         private readonly IAuthentication _authentication;
 
@@ -16,8 +15,6 @@ namespace FinansoData.Repository.Account
             _context = context;
             _userManager = userManager;
             _authentication = authentication;
-
-            _errorHandling = new AccountErrorHandling();
         }
 
         public async Task<RepositoryResult<AppUser?>> AddUserToRoleAdminAsync(AppUser appUser)

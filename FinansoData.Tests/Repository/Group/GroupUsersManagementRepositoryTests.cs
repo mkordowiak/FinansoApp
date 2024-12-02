@@ -3,10 +3,15 @@ using FinansoData.Models;
 using FinansoData.Repository.Group;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace FinansoData.Tests.Repository.Group
 {
-    public class GroupManagmentRepositoryTests
+    public class GroupUsersManagementRepositoryTests
     {
         private readonly DbContextOptions<ApplicationDbContext> _dbContextOptions;
         private AppUser _group1Owner;
@@ -15,7 +20,7 @@ namespace FinansoData.Tests.Repository.Group
         private Models.Group _group2;
         private GroupUser _groupUser;
 
-        public GroupManagmentRepositoryTests()
+        public GroupUsersManagementRepositoryTests()
         {
             _dbContextOptions = new DbContextOptionsBuilder<ApplicationDbContext>()
                 .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
@@ -47,95 +52,105 @@ namespace FinansoData.Tests.Repository.Group
             }
         }
 
-
         [Fact]
-        public async Task GroupRepository_Add_ShoudBeTrue()
+        public async Task GroupManagementRepository_GetUserDeleteInfo_Shoud_ReturnUserDeleteInfo()
         {
             // Arrange
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
                 IGroupCrudRepository groupCrudRepository = new GroupCrudRepository(context);
-                GroupManagementRepository groupRepository = new GroupManagementRepository(context, groupCrudRepository);
-
-                string newGroupName = "New group";
-                string groupOwnerUserName = _group1Owner.UserName;
+                GroupUsersManagementRepository repository = new GroupUsersManagementRepository(context, groupCrudRepository);
 
                 // Act
-                FinansoData.RepositoryResult<bool?> data = await groupRepository.Add(newGroupName, groupOwnerUserName);
+                RepositoryResult<bool> result = await repository.RemoveUserFromGroup(_groupUser.Id);
                 // Destroy in-memory database to prevent running multiple instance
                 context.Database.EnsureDeleted();
-
-                // Assert 
-                data.Value.Should().BeTrue();
-            }
-        }
-
-        [Fact]
-        public async Task GroupManagementRepository_Add_ShoudBeFailureIfWrongUserId()
-        {
-            // Arrange
-            using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
-            {
-                IGroupCrudRepository groupCrudRepository = new GroupCrudRepository(context);
-                GroupManagementRepository groupManagementRepository = new GroupManagementRepository(context, groupCrudRepository);
-
-                string newGroupName = "New group";
-                string groupOwnerUserName = "wrong username";
-
-                // Act
-                FinansoData.RepositoryResult<bool?> data = await groupManagementRepository.Add(newGroupName, groupOwnerUserName);
-                // Destroy in-memory database to prevent running multiple instance
-                context.Database.EnsureDeleted();
-
-                // Assert 
-                data.IsSuccess.Should().BeFalse();
-                data.Value.Should().BeNull();
-            }
-        }
-
-        [Fact]
-        public async Task GroupManagementRepository_DeleteGroup_ShouldRemoveGroup()
-        {
-            // Arrange
-            using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
-            {
-                IGroupCrudRepository groupCrudRepository = new GroupCrudRepository(context);
-                GroupManagementRepository groupManagementRepository = new GroupManagementRepository(context, groupCrudRepository);
-
-                // Act
-                RepositoryResult<bool> result = await groupManagementRepository.DeleteGroup(_group1.Id);
-
-
 
                 // Assert 
                 result.IsSuccess.Should().BeTrue();
-                context.Groups.Should().HaveCount(1);
-                context.Groups.FirstOrDefault().Id.Should().Be(2);
+            }
+        }
+
+        [Fact]
+        public async Task GroupManagementRepository_DeleteGroupUser_ShouldRemoveGroupUser()
+        {
+            // Arrange
+            using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
+            {
+                IGroupCrudRepository groupCrudRepository = new GroupCrudRepository(context);
+                GroupUsersManagementRepository groupManagementRepository = new GroupUsersManagementRepository(context, groupCrudRepository);
+
+                // Act
+                RepositoryResult<bool> result = await groupManagementRepository.RemoveUserFromGroup(_groupUser.Id);
+
+
+                // Assert
+                context.GroupUsers.Should().HaveCount(0);
+
 
                 // Destroy in-memory database to prevent running multiple instance
                 context.Database.EnsureDeleted();
             }
         }
 
-
         [Fact]
-        public async Task GroupManagementRepository_DeleteGroupUser_ShouldRetrurnFailureWhenGroupIsIdIsIncorrect()
+        public async Task GroupManagementRepository_AddUserToGroup_ShouldReturnnnn()
         {
             // Arrange
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
                 IGroupCrudRepository groupCrudRepository = new GroupCrudRepository(context);
-                GroupManagementRepository groupManagementRepository = new GroupManagementRepository(context, groupCrudRepository);
+                GroupUsersManagementRepository groupManagementRepository = new GroupUsersManagementRepository(context, groupCrudRepository);
 
                 // Act
-                RepositoryResult<bool> result = await groupManagementRepository.DeleteGroup(999);
+                RepositoryResult<bool> result = await groupManagementRepository.AddUserToGroup(_group1, _group1Member);
+
+                // Assert
+                context.GroupUsers.Should().HaveCount(2);
+
                 // Destroy in-memory database to prevent running multiple instance
                 context.Database.EnsureDeleted();
+            }
+        }
 
-                // Assert 
+        [Fact]
+        public async Task GroupManagementRepository_AddUserToGroup_ShouldAddUserToGroup()
+        {
+            // Arrange
+            using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
+            {
+                IGroupCrudRepository groupCrudRepository = new GroupCrudRepository(context);
+                GroupUsersManagementRepository groupManagementRepository = new GroupUsersManagementRepository(context, groupCrudRepository);
+
+                // Act
+                RepositoryResult<bool> result = await groupManagementRepository.AddUserToGroup(_group1.Id, _group1Member);
+
+                // Assert
+                context.GroupUsers.Should().HaveCount(2);
+
+                // Destroy in-memory database to prevent running multiple instance
+                context.Database.EnsureDeleted();
+            }
+        }
+
+        [Fact]
+        public async Task GroupManagementRepository_AddUserToGroup_ShouldReturnErrorWhenGroupNotFound()
+        {
+            // Arrange
+            using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
+            {
+                IGroupCrudRepository groupCrudRepository = new GroupCrudRepository(context);
+                GroupUsersManagementRepository groupManagementRepository = new GroupUsersManagementRepository(context, groupCrudRepository);
+
+                // Act
+                RepositoryResult<bool> result = await groupManagementRepository.AddUserToGroup(100, _group1Member);
+
+                // Assert
                 result.IsSuccess.Should().BeFalse();
                 result.ErrorType.Should().Be(ErrorType.NotFound);
 
+                // Destroy in-memory database to prevent running multiple instance
+                context.Database.EnsureDeleted();
             }
         }
     }
