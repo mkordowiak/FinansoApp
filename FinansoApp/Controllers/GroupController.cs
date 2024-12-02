@@ -19,11 +19,11 @@ namespace FinansoApp.Controllers
         private readonly IUserQuery _userQuery;
 
         public GroupController(
-            IMapper mapper, 
-            IGroupQueryRepository groupQueryRepository, 
-            IGroupManagementRepository groupManagementRepository, 
-            IGroupUsersQueryRepository groupUsersQuery, 
-            IGroupUsersManagementRepository groupUsersManagementRepository, 
+            IMapper mapper,
+            IGroupQueryRepository groupQueryRepository,
+            IGroupManagementRepository groupManagementRepository,
+            IGroupUsersQueryRepository groupUsersQuery,
+            IGroupUsersManagementRepository groupUsersManagementRepository,
             IUserQuery userQuery)
         {
             _mapper = mapper;
@@ -96,7 +96,7 @@ namespace FinansoApp.Controllers
 
             if (groupMemberInfo.Value.IsMember == false)
             {
-                return RedirectToAction("Index", "Home");
+                return Unauthorized();
             }
 
 
