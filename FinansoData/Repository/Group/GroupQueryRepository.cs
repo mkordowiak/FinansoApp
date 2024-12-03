@@ -35,7 +35,7 @@ namespace FinansoData.Repository.Group
             IQueryable<GetUserGroupsViewModel> memberQuery = from g in _context.Groups
                                                              join gu in _context.GroupUsers on g.Id equals gu.Group.Id
                                                              join u in _context.AppUsers on gu.AppUser.Id equals u.Id
-                                                             where u.UserName == appUser
+                                                             where u.UserName == appUser && gu.Active == true
                                                              select new GetUserGroupsViewModel
                                                              {
                                                                  Id = g.Id,

@@ -1,0 +1,33 @@
+﻿@using FinansoData.DataViewModel.Group
+
+@model IEnumerable<GetGroupInvitationsViewModel>
+
+    
+@if(Model.Count() > 0){
+    <h2>Invitations</h2>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Group</th>
+                <th>Invited by</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var i in Model)
+            {
+                <tr>
+                    <td>@i.GroupName</td>
+                    <td>@i.GroupOwnerFirstName @i.GroupOwnerLastName</td>
+                    <td>
+                        <a type="button" class="btn btn-secondary mb-1" asp-action="AcceptInvitation" asp-controller="Group" asp-route-id="@i.GroupUserId">Accept</a>
+                        <a type="button" class="btn btn-secondary mb-1" asp-action="RejectInvitation" asp-controller="Group" asp-route-id="@i.GroupUserId">Reject</a>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
+else{
+    <p>No invitations</p>
+}
