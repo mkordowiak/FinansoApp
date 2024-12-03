@@ -20,14 +20,15 @@ namespace FinansoData.Repository.Group
             IQueryable<GetUserGroupsViewModel> ownerQuery = from g in _context.Groups
                                                             join u in _context.AppUsers on g.OwnerAppUser.Id equals u.Id into gu
                                                             from u in gu.DefaultIfEmpty()
-                                                            where u.UserName == appUser
+                                                            where u.UserName == appUser 
                                                             select new GetUserGroupsViewModel
                                                             {
                                                                 Id = g.Id,
                                                                 Name = g.Name,
                                                                 IsOwner = true,
                                                                 MembersCount = (from sqgu in _context.GroupUsers
-                                                                                where sqgu.Group.Id == g.Id
+                                                                                where sqgu.Group.Id == g.Id 
+                                                                                && sqgu.Active == true
                                                                                 select sqgu.Id).Count() + 1
                                                             };
 
@@ -43,6 +44,7 @@ namespace FinansoData.Repository.Group
                                                                  IsOwner = false,
                                                                  MembersCount = (from sqgu in _context.GroupUsers
                                                                                  where sqgu.Group.Id == g.Id
+                                                                                 && sqgu.Active == true
                                                                                  select sqgu.Id).Count() + 1
                                                              };
 
