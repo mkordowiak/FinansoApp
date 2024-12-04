@@ -88,7 +88,7 @@ namespace FinansoData.Tests.Repository.Group
 
 
                 // Assert
-                context.GroupUsers.Should().HaveCount(0);
+                context.GroupUsers.Should().HaveCount(1);
 
 
                 // Destroy in-memory database to prevent running multiple instance
@@ -110,10 +110,12 @@ namespace FinansoData.Tests.Repository.Group
                 GroupUsersManagementRepository groupManagementRepository = new GroupUsersManagementRepository(context, groupCrudRepository);
 
                 // Act
-                RepositoryResult<bool> result = await groupManagementRepository.AddUserToGroup(_group1, _group1Member);
+                RepositoryResult<bool> result = await groupManagementRepository.AddUserToGroup(_group1, _group1InvitationInactive);
 
                 // Assert
-                context.GroupUsers.Should().HaveCount(2);
+                context.GroupUsers.Should().HaveCount(3);
+                context.GroupUsers.Last().AppUser.Should().BeSameAs(_group1InvitationInactive);
+
 
                 // Destroy in-memory database to prevent running multiple instance
                 context.Database.EnsureDeleted();
@@ -133,27 +135,8 @@ namespace FinansoData.Tests.Repository.Group
                 RepositoryResult<bool> result = await groupManagementRepository.AddUserToGroup(_group1, _group1Member);
 
                 // Assert
+                result.IsSuccess.Should().BeTrue();
                 context.GroupUsers.Last().Active.Should().BeFalse();
-
-                // Destroy in-memory database to prevent running multiple instance
-                context.Database.EnsureDeleted();
-            }
-        }
-
-        [Fact]
-        public async Task GroupUsersManagementRepository_AddUserToGroup_ShouldAddUserToGroup()
-        {
-            // Arrange
-            using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
-            {
-                IGroupCrudRepository groupCrudRepository = new GroupCrudRepository(context);
-                GroupUsersManagementRepository groupManagementRepository = new GroupUsersManagementRepository(context, groupCrudRepository);
-
-                // Act
-                RepositoryResult<bool> result = await groupManagementRepository.AddUserToGroup(_group1.Id, _group1Member);
-
-                // Assert
-                context.GroupUsers.Should().HaveCount(2);
 
                 // Destroy in-memory database to prevent running multiple instance
                 context.Database.EnsureDeleted();
