@@ -54,9 +54,9 @@ namespace FinansoData.Repository.Group
         /// <summary>
         /// If user is invited to group return true
         /// </summary>
-        /// <param name="groupId"></param>
+        /// <param name="groupUserId"></param>
         /// <param name="appUser"></param>
         /// <returns></returns>
-        Task<RepositoryResult<bool>> IsUserInvited(int groupId, string appUser);
+        Task<RepositoryResult<bool>> IsUserInvited(int groupUserId, string appUser);
     }
 }

@@ -198,12 +198,12 @@ namespace FinansoData.Repository.Group
 
         }
 
-        public async Task<RepositoryResult<bool>> IsUserInvited(int groupId, string appUser)
+        public async Task<RepositoryResult<bool>> IsUserInvited(int groupUserId, string appUser)
         {
             IQueryable<GroupUser> query = from gu in _context.GroupUsers
                                            join u in _context.AppUsers on gu.AppUser.Id equals u.Id
                                            where 
-                                            gu.Group.Id == groupId 
+                                            gu.Id == groupUserId
                                             && u.NormalizedEmail == appUser 
                                             && gu.Active == false
                                            select gu;
