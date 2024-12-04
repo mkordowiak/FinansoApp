@@ -69,6 +69,9 @@ namespace FinansoData.Repository.Group
         {
             try
             {
+                _context.Attach(group);
+                _context.Attach(appUser);
+
                 await _context.GroupUsers.AddAsync(new GroupUser
                 {
                     AppUser = appUser,
