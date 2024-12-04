@@ -12,17 +12,15 @@ namespace FinansoApp.Controllers
     {
         private readonly UserManager<AppUser> _userManager;
         private readonly SignInManager<AppUser> _signInManager;
-        //private readonly IAccountRepository _accountRepository;
-
+        private readonly IUserQuery _userQuery;
         private readonly IAuthentication _authentication;
         private readonly IUserManagement _userManagement;
 
-        public AccountController(UserManager<AppUser> userManager, IAuthentication authentication, IUserManagement userManagement, SignInManager<AppUser> signInManager = null)
+        public AccountController(UserManager<AppUser> userManager, IAuthentication authentication, IUserManagement userManagement, IUserQuery userQuery, SignInManager<AppUser> signInManager = null)
         {
             _userManager = userManager;
             _signInManager = signInManager;
-            //_accountRepository = accountRepository;
-
+            _userQuery = userQuery;
             _authentication = authentication;
             _userManagement = userManagement;
         }
@@ -137,12 +135,23 @@ namespace FinansoApp.Controllers
         [Authorize]
         public async Task<IActionResult> Edit()
         {
-            AppUser user = await _userManager.GetUserAsync(User);
+            RepositoryResult<AppUser?> repositoryResult = await _userQuery.GetUserByEmail(User.Identity.Name);
+
+            if (repositoryResult.IsSuccess == false)
+            {
+                return NotFound();
+            }
+
+            if(repositoryResult.Value == null)
+            {
+                return NotFound();
+            }
+
             FinansoApp.ViewModels.Account.EditAccountViewModel editAccountViewModel = new FinansoApp.ViewModels.Account.EditAccountViewModel
             {
-                FirstName = user.FirstName,
-                LastName = user.LastName,
-                Nickname = user.Nickname
+                FirstName = repositoryResult.Value.FirstName,
+                LastName = repositoryResult.Value.LastName,
+                Nickname = repositoryResult.Value.Nickname
             };
 
             return View(editAccountViewModel);
@@ -157,21 +166,26 @@ namespace FinansoApp.Controllers
                 return View(editAccountViewModel);
             }
 
-            AppUser user = await _userManager.GetUserAsync(User);
+            RepositoryResult<AppUser?> getUserRepositoryResult = await _userQuery.GetUserByEmail(User.Identity.Name);
 
-            if (user == null)
+            if (getUserRepositoryResult.IsSuccess == false)
             {
-                editAccountViewModel.Error.UserNotFound = true;
-                return View(editAccountViewModel);
+                return NotFound();
             }
 
-            user.FirstName = editAccountViewModel.FirstName;
-            user.LastName = editAccountViewModel.LastName;
-            user.Nickname = editAccountViewModel.Nickname;
+            if (getUserRepositoryResult.Value == null)
+            {
+                return NotFound();
+            }
 
-            RepositoryResult<bool> repoResult = await _userManagement.EditUserInfo(user);
+            getUserRepositoryResult.Value.FirstName = editAccountViewModel.FirstName;
+            getUserRepositoryResult.Value.LastName = editAccountViewModel.LastName;
+            getUserRepositoryResult.Value.Nickname = editAccountViewModel.Nickname;
 
-            if (repoResult.IsSuccess == false && repoResult.ErrorType == ErrorType.ServerError)
+            RepositoryResult<bool> editUserRepositoryResult = await _userManagement.EditUserInfo(getUserRepositoryResult.Value);
+
+
+            if (editUserRepositoryResult.IsSuccess == false && editUserRepositoryResult.ErrorType == ErrorType.ServerError)
             {
                 editAccountViewModel.Error.InternalError = true;
                 return View(editAccountViewModel);
