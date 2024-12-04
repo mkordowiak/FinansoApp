@@ -2,8 +2,10 @@
 using FinansoData;
 using FinansoData.Models;
 using FinansoData.Repository.Account;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.IdentityModel.Tokens;
 
 namespace FinansoApp.Controllers
 {
@@ -130,6 +132,53 @@ namespace FinansoApp.Controllers
         public async Task<IActionResult> Logout()
         {
             await _signInManager.SignOutAsync();
+            return RedirectToAction("Index", "Home");
+        }
+
+        [Authorize]
+        public async Task<IActionResult> Edit()
+        {
+            AppUser user = await _userManager.GetUserAsync(User);
+            FinansoApp.ViewModels.Account.EditAccountViewModel editAccountViewModel = new FinansoApp.ViewModels.Account.EditAccountViewModel
+            {
+                FirstName = user.FirstName,
+                LastName = user.LastName,
+                Nickname = user.Nickname
+            };
+
+            return View(editAccountViewModel);
+        }
+
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> Edit(FinansoApp.ViewModels.Account.EditAccountViewModel editAccountViewModel)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(editAccountViewModel);
+            }
+
+            AppUser user = await _userManager.GetUserAsync(User);
+
+            if (user == null) 
+            {
+                editAccountViewModel.Error.UserNotFound = true;
+                return View(editAccountViewModel);
+            }
+
+            user.FirstName = editAccountViewModel.FirstName;
+            user.LastName = editAccountViewModel.LastName;
+            user.Nickname = editAccountViewModel.Nickname;
+
+            var repoResult = await _userManagement.EditUserInfo(user);
+
+            if(repoResult.IsSuccess == false && repoResult.ErrorType == ErrorType.ServerError)
+            {
+                editAccountViewModel.Error.InternalError = true;
+                return View(editAccountViewModel);
+            }
+
+
             return RedirectToAction("Index", "Home");
         }
     }
