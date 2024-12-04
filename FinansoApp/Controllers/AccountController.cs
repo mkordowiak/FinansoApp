@@ -5,7 +5,6 @@ using FinansoData.Repository.Account;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
 
 namespace FinansoApp.Controllers
 {
@@ -160,7 +159,7 @@ namespace FinansoApp.Controllers
 
             AppUser user = await _userManager.GetUserAsync(User);
 
-            if (user == null) 
+            if (user == null)
             {
                 editAccountViewModel.Error.UserNotFound = true;
                 return View(editAccountViewModel);
@@ -170,9 +169,9 @@ namespace FinansoApp.Controllers
             user.LastName = editAccountViewModel.LastName;
             user.Nickname = editAccountViewModel.Nickname;
 
-            var repoResult = await _userManagement.EditUserInfo(user);
+            RepositoryResult<bool> repoResult = await _userManagement.EditUserInfo(user);
 
-            if(repoResult.IsSuccess == false && repoResult.ErrorType == ErrorType.ServerError)
+            if (repoResult.IsSuccess == false && repoResult.ErrorType == ErrorType.ServerError)
             {
                 editAccountViewModel.Error.InternalError = true;
                 return View(editAccountViewModel);
