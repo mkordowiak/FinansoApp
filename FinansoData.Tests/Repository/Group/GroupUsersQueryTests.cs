@@ -94,7 +94,7 @@ namespace FinansoData.Tests.Repository.Group
         }
 
         [Fact]
-        public async Task GetGroupMembersAsync_ShouldReturnOnlyOwner()
+        public async Task GroupUsersQuery_GetGroupMembersAsync_ShouldReturnOnlyOwner()
         {
             // Arrange
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
@@ -113,7 +113,7 @@ namespace FinansoData.Tests.Repository.Group
         }
 
         [Fact]
-        public async Task GroupRepository_IsUserGroupOwner_ShouldReturnTrueIfUserIsGroupOwner()
+        public async Task GroupUsersQuery_IsUserGroupOwner_ShouldReturnTrueIfUserIsGroupOwner()
         {
             // Arrange
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
@@ -133,7 +133,7 @@ namespace FinansoData.Tests.Repository.Group
 
 
         [Fact]
-        public async Task GroupRepository_IsUserGroupOwner_ShouldReturnFalseIfUserIsNOTGroupOwner()
+        public async Task GroupUsersQuery_IsUserGroupOwner_ShouldReturnFalseIfUserIsNOTGroupOwner()
         {
             // Arrange
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
@@ -152,7 +152,7 @@ namespace FinansoData.Tests.Repository.Group
         }
 
         [Fact]
-        public async Task GroupRepository_GetInvitationCountForGroup_ShouldReturnNum()
+        public async Task GroupUsersQuery_GetInvitationCountForGroup_ShouldReturnNum()
         {
             // Arrange
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
@@ -171,7 +171,7 @@ namespace FinansoData.Tests.Repository.Group
         }
 
         [Fact]
-        public async Task GroupRepository_GetInvitationCountForGroup_ShouldReturn0IfNoInvitations()
+        public async Task GroupUsersQuery_GetInvitationCountForGroup_ShouldReturn0IfNoInvitations()
         {
             // Arrange
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
@@ -186,6 +186,44 @@ namespace FinansoData.Tests.Repository.Group
                 // Assert
                 result.IsSuccess.Should().BeTrue();
                 result.Value.Should().Be(0);
+            }
+        }
+
+        [Fact]
+        public async Task GroupUsersQuery_IsUserInvited_ShouldReturnTrueIfUserIsInvited()
+        {
+            // Arrange
+            using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
+            {
+
+                GroupUsersQuery repository = new GroupUsersQuery(context);
+
+                // Act 
+                RepositoryResult<bool> result = await repository.IsUserInvited(_group1.Id, _group3Invite.UserName);
+                context.Database.EnsureDeleted();
+
+                // Assert
+                result.IsSuccess.Should().BeTrue();
+                result.Value.Should().BeTrue();
+            }
+        }
+
+        [Fact]
+        public async Task GroupUsersQuery_IsUserInvited_ShouldReturnFalseIfUserIsNOTInvited()
+        {
+            // Arrange
+            using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
+            {
+
+                GroupUsersQuery repository = new GroupUsersQuery(context);
+
+                // Act 
+                RepositoryResult<bool> result = await repository.IsUserInvited(_group1.Id, _group2Member.UserName);
+                context.Database.EnsureDeleted();
+
+                // Assert
+                result.IsSuccess.Should().BeTrue();
+                result.Value.Should().BeFalse();
             }
         }
     }
