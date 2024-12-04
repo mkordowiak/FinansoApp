@@ -1,0 +1,66 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+@{
+}
+@model FinansoApp.ViewModels.Account.EditAccountViewModel
+
+@{
+    ViewData["Title"] = "Edit Account";
+}
+
+<h2>Edit Account</h2>
+
+
+<div class="row">
+    <div class="col-md-8 offset-2">
+        @if(Model != null && Model.Error.IsError())
+        {
+            @if(Model.Error.InternalError)
+            {
+                <div class="col-md-12 alert alert-danger">
+                    <span>
+                        <b>Sorry!</b> An error occurred while editing account, please try again later
+                    </span>
+                </div>
+            }
+
+            @if (Model.Error.UserNotFound)
+            {
+                <div class="col-md-12 alert alert-danger">
+                    <span>
+                        <b>Sorry!</b> Can't find user to edit
+                    </span>
+                </div>
+            }
+        }
+
+
+        <form asp-action="Edit" method="post">
+            <div asp-validation-summary="All" class="text-danger"></div>
+            <div class="form-group">
+                <label asp-for="FirstName" class="control-label"></label>
+                <input asp-for="FirstName" class="form-control">
+                <span asp-validation-for="FirstName" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="LastName" class="control-label"></label>
+                <input asp-for="LastName" class="form-control">
+                <span asp-validation-for="LastName" class="text-danger"></span>
+            </div>
+
+            <div class="form-group">
+                <label asp-for="Nickname" class="control-label"></label>
+                <input asp-for="Nickname" class="form-control">
+                <span asp-validation-for="Nickname" class="text-danger"></span>
+            </div>
+
+
+            <div class="form-group">
+                <input class="btn btn-outline-success float right" type="submit" value="Submit" />
+                <a class="btn btn-outline-secondary" asp-controller="Home" asp-action="Index">Cancel</a>
+            </div>
+        </form>
+    </<div>
+</div>

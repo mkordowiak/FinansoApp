@@ -4,9 +4,12 @@ using FinansoData;
 using FinansoData.Models;
 using FinansoData.Repository.Account;
 using FluentAssertions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.AspNetCore.Mvc;
 using Moq;
+using System.Reflection;
 
 namespace FinansoApp.Tests.Controllers
 {
@@ -19,6 +22,7 @@ namespace FinansoApp.Tests.Controllers
         private readonly Mock<SignInManager<AppUser>> _signInManagerMock;
         private readonly Mock<IAuthentication> _authenticationMock;
         private readonly Mock<IUserManagement> _userManagementMock;
+        private readonly Mock<IUserQuery> _userQueryMock;
 
 
         public AccountControllerTest()
@@ -27,6 +31,8 @@ namespace FinansoApp.Tests.Controllers
             _userManagerMock = new Mock<UserManager<AppUser>>(_userStoreMock.Object, null, null, null, null, null, null, null, null);
             _userManagerMock.Setup(x => x.FindByIdAsync(It.IsAny<string>()))
                 .ReturnsAsync(new AppUser { UserName = "testuser" });
+
+            _userQueryMock = new Mock<IUserQuery>();
 
             _contextAccessorMock = new Mock<IHttpContextAccessor>();
             _userPrincipalFactoryMock = new Mock<IUserClaimsPrincipalFactory<AppUser>>();
@@ -47,10 +53,10 @@ namespace FinansoApp.Tests.Controllers
 
 
             _signInManagerMock.Setup(m => m.PasswordSignInAsync(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()))
-                     .ReturnsAsync(SignInResult.Success);
+                     .ReturnsAsync(Microsoft.AspNetCore.Identity.SignInResult.Success);
 
             _signInManagerMock.Setup(x => x.PasswordSignInAsync(It.IsAny<AppUser>(), It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<bool>()))
-                .ReturnsAsync(SignInResult.Success);
+                .ReturnsAsync(Microsoft.AspNetCore.Identity.SignInResult.Success);
 
         }
 
@@ -87,6 +93,7 @@ namespace FinansoApp.Tests.Controllers
                 _userManagerMock.Object,
                 _authenticationMock.Object,
                 _userManagementMock.Object,
+                _userQueryMock.Object,
                 _signInManagerMock.Object);
 
 
@@ -141,6 +148,7 @@ namespace FinansoApp.Tests.Controllers
                 _userManagerMock.Object,
                 _authenticationMock.Object,
                 _userManagementMock.Object,
+                _userQueryMock.Object,
                 _signInManagerMock.Object);
 
 
@@ -199,6 +207,7 @@ namespace FinansoApp.Tests.Controllers
                 _userManagerMock.Object,
                 _authenticationMock.Object,
                 _userManagementMock.Object,
+                _userQueryMock.Object,
                 _signInManagerMock.Object);
             #endregion
 
@@ -250,6 +259,7 @@ namespace FinansoApp.Tests.Controllers
                 _userManagerMock.Object,
                 _authenticationMock.Object,
                 _userManagementMock.Object,
+                _userQueryMock.Object,
                 _signInManagerMock.Object);
 
             #endregion
@@ -304,6 +314,7 @@ namespace FinansoApp.Tests.Controllers
                 _userManagerMock.Object,
                 _authenticationMock.Object,
                 _userManagementMock.Object,
+                _userQueryMock.Object,
                 _signInManagerMock.Object);
 
             #endregion
@@ -318,5 +329,301 @@ namespace FinansoApp.Tests.Controllers
             registerActionResult.Should().BeOfType<Microsoft.AspNetCore.Mvc.RedirectToActionResult>();
             #endregion
         }
+
+        #region Edit_HttpGet
+
+        [Fact]
+        public async Task AccountController_Edit_HttpGet_ShouldBeAuthorized()
+        {
+            #region Arrange
+            MethodInfo httpGetMethodInfo = typeof(AccountController).GetMethod(nameof(AccountController.Edit), Type.EmptyTypes);
+            #endregion
+
+            #region Act
+            AuthorizeAttribute? httpGetAuthorizeAttribute = httpGetMethodInfo.GetCustomAttribute<AuthorizeAttribute>();
+
+            #endregion
+
+            #region Assert
+            httpGetAuthorizeAttribute.Should().NotBeNull("this method should be protected by authorization");
+            #endregion
+        }
+
+        [Fact]
+        public async Task AccountController_Edit_HttpGet_ShouldReturnNotFoundWhenCantFindUser()
+        {
+            #region Arrange
+            // Input data
+            string appUserId = "appuserid";
+            string email = "test@test.pl";
+            AppUser appUser = new AppUser { Id = appUserId, Email = email, NormalizedEmail = email };
+
+
+            // Repository Mock
+            _userQueryMock.Setup(x => x.GetUserByEmail(It.IsAny<string>()))
+                .ReturnsAsync(RepositoryResult<AppUser?>.Success(null));
+
+            // Claims Principal Mock
+            Mock<System.Security.Claims.ClaimsPrincipal> mockPrincipal = new Mock<System.Security.Claims.ClaimsPrincipal>();
+            mockPrincipal.Setup(p => p.Identity.Name).Returns(email);
+            mockPrincipal.Setup(p => p.Identity.IsAuthenticated).Returns(true);
+
+
+
+            Mock<HttpContext> context = new Mock<HttpContext>();
+            context.SetupGet(ctx => ctx.User).Returns(mockPrincipal.Object);
+
+
+            // Arrange controller
+            AccountController accountController = new AccountController(
+                _userManagerMock.Object,
+                _authenticationMock.Object,
+                _userManagementMock.Object,
+                _userQueryMock.Object,
+                _signInManagerMock.Object)
+            {
+                ControllerContext = new ControllerContext
+                {
+                    HttpContext = context.Object
+                }
+            };
+
+            #endregion
+
+            #region ACT
+            Microsoft.AspNetCore.Mvc.IActionResult result = await accountController.Edit();
+            #endregion
+
+            #region ASSERT
+            result.Should().BeOfType<Microsoft.AspNetCore.Mvc.NotFoundResult>();
+            #endregion
+        }
+
+        [Fact]
+        public async Task AccountController_Edit_HttpGet_ShouldReturnView()
+        {
+            #region Arrange
+            // Input data
+            string appUserId = "appuserid";
+            string email = "test@test.pl";
+            AppUser appUser = new AppUser { Id = appUserId, Email = email, NormalizedEmail = email };
+
+
+            // Repository Mock
+            _userQueryMock.Setup(x => x.GetUserByEmail(It.IsAny<string>()))
+                .ReturnsAsync(RepositoryResult<AppUser?>.Success(appUser));
+
+            // Claims Principal Mock
+            Mock<System.Security.Claims.ClaimsPrincipal> mockPrincipal = new Mock<System.Security.Claims.ClaimsPrincipal>();
+            mockPrincipal.Setup(p => p.Identity.Name).Returns(email);
+            mockPrincipal.Setup(p => p.Identity.IsAuthenticated).Returns(true);
+
+
+
+            Mock<HttpContext> context = new Mock<HttpContext>();
+            context.SetupGet(ctx => ctx.User).Returns(mockPrincipal.Object);
+
+
+            // Arrange controller
+            AccountController accountController = new AccountController(
+                _userManagerMock.Object,
+                _authenticationMock.Object,
+                _userManagementMock.Object,
+                _userQueryMock.Object,
+                _signInManagerMock.Object)
+            {
+                ControllerContext = new ControllerContext
+                {
+                    HttpContext = context.Object
+                }
+            };
+
+            #endregion
+
+            #region ACT
+            Microsoft.AspNetCore.Mvc.IActionResult result = await accountController.Edit();
+            #endregion
+
+            #region ASSERT
+            result.Should().BeOfType<Microsoft.AspNetCore.Mvc.ViewResult>();
+            #endregion
+        }
+
+        #endregion
+
+        #region Edit_HttpPost
+
+        [Fact]
+        public async Task AccountController_Edit_HttpPost_ShouldBeAuthorized()
+        {
+            #region Arrange
+            MethodInfo httpGetMethodInfo = typeof(AccountController).GetMethod(nameof(AccountController.Edit), new[] {typeof(FinansoApp.ViewModels.Account.EditAccountViewModel) } );
+            #endregion
+
+            #region Act
+            AuthorizeAttribute? httpGetAuthorizeAttribute = httpGetMethodInfo.GetCustomAttribute<AuthorizeAttribute>();
+
+            #endregion
+
+            #region Assert
+            httpGetAuthorizeAttribute.Should().NotBeNull("this method should be protected by authorization");
+            #endregion
+        }
+
+
+        [Fact]
+        public async Task AccountController_Edit_HttpPost_ShouldReturnViewIfModelIsInvalid()
+        {
+            #region Arrange
+            FinansoApp.ViewModels.Account.EditAccountViewModel editAccountViewModel = new FinansoApp.ViewModels.Account.EditAccountViewModel
+            {
+                FirstName = "FirstName",
+                LastName = "LastName",
+                Nickname = "Nickname"
+            };
+
+            // Arrange controller
+            AccountController accountController = new AccountController(
+                _userManagerMock.Object,
+                _authenticationMock.Object,
+                _userManagementMock.Object,
+                _userQueryMock.Object,
+                _signInManagerMock.Object);
+
+            accountController.ModelState.AddModelError("FirstName", "FirstName is required");
+
+            #endregion
+
+            #region ACT
+            Microsoft.AspNetCore.Mvc.IActionResult result = await accountController.Edit(editAccountViewModel);
+            #endregion
+
+            #region ASSERT
+            result.Should().BeOfType<ViewResult>();
+
+            #endregion
+        }
+
+
+        [Fact]
+        public async Task AccountController_Edit_HttpPost_ShouldReturnNotFoundIfCantFindUser()
+        {
+            #region Arrange
+            // Input data
+            string appUserId = "appuserid";
+            string email = "test@test.pl";
+            AppUser appUser = new AppUser { Id = appUserId, Email = email, NormalizedEmail = email };
+
+            FinansoApp.ViewModels.Account.EditAccountViewModel editAccountViewModel = new FinansoApp.ViewModels.Account.EditAccountViewModel
+            {
+                FirstName = "FirstName",
+                LastName = "LastName",
+                Nickname = "Nickname"
+            };
+
+            // Repository Mock
+            _userQueryMock.Setup(x => x.GetUserByEmail(It.IsAny<string>()))
+                .ReturnsAsync(RepositoryResult<AppUser?>.Success(null));
+
+            // Claims Principal Mock
+            Mock<System.Security.Claims.ClaimsPrincipal> mockPrincipal = new Mock<System.Security.Claims.ClaimsPrincipal>();
+            mockPrincipal.Setup(p => p.Identity.Name).Returns(email);
+            mockPrincipal.Setup(p => p.Identity.IsAuthenticated).Returns(true);
+
+
+
+            Mock<HttpContext> context = new Mock<HttpContext>();
+            context.SetupGet(ctx => ctx.User).Returns(mockPrincipal.Object);
+
+
+            // Arrange controller
+            AccountController accountController = new AccountController(
+                _userManagerMock.Object,
+                _authenticationMock.Object,
+                _userManagementMock.Object,
+                _userQueryMock.Object,
+                _signInManagerMock.Object)
+            {
+                ControllerContext = new ControllerContext
+                {
+                    HttpContext = context.Object
+                }
+            };
+
+            #endregion
+
+            #region ACT
+            Microsoft.AspNetCore.Mvc.IActionResult result = await accountController.Edit(editAccountViewModel);
+            #endregion
+
+            #region ASSERT
+            result.Should().BeOfType<Microsoft.AspNetCore.Mvc.NotFoundResult>();
+            #endregion
+        }
+
+        [Fact]
+        public async Task AccountController_Edit_HttpPost_ShouldRedirectToActionWhenOk()
+        {
+            #region Arrange
+            // Input data
+            string appUserId = "appuserid";
+            string email = "test@test.pl";
+            AppUser appUser = new AppUser { Id = appUserId, Email = email, NormalizedEmail = email };
+
+            FinansoApp.ViewModels.Account.EditAccountViewModel editAccountViewModel = new FinansoApp.ViewModels.Account.EditAccountViewModel
+            {
+                FirstName = "FirstName",
+                LastName = "LastName",
+                Nickname = "Nickname"
+            };
+
+            // Repository Mock
+            _userQueryMock.Setup(x => x.GetUserByEmail(It.IsAny<string>()))
+                .ReturnsAsync(RepositoryResult<AppUser?>.Success(appUser));
+            _userManagementMock.Setup(x => x.EditUserInfo(It.IsAny<AppUser>()))
+                .ReturnsAsync(RepositoryResult<bool>.Success(true));
+
+            // Claims Principal Mock
+            Mock<System.Security.Claims.ClaimsPrincipal> mockPrincipal = new Mock<System.Security.Claims.ClaimsPrincipal>();
+            mockPrincipal.Setup(p => p.Identity.Name).Returns(email);
+            mockPrincipal.Setup(p => p.Identity.IsAuthenticated).Returns(true);
+
+
+
+            Mock<HttpContext> context = new Mock<HttpContext>();
+            context.SetupGet(ctx => ctx.User).Returns(mockPrincipal.Object);
+
+
+            // Arrange controller
+            AccountController accountController = new AccountController(
+                _userManagerMock.Object,
+                _authenticationMock.Object,
+                _userManagementMock.Object,
+                _userQueryMock.Object,
+                _signInManagerMock.Object)
+            {
+                ControllerContext = new ControllerContext
+                {
+                    HttpContext = context.Object
+                }
+            };
+
+            #endregion
+
+            #region ACT
+            Microsoft.AspNetCore.Mvc.IActionResult result = await accountController.Edit(editAccountViewModel);
+            #endregion
+
+            #region ASSERT
+            result.Should().BeOfType<Microsoft.AspNetCore.Mvc.RedirectToActionResult>();
+
+            RedirectToActionResult redirectToActionResult = (RedirectToActionResult)result;
+            redirectToActionResult.ActionName.Should().Be("Index");
+            redirectToActionResult.ControllerName.Should().Be("Home");
+
+            #endregion
+        }
+
+        #endregion
     }
 }
