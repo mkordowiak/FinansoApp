@@ -15,6 +15,35 @@ namespace FinansoData.Repository.Group
             _groupCrudRepository = groupCrudRepository;
         }
 
+        public async Task<RepositoryResult<bool>> AcceptGroupInvitation(int groupUserId)
+        {
+            GroupUser? groupUser;
+            try
+            {
+                groupUser = await _context.GroupUsers.SingleOrDefaultAsync(x => x.Id == groupUserId && x.Active == false);
+            }
+            catch
+            {
+                return RepositoryResult<bool>.Failure(null, ErrorType.ServerError);
+            }
+
+            if (groupUser == null)
+            {
+                return RepositoryResult<bool>.Failure(null, ErrorType.NotFound);
+            }
+
+            try
+            {
+                groupUser.Active = true;
+                await _context.SaveChangesAsync();
+            }
+            catch
+            {
+                return RepositoryResult<bool>.Failure(null, ErrorType.ServerError);
+            }
+
+            return RepositoryResult<bool>.Success(true);
+        }
 
         public async Task<RepositoryResult<bool>> AddUserToGroup(int groupId, AppUser appUser)
         {
@@ -40,6 +69,9 @@ namespace FinansoData.Repository.Group
         {
             try
             {
+                _context.Attach(group);
+                _context.Attach(appUser);
+
                 await _context.GroupUsers.AddAsync(new GroupUser
                 {
                     AppUser = appUser,
@@ -56,7 +88,35 @@ namespace FinansoData.Repository.Group
             return RepositoryResult<bool>.Success(true);
         }
 
+        public async Task<RepositoryResult<bool>> RejectGroupInvitation(int groupUserId)
+        {
+            GroupUser groupUser;
+            try
+            {
+                groupUser = await _context.GroupUsers.SingleOrDefaultAsync(x => x.Id == groupUserId);
+            }
+            catch
+            {
+                return RepositoryResult<bool>.Failure(null, ErrorType.ServerError);
+            }
 
+            if (groupUser == null)
+            {
+                return RepositoryResult<bool>.Failure(null, ErrorType.NotFound);
+            }
+
+            try
+            {
+                _context.GroupUsers.Remove(groupUser);
+                await _context.SaveChangesAsync();
+            }
+            catch
+            {
+                return RepositoryResult<bool>.Failure(null, ErrorType.ServerError);
+            }
+
+            return RepositoryResult<bool>.Success(true);
+        }
 
         public Task<RepositoryResult<bool>> RemoveAllUsersFromGroup(int groupId)
         {

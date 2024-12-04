@@ -1,10 +1,19 @@
 ﻿@using FinansoData.DataViewModel.Group
-@model List<GetUserGroupsViewModel>
+@using FinansoApp.ViewModels.Group
+
+@model FinansoApp.ViewModels.Group.GroupIndexViewModel
+
+@if(Model.GroupInvitations > 0){    
+    <div class="col-md-12 alert alert-info">
+        <span>
+            You have @Model.GroupInvitations invitations to group(s). <a type="button" class="btn btn-secondary mb-1" asp-action="Invitations" asp-controller="Group">Invitations</a>
+        </span>
+    </div>
+}
 
 <a type="button" class="btn btn-secondary mb-1" asp-action="Create" asp-controller="Group">New group</a>
 
-
-@foreach (var i in Model)
+@foreach (var i in Model.Groups)
             {
     <h2>@i.Name</h2>
     <p>Members: <bold>@i.MembersCount</bold></p> 

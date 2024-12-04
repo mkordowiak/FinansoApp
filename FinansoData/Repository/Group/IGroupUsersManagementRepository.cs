@@ -41,5 +41,19 @@ namespace FinansoData.Repository.Group
         /// <param name="groupId"></param>
         /// <returns></returns>
         Task<RepositoryResult<bool>> RemoveAllUsersFromGroup(int groupId);
+
+        /// <summary>
+        /// Accept group invitation
+        /// </summary>
+        /// <param name="groupUserId"></param>
+        /// <returns></returns>
+        Task<RepositoryResult<bool>> AcceptGroupInvitation(int groupUserId);
+
+        /// <summary>
+        /// Reject group invitation
+        /// </summary>
+        /// <param name="groupUserId"></param>
+        /// <returns></returns>
+        Task<RepositoryResult<bool>> RejectGroupInvitation(int groupUserId);
     }
 }

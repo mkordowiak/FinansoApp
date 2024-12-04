@@ -36,5 +36,27 @@ namespace FinansoData.Repository.Group
         /// IsMember
         /// </returns>
         Task<RepositoryResult<GetUserMembershipInGroupViewModel>> GetUserMembershipInGroupAsync(int groupId, string appUser);
+
+        /// <summary>
+        /// Get invitation count for group
+        /// </summary>
+        /// <param name="appUser"></param>
+        /// <returns></returns>
+        Task<RepositoryResult<int>> GetInvitationCountForGroup(string appUser);
+
+        /// <summary>
+        /// Get list of all invitations for group
+        /// </summary>
+        /// <param name="appUser"></param>
+        /// <returns></returns>
+        Task<RepositoryResult<IEnumerable<GetGroupInvitationsViewModel>>> GetGroupInvitations(string appUser);
+
+        /// <summary>
+        /// If user is invited to group return true
+        /// </summary>
+        /// <param name="groupId"></param>
+        /// <param name="appUser"></param>
+        /// <returns></returns>
+        Task<RepositoryResult<bool>> IsUserInvited(int groupId, string appUser);
     }
 }

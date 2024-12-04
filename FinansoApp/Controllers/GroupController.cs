@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using FinansoApp.ViewModels;
+using FinansoApp.ViewModels.Group;
 using FinansoData.DataViewModel.Group;
 using FinansoData.Models;
 using FinansoData.Repository.Account;
@@ -41,8 +42,26 @@ namespace FinansoApp.Controllers
         [Authorize]
         public async Task<IActionResult> Index()
         {
+            FinansoData.RepositoryResult<int> groupInvitations = await _groupUsersQuery.GetInvitationCountForGroup(User.Identity.Name);
+            if (groupInvitations.IsSuccess == false)
+            {
+                return BadRequest();
+            }
+
             FinansoData.RepositoryResult<IEnumerable<GetUserGroupsViewModel>?> data = await _groupQueryRepository.GetUserGroups(User.Identity.Name);
-            return View(data.Value);
+            if (data.IsSuccess == false)
+            {
+                return BadRequest();
+            }
+
+
+            FinansoApp.ViewModels.Group.GroupIndexViewModel vm = new GroupIndexViewModel
+            {
+                GroupInvitations = groupInvitations.Value,
+                Groups = data.Value.ToList()
+            };
+
+            return View(vm);
         }
 
         /// <summary>
@@ -273,6 +292,11 @@ namespace FinansoApp.Controllers
             return View("AddGroupUser", vm);
         }
 
+        /// <summary>
+        /// Add user to group. User is inactivated until he accepts invitation
+        /// </summary>
+        /// <param name="model"></param>
+        /// <returns></returns>
         [Authorize]
         [HttpPost]
         public async Task<IActionResult> AddGroupUser(AddGroupUserViemModel model)
@@ -335,8 +359,6 @@ namespace FinansoApp.Controllers
                 });
             }
 
-
-
             // Get user by email
             FinansoData.RepositoryResult<AppUser?> getUserByEmailResult = await _userQuery.GetUserByEmail(model.UserName);
 
@@ -372,6 +394,76 @@ namespace FinansoApp.Controllers
 
             // Redirect to group page
             return RedirectToAction("EditMembers", "Group", new { id = model.GroupId });
+        }
+
+        /// <summary>
+        /// Show list of invitations
+        /// </summary>
+        /// <returns></returns>
+        [Authorize]
+        public async Task<IActionResult> Invitations()
+        {
+            FinansoData.RepositoryResult<IEnumerable<GetGroupInvitationsViewModel>> repositoryResult = await _groupUsersQuery.GetGroupInvitations(User.Identity.Name);
+            if (repositoryResult.IsSuccess == false)
+            {
+                return BadRequest();
+            }
+
+            return View(repositoryResult.Value);
+        }
+
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> AcceptInvitation(int groupUserId)
+        {
+            FinansoData.RepositoryResult<bool> isUserInvited = await _groupUsersQuery.IsUserInvited(groupUserId, User.Identity.Name);
+
+            if (isUserInvited.IsSuccess == false)
+            {
+                return BadRequest();
+            }
+
+            if (isUserInvited.Value == false)
+            {
+                return Unauthorized();
+            }
+
+
+            FinansoData.RepositoryResult<bool> result = await _groupUsersManagementRepository.AcceptGroupInvitation(groupUserId);
+
+            if (!result.IsSuccess)
+            {
+                return BadRequest();
+            }
+
+            return RedirectToAction("Invitations", "Group");
+        }
+
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> RejectInvitation(int groupUserId)
+        {
+            FinansoData.RepositoryResult<bool> isUserInvited = await _groupUsersQuery.IsUserInvited(groupUserId, User.Identity.Name);
+
+            if (isUserInvited.IsSuccess == false)
+            {
+                return BadRequest();
+            }
+
+            if(isUserInvited.Value == false)
+            {
+                return Unauthorized();
+            }
+
+
+            FinansoData.RepositoryResult<bool> result = await _groupUsersManagementRepository.RejectGroupInvitation(groupUserId);
+
+            if (!result.IsSuccess)
+            {
+                return BadRequest();
+            }
+
+            return RedirectToAction("Invitations", "Group");
         }
     }
 }
