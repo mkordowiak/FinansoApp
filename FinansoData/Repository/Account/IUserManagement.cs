@@ -10,5 +10,11 @@ namespace FinansoData.Repository.Account
         Task<RepositoryResult<bool>> DeleteUserAsync(AppUser user);
         Task<RepositoryResult<bool>> AdminSetNewPassword(AppUser user, string newPassword);
         Task<RepositoryResult<bool>> AdminSetNewPassword(string username, string newPassword);
+        /// <summary>
+        /// Edit user info
+        /// </summary>
+        /// <param name="user"></param>
+        /// <returns></returns>
+        Task<RepositoryResult<bool>> EditUserInfo(AppUser user);
     }
 }

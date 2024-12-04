@@ -23,6 +23,8 @@ namespace FinansoData.Tests.Repository.Account
         private readonly string _username;
         private readonly string _userEmail;
 
+        private AppUser _user1;
+
         public UserManagementTests()
         {
             _contextMock = new Mock<ApplicationDbContext>();
@@ -35,8 +37,15 @@ namespace FinansoData.Tests.Repository.Account
 
 
             // In memory test database
-            _username = "testUser1";
-            _userEmail = "test@test.com";
+            _user1 = new AppUser
+            {
+                UserName = "testUser1",
+                Email = "test@test.com",
+                EmailConfirmed = true,
+                Id = "1",
+                FirstName = "Konrad",
+                LastName = "Walenrod"
+            };
 
 
             _dbContextOptions = new DbContextOptionsBuilder<ApplicationDbContext>()
@@ -48,13 +57,7 @@ namespace FinansoData.Tests.Repository.Account
                 context.Database.EnsureDeleted();
                 context.Database.EnsureCreated();
 
-                context.AppUsers.Add(new AppUser
-                {
-                    Id = "testId",
-                    UserName = _username,
-                    Email = _userEmail,
-                    EmailConfirmed = true
-                });
+                context.AppUsers.Add(_user1);
 
 
                 context.SaveChanges();
@@ -261,5 +264,42 @@ namespace FinansoData.Tests.Repository.Account
                 result.ErrorType.Should().Be(ErrorType.None);
             }
         }
+
+        #region EditUserInfo
+
+        [Fact]
+        public async Task UserManagement_EditUserInfo_ShouldChangeEntry()
+        {
+            // Arrange
+            AppUser updateAppUser = (AppUser)_user1;
+            string NewFirstName = "NewFirstName";
+            string NewLastName = "NewLastName";
+
+            updateAppUser.FirstName = NewFirstName;
+            updateAppUser.LastName = NewLastName;
+
+            Mock<IAuthentication> authenticationMock = new Mock<IAuthentication>();
+
+            using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
+            {
+                UserManagement repository = new UserManagement(context, _userManagerMock.Object, authenticationMock.Object);
+
+                // Act
+                RepositoryResult<bool> result = await repository.EditUserInfo(updateAppUser);
+                
+
+                // Assert
+                result.IsSuccess.Should().BeTrue();
+                context.AppUsers.FirstOrDefault(x => x.Id == updateAppUser.Id).Should().NotBeNull();
+                context.AppUsers.FirstOrDefault(x => x.Id == updateAppUser.Id).FirstName.Should().Be(NewFirstName);
+                context.AppUsers.FirstOrDefault(x => x.Id == updateAppUser.Id).LastName.Should().Be(NewLastName);
+
+                // DESTROY IN MEMORY DATABASE - prevent to run multiple instances of database
+                context.Database.EnsureDeleted();
+
+            }
+        }
+
+        #endregion
     }
 }

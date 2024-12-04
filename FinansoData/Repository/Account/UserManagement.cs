@@ -17,6 +17,12 @@ namespace FinansoData.Repository.Account
             _authentication = authentication;
         }
 
+        private async Task<bool> Save()
+        {
+            int saved = await _context.SaveChangesAsync();
+            return saved > 0 ? true : false;
+        }
+
         public async Task<RepositoryResult<AppUser?>> AddUserToRoleAdminAsync(AppUser appUser)
         {
             try
@@ -175,6 +181,21 @@ namespace FinansoData.Repository.Account
             }
 
             return RepositoryResult<bool>.Success(true);
+        }
+
+        public async Task<RepositoryResult<bool>> EditUserInfo(AppUser user)
+        {
+            try
+            {
+                _context.Users.Update(user);
+                bool saved = await Save();
+
+                return RepositoryResult<bool>.Success(saved);
+            }
+            catch
+            {
+                return RepositoryResult<bool>.Failure(null, ErrorType.ServerError);
+            }
         }
     }
 }
