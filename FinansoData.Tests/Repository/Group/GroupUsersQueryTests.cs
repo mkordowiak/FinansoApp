@@ -198,8 +198,10 @@ namespace FinansoData.Tests.Repository.Group
 
                 GroupUsersQuery repository = new GroupUsersQuery(context);
 
+                int groupUserId = context.GroupUsers.Where(x => x.AppUserId == "4").Select(x => x.Id).FirstOrDefault();
+
                 // Act 
-                RepositoryResult<bool> result = await repository.IsUserInvited(_group1.Id, _group3Invite.UserName);
+                RepositoryResult<bool> result = await repository.IsUserInvited(groupUserId, _group3Invite.UserName);
                 context.Database.EnsureDeleted();
 
                 // Assert
@@ -218,7 +220,7 @@ namespace FinansoData.Tests.Repository.Group
                 GroupUsersQuery repository = new GroupUsersQuery(context);
 
                 // Act 
-                RepositoryResult<bool> result = await repository.IsUserInvited(_group1.Id, _group2Member.UserName);
+                RepositoryResult<bool> result = await repository.IsUserInvited(100, _group3Invite.UserName);
                 context.Database.EnsureDeleted();
 
                 // Assert
