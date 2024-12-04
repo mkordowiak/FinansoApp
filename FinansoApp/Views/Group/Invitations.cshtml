@@ -20,8 +20,16 @@
                     <td>@i.GroupName</td>
                     <td>@i.GroupOwnerFirstName @i.GroupOwnerLastName</td>
                     <td>
-                        <a type="button" class="btn btn-secondary mb-1" asp-action="AcceptInvitation" asp-controller="Group" asp-route-id="@i.GroupUserId">Accept</a>
-                        <a type="button" class="btn btn-secondary mb-1" asp-action="RejectInvitation" asp-controller="Group" asp-route-id="@i.GroupUserId">Reject</a>
+                        <form method="post" action="/Group/AcceptInvitation">
+                            <input type="hidden" name="groupUserId" value="@i.GroupUserId" />
+                            <button type="submit" class="btn btn-success mb-1">Accept</button>
+                        </form>
+
+                        <form method="post" action="/Group/RejectInvitation">
+                            <input type="hidden" name="groupUserId" value="@i.GroupUserId" />
+                            <button type="submit" class="btn btn-secondary btn-danger mb-1">Reject</button>
+                        </form>
+                        
                     </td>
                 </tr>
             }

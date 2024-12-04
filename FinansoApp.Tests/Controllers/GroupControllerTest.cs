@@ -653,5 +653,333 @@ namespace FinansoApp.Tests.Controllers
 
 
         #endregion
+
+        #region Invitations
+
+        [Fact]
+        public async Task GroupController_Invitations_ShouldBeAuthorized()
+        {
+            // Arrange
+            MethodInfo? httpGetMethod = typeof(GroupController).GetMethod(nameof(GroupController.Invitations), Type.EmptyTypes);
+
+            // Act
+            AuthorizeAttribute? httpGetAuthorizeAttribute = httpGetMethod.GetCustomAttribute<AuthorizeAttribute>();
+
+            // Assert
+            httpGetAuthorizeAttribute.Should().NotBeNull("this method shoud be protected by authorization");
+        }
+
+        [Fact]
+        public async Task GroupController_Invitations_ShouldReturnBadRequestWhenCantGetInvitations()
+        {
+            // Arrange
+            _groupUsersQueryMock.Setup(x => x.GetGroupInvitations(It.IsAny<string>()))
+                .ReturnsAsync(RepositoryResult<IEnumerable<GetGroupInvitationsViewModel>>.Failure(null, ErrorType.ServerError));
+
+            // Claims Principal Mock
+            string appUser = "appuser";
+            Mock<ClaimsPrincipal> mockPrincipal = new Mock<ClaimsPrincipal>();
+            mockPrincipal.Setup(p => p.Identity.Name).Returns(appUser);
+            mockPrincipal.Setup(p => p.Identity.IsAuthenticated).Returns(true);
+
+            Mock<HttpContext> context = new Mock<HttpContext>();
+            context.SetupGet(ctx => ctx.User).Returns(mockPrincipal.Object);
+
+            // Create controller object
+            GroupController groupController = new GroupController(_mapper.Object, _groupQueryRepositoryMock.Object, _groupManagementRepositoryMock.Object, _groupUsersQueryMock.Object, _groupUsersManagementRepositoryMock.Object, _userQueryMock.Object)
+            {
+                ControllerContext = new ControllerContext
+                {
+                    HttpContext = context.Object
+                }
+            };
+
+            // Act
+            IActionResult controllerResult = await groupController.Invitations();
+
+            // Assert
+            controllerResult.Should().BeOfType<BadRequestResult>("Controller should return bad request when can't get invitations");
+        }
+
+        [Fact]
+        public async Task GroupController_Invitations_ShouldReturnViewWhenOk()
+        {
+            // Arrange
+            _groupUsersQueryMock.Setup(x => x.GetGroupInvitations(It.IsAny<string>()))
+                .ReturnsAsync(RepositoryResult<IEnumerable<GetGroupInvitationsViewModel>>.Failure(null, ErrorType.ServerError));
+
+            // Claims Principal Mock
+            string appUser = "appuser";
+            Mock<ClaimsPrincipal> mockPrincipal = new Mock<ClaimsPrincipal>();
+            mockPrincipal.Setup(p => p.Identity.Name).Returns(appUser);
+            mockPrincipal.Setup(p => p.Identity.IsAuthenticated).Returns(true);
+
+            Mock<HttpContext> context = new Mock<HttpContext>();
+            context.SetupGet(ctx => ctx.User).Returns(mockPrincipal.Object);
+
+            // Create controller object
+            GroupController groupController = new GroupController(_mapper.Object, _groupQueryRepositoryMock.Object, _groupManagementRepositoryMock.Object, _groupUsersQueryMock.Object, _groupUsersManagementRepositoryMock.Object, _userQueryMock.Object)
+            {
+                ControllerContext = new ControllerContext
+                {
+                    HttpContext = context.Object
+                }
+            };
+
+            // Act
+            IActionResult controllerResult = await groupController.Invitations();
+
+            // Assert
+            controllerResult.Should().BeOfType<BadRequestResult>("Controller should return bad request when can't get invitations");
+        }
+
+        #endregion
+
+        #region AcceptInvitation
+
+        [Fact]
+        public async Task GroupController_AcceptInvitation_ShouldBeAuthorized()
+        {
+            // Arrange
+            MethodInfo? httpPostMethod = typeof(GroupController).GetMethod(nameof(GroupController.AcceptInvitation), new[] { typeof(int) });
+
+            // Act
+            AuthorizeAttribute? httpPostAuthorizeAttribute = httpPostMethod.GetCustomAttribute<AuthorizeAttribute>();
+
+            // Assert
+            httpPostAuthorizeAttribute.Should().NotBeNull("this method should be protected by authorization");
+        }
+
+        [Fact]
+        public async Task GroupController_AcceptInvitation_ShouldReturnBadRequestWhenCantAcceptInvitation()
+        {
+            // Arrange
+            _groupUsersManagementRepositoryMock.Setup(x => x.AcceptGroupInvitation(It.IsAny<int>()))
+                .ReturnsAsync(RepositoryResult<bool>.Failure(null, ErrorType.ServerError));
+            _groupUsersQueryMock.Setup(x => x.IsUserInvited(It.IsAny<int>(), It.IsAny<string>()))
+                .ReturnsAsync(RepositoryResult<bool>.Success(true));
+
+            // Claims Principal Mock
+            Mock<ClaimsPrincipal> mockPrincipal = new Mock<ClaimsPrincipal>();
+            mockPrincipal.Setup(p => p.Identity.Name).Returns("appUser");
+            mockPrincipal.Setup(p => p.Identity.IsAuthenticated).Returns(true);
+
+
+            Mock<HttpContext> context = new Mock<HttpContext>();
+            context.SetupGet(ctx => ctx.User).Returns(mockPrincipal.Object);
+
+            // Create controller object
+            GroupController groupController = new GroupController(_mapper.Object, _groupQueryRepositoryMock.Object, _groupManagementRepositoryMock.Object, _groupUsersQueryMock.Object, _groupUsersManagementRepositoryMock.Object, _userQueryMock.Object)
+            {
+                ControllerContext = new ControllerContext
+                {
+                    HttpContext = context.Object
+                }
+            };
+
+
+            // Act
+            IActionResult controllerResult = await groupController.AcceptInvitation(It.IsAny<int>());
+
+            // Assert
+            controllerResult.Should().BeOfType<BadRequestResult>("Controller should return bad request when can't accept invitation");
+        }
+
+        [Fact]
+        public async Task GroupController_AcceptInvitation_ShouldReturnRedirectToInvitationsWhenOk()
+        {
+            // Arrange
+            _groupUsersManagementRepositoryMock.Setup(x => x.AcceptGroupInvitation(It.IsAny<int>()))
+                .ReturnsAsync(RepositoryResult<bool>.Success(true));
+            _groupUsersQueryMock.Setup(x => x.IsUserInvited(It.IsAny<int>(), It.IsAny<string>()))
+                .ReturnsAsync(RepositoryResult<bool>.Success(true));
+
+
+
+            // Claims Principal Mock
+            Mock<ClaimsPrincipal> mockPrincipal = new Mock<ClaimsPrincipal>();
+            mockPrincipal.Setup(p => p.Identity.Name).Returns("appUser");
+            mockPrincipal.Setup(p => p.Identity.IsAuthenticated).Returns(true);
+
+
+            Mock<HttpContext> context = new Mock<HttpContext>();
+            context.SetupGet(ctx => ctx.User).Returns(mockPrincipal.Object);
+
+            // Create controller object
+            GroupController groupController = new GroupController(_mapper.Object, _groupQueryRepositoryMock.Object, _groupManagementRepositoryMock.Object, _groupUsersQueryMock.Object, _groupUsersManagementRepositoryMock.Object, _userQueryMock.Object)
+            {
+                ControllerContext = new ControllerContext
+                {
+                    HttpContext = context.Object
+                }
+            };
+
+            // Act 
+            IActionResult controllerResult = await groupController.AcceptInvitation(It.IsAny<int>());
+
+            // Assert
+            controllerResult.Should().BeOfType<RedirectToActionResult>("Controller should return redirect to invitations when everything is fine");
+        }
+
+        [Fact]
+        public async Task GroupController_AcceptInvitation_ShouldReturnUnauthorizedWhenUserIsNotInvited()
+        {
+            // Assert
+            _groupUsersQueryMock.Setup(x => x.IsUserInvited(It.IsAny<int>(), It.IsAny<string>()))
+                .ReturnsAsync(RepositoryResult<bool>.Success(false));
+            _groupUsersQueryMock.Setup(x => x.IsUserInvited(It.IsAny<int>(), It.IsAny<string>()))
+                .ReturnsAsync(RepositoryResult<bool>.Success(false));
+
+            // Claims Principal Mock
+            Mock<ClaimsPrincipal> mockPrincipal = new Mock<ClaimsPrincipal>();
+            mockPrincipal.Setup(p => p.Identity.Name).Returns("appUser");
+            mockPrincipal.Setup(p => p.Identity.IsAuthenticated).Returns(true);
+
+
+            Mock<HttpContext> context = new Mock<HttpContext>();
+            context.SetupGet(ctx => ctx.User).Returns(mockPrincipal.Object);
+
+            // Create controller object
+            GroupController groupController = new GroupController(_mapper.Object, _groupQueryRepositoryMock.Object, _groupManagementRepositoryMock.Object, _groupUsersQueryMock.Object, _groupUsersManagementRepositoryMock.Object, _userQueryMock.Object)
+            {
+                ControllerContext = new ControllerContext
+                {
+                    HttpContext = context.Object
+                }
+            };
+
+
+            // Act
+            IActionResult controllerResult = await groupController.AcceptInvitation(It.IsAny<int>());
+
+            // Assert
+            controllerResult.Should().BeOfType<UnauthorizedResult>("Controller should return unauthorized when user is not invited");
+        }
+
+        #endregion
+
+        #region RejectInvitation
+
+        [Fact]
+        public async Task GroupController_RejectInvitation_ShouldBeAuthorized()
+        {
+            // Arrange
+            MethodInfo? httpPostMethod = typeof(GroupController).GetMethod(nameof(GroupController.RejectInvitation), new[] { typeof(int) });
+
+            // Act
+            AuthorizeAttribute? httpPostAuthorizeAttribute = httpPostMethod.GetCustomAttribute<AuthorizeAttribute>();
+
+            // Assert
+            httpPostAuthorizeAttribute.Should().NotBeNull("this method should be protected by authorization");
+        }
+
+        [Fact]
+        public async Task GroupController_RejectInvitation_ShouldReturnBadRequestWhenCantRejectInvitation()
+        {
+            // Arrange
+            _groupUsersManagementRepositoryMock.Setup(x => x.RejectGroupInvitation(It.IsAny<int>()))
+                .ReturnsAsync(RepositoryResult<bool>.Failure(null, ErrorType.ServerError));
+            _groupUsersQueryMock.Setup(x => x.IsUserInvited(It.IsAny<int>(), It.IsAny<string>()))
+                .ReturnsAsync(RepositoryResult<bool>.Success(true));
+
+
+            // Claims Principal Mock
+            Mock<ClaimsPrincipal> mockPrincipal = new Mock<ClaimsPrincipal>();
+            mockPrincipal.Setup(p => p.Identity.Name).Returns("appUser");
+            mockPrincipal.Setup(p => p.Identity.IsAuthenticated).Returns(true);
+
+
+            Mock<HttpContext> context = new Mock<HttpContext>();
+            context.SetupGet(ctx => ctx.User).Returns(mockPrincipal.Object);
+
+            // Create controller object
+            GroupController groupController = new GroupController(_mapper.Object, _groupQueryRepositoryMock.Object, _groupManagementRepositoryMock.Object, _groupUsersQueryMock.Object, _groupUsersManagementRepositoryMock.Object, _userQueryMock.Object)
+            {
+                ControllerContext = new ControllerContext
+                {
+                    HttpContext = context.Object
+                }
+            };
+
+            // Act
+            IActionResult controllerResult = await groupController.RejectInvitation(It.IsAny<int>());
+
+            // Assert
+            controllerResult.Should().BeOfType<BadRequestResult>("Controller should return bad request when can't reject invitation");
+        }
+
+        [Fact]
+        public async Task GroupController_RejectInvitation_ShouldReturnRedirectToInvitationsWhenOk()
+        {
+            // Arrange
+            _groupUsersManagementRepositoryMock.Setup(x => x.RejectGroupInvitation(It.IsAny<int>()))
+                .ReturnsAsync(RepositoryResult<bool>.Success(true));
+            _groupUsersQueryMock.Setup(x => x.IsUserInvited(It.IsAny<int>(), It.IsAny<string>()))
+                .ReturnsAsync(RepositoryResult<bool>.Success(true));
+
+
+            // Claims Principal Mock
+            Mock<ClaimsPrincipal> mockPrincipal = new Mock<ClaimsPrincipal>();
+            mockPrincipal.Setup(p => p.Identity.Name).Returns("appUser");
+            mockPrincipal.Setup(p => p.Identity.IsAuthenticated).Returns(true);
+
+
+            Mock<HttpContext> context = new Mock<HttpContext>();
+            context.SetupGet(ctx => ctx.User).Returns(mockPrincipal.Object);
+
+            // Create controller object
+            GroupController groupController = new GroupController(_mapper.Object, _groupQueryRepositoryMock.Object, _groupManagementRepositoryMock.Object, _groupUsersQueryMock.Object, _groupUsersManagementRepositoryMock.Object, _userQueryMock.Object)
+            {
+                ControllerContext = new ControllerContext
+                {
+                    HttpContext = context.Object
+                }
+            };
+
+            // Act
+            IActionResult controllerResult = await groupController.RejectInvitation(It.IsAny<int>());
+
+            // Assert
+            controllerResult.Should().BeOfType<RedirectToActionResult>("Controller should return redirect to invitations when everything is fine");
+
+            RedirectToActionResult? redirectResult = controllerResult as RedirectToActionResult;
+            redirectResult.ControllerName.Should().Be("Group");
+            redirectResult.ActionName.Should().Be("Invitations");
+        }
+
+        [Fact]
+        public async Task GroupController_RejectInvitation_ShouldReturnUnauthorizedWhenUserIsNotInvited()
+        {
+            // Arrange
+            _groupUsersQueryMock.Setup(x => x.IsUserInvited(It.IsAny<int>(), It.IsAny<string>()))
+                .ReturnsAsync(RepositoryResult<bool>.Success(false));
+
+
+            // Claims Principal Mock
+            Mock<ClaimsPrincipal> mockPrincipal = new Mock<ClaimsPrincipal>();
+            mockPrincipal.Setup(p => p.Identity.Name).Returns("appUser");
+            mockPrincipal.Setup(p => p.Identity.IsAuthenticated).Returns(true);
+
+
+            Mock<HttpContext> context = new Mock<HttpContext>();
+            context.SetupGet(ctx => ctx.User).Returns(mockPrincipal.Object);
+
+            // Create controller object
+            GroupController groupController = new GroupController(_mapper.Object, _groupQueryRepositoryMock.Object, _groupManagementRepositoryMock.Object, _groupUsersQueryMock.Object, _groupUsersManagementRepositoryMock.Object, _userQueryMock.Object)
+            {
+                ControllerContext = new ControllerContext
+                {
+                    HttpContext = context.Object
+                }
+            };
+
+            // Act
+            IActionResult controllerResult = await groupController.RejectInvitation(It.IsAny<int>());
+
+            // Assert
+            controllerResult.Should().BeOfType<UnauthorizedResult>("Controller should return unauthorized when user is not invited");
+        }
+
+        #endregion
     }
 }

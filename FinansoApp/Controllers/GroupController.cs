@@ -409,8 +409,61 @@ namespace FinansoApp.Controllers
                 return BadRequest();
             }
 
-
             return View(repositoryResult.Value);
+        }
+
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> AcceptInvitation(int groupUserId)
+        {
+            FinansoData.RepositoryResult<bool> isUserInvited = await _groupUsersQuery.IsUserInvited(groupUserId, User.Identity.Name);
+
+            if (isUserInvited.IsSuccess == false)
+            {
+                return BadRequest();
+            }
+
+            if (isUserInvited.Value == false)
+            {
+                return Unauthorized();
+            }
+
+
+            FinansoData.RepositoryResult<bool> result = await _groupUsersManagementRepository.AcceptGroupInvitation(groupUserId);
+
+            if (!result.IsSuccess)
+            {
+                return BadRequest();
+            }
+
+            return RedirectToAction("Invitations", "Group");
+        }
+
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> RejectInvitation(int groupUserId)
+        {
+            FinansoData.RepositoryResult<bool> isUserInvited = await _groupUsersQuery.IsUserInvited(groupUserId, User.Identity.Name);
+
+            if (isUserInvited.IsSuccess == false)
+            {
+                return BadRequest();
+            }
+
+            if(isUserInvited.Value == false)
+            {
+                return Unauthorized();
+            }
+
+
+            FinansoData.RepositoryResult<bool> result = await _groupUsersManagementRepository.RejectGroupInvitation(groupUserId);
+
+            if (!result.IsSuccess)
+            {
+                return BadRequest();
+            }
+
+            return RedirectToAction("Invitations", "Group");
         }
     }
 }
