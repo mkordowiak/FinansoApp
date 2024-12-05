@@ -9,13 +9,13 @@ namespace FinansoData.Data
     public class Seed : ISeed
     {
         private readonly IAccountRepository _accountRepository;
-        ICurrencyRepository _currencyRepository;
+        //ICurrencyRepository _currencyRepository;
 
 
-        public Seed(IAccountRepository accountRepository, ICurrencyRepository currencyRepository)
+        public Seed(IAccountRepository accountRepository)
         {
             _accountRepository = accountRepository;
-            _currencyRepository = currencyRepository;
+            //_currencyRepository = currencyRepository;
         }
 
         /// <summary>
@@ -99,11 +99,11 @@ namespace FinansoData.Data
 
         public async Task<bool> SeedCurrencies()
         {
-            _currencyRepository.Add(new Currency { Name = "PLN", ExchangeRate = 1, Updated = DateTime.Now });
-            _currencyRepository.Add(new Currency { Name = "EUR", ExchangeRate = 4.5, Updated = DateTime.Now });
-            _currencyRepository.Add(new Currency { Name = "USD", ExchangeRate = 4.2, Updated = DateTime.Now });
+            //_currencyRepository.Add(new Currency { Name = "PLN", ExchangeRate = 1, Updated = DateTime.Now });
+            //_currencyRepository.Add(new Currency { Name = "EUR", ExchangeRate = 4.5, Updated = DateTime.Now });
+            //_currencyRepository.Add(new Currency { Name = "USD", ExchangeRate = 4.2, Updated = DateTime.Now });
 
-            _currencyRepository.Save();
+            //_currencyRepository.Save();
 
             return true;
         }
