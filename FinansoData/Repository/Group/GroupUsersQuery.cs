@@ -130,7 +130,9 @@ namespace FinansoData.Repository.Group
 
             IQueryable<Models.Group> isUserAdminQuery = from g in _context.Groups
                                                         join u in _context.AppUsers on g.OwnerAppUser.Id equals u.Id
-                                                        where g.Id == groupId && u.UserName == appUser
+                                                        where 
+                                                            g.Id == groupId 
+                                                            && u.UserName == appUser
                                                         select g;
             Models.Group isUserAdmin;
 
@@ -179,7 +181,9 @@ namespace FinansoData.Repository.Group
         {
             IQueryable<Models.Group> query = from g in _context.Groups
                                              join a in _context.AppUsers on g.OwnerAppUser.Id equals a.Id
-                                             where g.Id == groupId && a.NormalizedEmail == appUser
+                                             where 
+                                                g.Id == groupId 
+                                                && a.NormalizedEmail == appUser 
                                              select g;
 
             bool queryResult = false;
