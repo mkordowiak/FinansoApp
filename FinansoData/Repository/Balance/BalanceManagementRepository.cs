@@ -23,8 +23,8 @@ namespace FinansoData.Repository.Balance
             {
                 Name = balance.Name,
                 Amount = balance.Amount,
-                Currency = balance.Currency,
-                Group = balance.Group
+                CurrencyId = balance.Currency.Id,
+                GroupId = balance.Group.Id
             };
 
             try
