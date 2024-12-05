@@ -51,6 +51,9 @@ namespace FinansoData.Tests.Repository.Currency
                 result.IsSuccess.Should().BeTrue();
                 result.Value.Id.Should().Be(expectedCurrency.Id);
                 result.Value.Name.Should().Be(expectedCurrency.Name);
+
+                // Delete in-memory database
+                context.Database.EnsureDeleted();
             }
         }
 
@@ -69,6 +72,9 @@ namespace FinansoData.Tests.Repository.Currency
                 // Assert
                 result.IsSuccess.Should().BeTrue();
                 result.Value.Should().BeNull();
+
+                // Delete in-memory database
+                context.Database.EnsureDeleted();
             }
         }
 
@@ -92,6 +98,9 @@ namespace FinansoData.Tests.Repository.Currency
                 result.IsSuccess.Should().BeTrue();
                 result.Value.Id.Should().Be(expectedCurrency.Id);
                 result.Value.Name.Should().Be(expectedCurrency.Name);
+
+                // Delete in-memory database
+                context.Database.EnsureDeleted();
             }
         }
 
@@ -110,6 +119,9 @@ namespace FinansoData.Tests.Repository.Currency
                 // Assert
                 result.IsSuccess.Should().BeTrue();
                 result.Value.Should().BeNull();
+
+                // Delete in-memory database
+                context.Database.EnsureDeleted();
             }
         }
 
@@ -131,6 +143,9 @@ namespace FinansoData.Tests.Repository.Currency
                 // Assert
                 result.IsSuccess.Should().BeTrue();
                 result.Value.Should().HaveCount(_currencies.Count);
+
+                // Delete in-memory database
+                context.Database.EnsureDeleted();
             }
         }
 
