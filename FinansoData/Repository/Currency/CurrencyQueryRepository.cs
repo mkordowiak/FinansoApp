@@ -15,11 +15,11 @@ namespace FinansoData.Repository.Currency
         public async Task<RepositoryResult<IEnumerable<CurrencyViewModel>>> GetAllCurrencies()
         {
             IQueryable<CurrencyViewModel> query = from currency in _context.Currencies
-                                                       select new CurrencyViewModel
-                                                       {
-                                                           Id = currency.Id,
-                                                           Name = currency.Name
-                                                       };
+                                                  select new CurrencyViewModel
+                                                  {
+                                                      Id = currency.Id,
+                                                      Name = currency.Name
+                                                  };
 
             try
             {
@@ -33,13 +33,15 @@ namespace FinansoData.Repository.Currency
 
         public async Task<RepositoryResult<Models.Currency?>> GetCurrencyModelById(int id)
         {
+            var query = from currency in _context.Currencies
+                        where currency.Id == id
+                        select currency;
+
             try
             {
-                RepositoryResult<Models.Currency>? result = await _context.Currencies.Where(x => x.Id == id)
-                    .Select(x => RepositoryResult<Models.Currency>.Success(x))
-                    .SingleOrDefaultAsync();
+                var resutl = await query.SingleOrDefaultAsync();
 
-                return result;
+                return RepositoryResult<Models.Currency?>.Success(resutl);
             }
             catch
             {
@@ -47,20 +49,20 @@ namespace FinansoData.Repository.Currency
             }
         }
 
-        public async Task<RepositoryResult<CurrencyViewModel>> GetCurrencyById(int id)
+        public async Task<RepositoryResult<CurrencyViewModel?>> GetCurrencyById(int id)
         {
+            IQueryable<CurrencyViewModel> query = from c in _context.Currencies
+                                                  where c.Id == id
+                                                  select new CurrencyViewModel
+                                                  {
+                                                      Id = c.Id,
+                                                      Name = c.Name
+                                                  };
+
             try
             {
-                RepositoryResult<CurrencyViewModel>? result = await _context.Currencies.Where(x => x.Id == id)
-                    .Select(x => new CurrencyViewModel
-                    {
-                        Id = x.Id,
-                        Name = x.Name
-                    })
-                    .Select(x => RepositoryResult<CurrencyViewModel>.Success(x))
-                    .SingleOrDefaultAsync();
-
-                return result;
+                CurrencyViewModel? result = await query.SingleOrDefaultAsync();
+                return RepositoryResult<CurrencyViewModel>.Success(result);
             }
             catch
             {

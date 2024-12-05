@@ -15,7 +15,7 @@ namespace FinansoData.Repository.Currency
         /// </summary>
         /// <param name="id"></param>
         /// <returns></returns>
-        Task<RepositoryResult<CurrencyViewModel>> GetCurrencyById(int id);
+        Task<RepositoryResult<CurrencyViewModel?>> GetCurrencyById(int id);
 
         Task<RepositoryResult<Models.Currency?>> GetCurrencyModelById(int id);
     }
