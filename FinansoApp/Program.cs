@@ -9,21 +9,22 @@ using Microsoft.EntityFrameworkCore;
 using AutoMapper;
 using FinansoData.Repository.Account;
 using FinansoData.Repository.Group;
+using FinansoData.Repository.Currency;
+using FinansoData.Repository.Balance;
 
 var builder = WebApplication.CreateBuilder(args);
 
 // Scopes
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
-builder.Services.AddScoped<IBalanceRepository, BalanceRepository>();
 builder.Services.AddScoped<ISeed, Seed>();
-builder.Services.AddScoped<ICurrencyRepository, CurrencyRepository>();
 builder.Services.AddScoped<IGroupCrudRepository, GroupCrudRepository>();
 builder.Services.AddScoped<IGroupManagementRepository, GroupManagementRepository>();
 builder.Services.AddScoped<IGroupQueryRepository, GroupQueryRepository>();
 builder.Services.AddScoped<IGroupUsersQueryRepository, GroupUsersQuery>();
 builder.Services.AddScoped<IGroupUsersManagementRepository, GroupUsersManagementRepository>();
 builder.Services.AddScoped<IUserQuery, UserQuery>();
-
+builder.Services.AddScoped<ICurrencyQueryRepository, CurrencyQueryRepository>();
+builder.Services.AddScoped<IBalanceManagmentRepository, BalanceManagementRepository>();
 // Repository account
 builder.Services.AddScoped<IAuthentication, Authentication>();
 builder.Services.AddScoped<IUserManagement, UserManagement>();
