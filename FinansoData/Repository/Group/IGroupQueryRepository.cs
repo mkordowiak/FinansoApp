@@ -18,6 +18,13 @@ namespace FinansoData.Repository.Group
         /// <param name="groupId"></param>
         /// <returns></returns>
         Task<RepositoryResult<bool>> IsGroupExists(int groupId);
+
+        /// <summary>
+        /// Get single Group by id
+        /// </summary>
+        /// <param name="groupId"></param>
+        /// <returns></returns>
+        Task<RepositoryResult<Models.Group?>> GetGroupById(int groupId);
     }
 
 }
