@@ -62,7 +62,7 @@ namespace FinansoApp.Controllers
             }
 
 
-            if (user == null)
+            if (user.Value == null)
             {
                 loginViewModel.Error.InternalError = true;
                 return View(loginViewModel);
