@@ -43,7 +43,13 @@ namespace FinansoApp.Controllers
             FinansoData.RepositoryResult<IEnumerable<FinansoData.DataViewModel.Currency.CurrencyViewModel>> currencies = await _currencyRepository.GetAllCurrencies();
             FinansoData.RepositoryResult<IEnumerable<FinansoData.DataViewModel.Group.GetUserGroupsViewModel>?> groups = await _groupQueryRepository.GetUserGroups(User.Identity.Name);
 
-            if(currencies.IsSuccess == false || groups.IsSuccess == false)
+            if (currencies.IsSuccess == false || groups.IsSuccess == false)
+            {
+                return BadRequest();
+            }
+
+            if(currencies.Value == null || groups.Value == null
+                || currencies.Value.Count() == 0 || groups.Value.Count() == 0)
             {
                 return BadRequest();
             }
