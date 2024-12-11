@@ -40,14 +40,6 @@ namespace FinansoData.Data
                 .HasForeignKey(gu => gu.GroupId)
                 .OnDelete(DeleteBehavior.NoAction);
 
-            modelBuilder
-                .Entity<Balance>()
-                .HasOne(b => b.Currency)
-                .WithMany()
-                .Metadata.PrincipalToDependent.SetPropertyAccessMode(PropertyAccessMode.Field);
-
-
-
 
 
 
