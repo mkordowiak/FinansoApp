@@ -48,7 +48,7 @@ namespace FinansoApp.Controllers
                 return BadRequest();
             }
 
-            if(currencies.Value == null || groups.Value == null
+            if (currencies.Value == null || groups.Value == null
                 || currencies.Value.Count() == 0 || groups.Value.Count() == 0)
             {
                 return BadRequest();
@@ -90,7 +90,7 @@ namespace FinansoApp.Controllers
 
             if (!groupMembershipResult.Value.IsMember)
             {
-                return BadRequest();
+                return Unauthorized();
             }
 
 
