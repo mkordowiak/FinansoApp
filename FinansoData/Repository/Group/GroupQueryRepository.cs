@@ -14,6 +14,19 @@ namespace FinansoData.Repository.Group
             _context = context;
         }
 
+        public async Task<RepositoryResult<Models.Group?>> GetGroupById(int groupId)
+        {
+            try
+            {
+                var group = await _context.Groups.FirstOrDefaultAsync(g => g.Id == groupId);
+                return RepositoryResult<Models.Group>.Success(group);
+            }
+            catch
+            {
+                return RepositoryResult<Models.Group>.Failure(null, ErrorType.ServerError);
+            }
+        }
+
         public async Task<RepositoryResult<IEnumerable<GetUserGroupsViewModel>?>> GetUserGroups(string appUser)
         {
             // Query to get all groups where user is owner

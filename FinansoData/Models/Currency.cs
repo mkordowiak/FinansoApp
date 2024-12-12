@@ -17,6 +17,9 @@ namespace FinansoData.Models
         [MaxLength(6)]
         public string Name { get; set; }
 
+        [Required]
+        public ICollection<Balance> Balance { get; set; }
+
         /// <summary>
         /// Currency exchange rate
         /// </summary>

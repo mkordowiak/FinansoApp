@@ -21,6 +21,9 @@ namespace FinansoData.Models
         [Required]
         public ICollection<GroupUser> GroupUser { get; set; }
 
+        [Required]
+        public ICollection<Balance> Balance { get; set; }
+
         /// <summary>
         /// Creation datetime
         /// </summary>
