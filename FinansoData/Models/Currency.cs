@@ -14,8 +14,15 @@ namespace FinansoData.Models
         /// Name of currency
         /// </summary>
         [Required]
-        [MaxLength(6)]
+        [MaxLength(64)]
         public string Name { get; set; }
+
+        /// <summary>
+        /// Currency code like USD, EUR, PLN
+        /// </summary>
+        [Required]
+        [MaxLength(6)]
+        public string Code { get; set; }
 
         [Required]
         public ICollection<Balance> Balance { get; set; }
