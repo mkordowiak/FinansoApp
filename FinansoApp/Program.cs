@@ -24,7 +24,10 @@ builder.Services.AddScoped<IGroupUsersQueryRepository, GroupUsersQuery>();
 builder.Services.AddScoped<IGroupUsersManagementRepository, GroupUsersManagementRepository>();
 builder.Services.AddScoped<IUserQuery, UserQuery>();
 builder.Services.AddScoped<ICurrencyQueryRepository, CurrencyQueryRepository>();
+
 builder.Services.AddScoped<IBalanceManagmentRepository, BalanceManagementRepository>();
+builder.Services.AddScoped<IBalanceQueryRepository, BalanceQueryRepository>();
+
 // Repository account
 builder.Services.AddScoped<IAuthentication, Authentication>();
 builder.Services.AddScoped<IUserManagement, UserManagement>();

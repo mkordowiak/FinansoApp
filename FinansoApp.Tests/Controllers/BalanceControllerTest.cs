@@ -14,19 +14,65 @@ namespace FinansoApp.Tests.Controllers
     public class BalanceControllerTest
     {
         private readonly Mock<IBalanceManagmentRepository> _balanceManagmentRepositoryMock;
-        private readonly Mock<ICurrencyQueryRepository> _currencyRepositoryMock;
+        private readonly Mock<ICurrencyQueryRepository> _currencyQueryRepositoryMock;
         private readonly Mock<IGroupQueryRepository> _groupQueryRepositoryMock;
         private readonly Mock<IGroupUsersQueryRepository> _groupUsersQueryRepositoryMock;
+        private readonly Mock<IBalanceQueryRepository> _balanceQueryRepositoryMock;
 
         public BalanceControllerTest()
         {
             _balanceManagmentRepositoryMock = new Mock<IBalanceManagmentRepository>();
-            _currencyRepositoryMock = new Mock<ICurrencyQueryRepository>();
+            _currencyQueryRepositoryMock = new Mock<ICurrencyQueryRepository>();
             _groupQueryRepositoryMock = new Mock<IGroupQueryRepository>();
             _groupUsersQueryRepositoryMock = new Mock<IGroupUsersQueryRepository>();
-
+            _balanceManagmentRepositoryMock = new Mock<IBalanceManagmentRepository>();
+            _balanceQueryRepositoryMock = new Mock<IBalanceQueryRepository>();
 
         }
+
+        #region Index
+
+        [Fact]
+        public async Task BalanceController_Index_ShouldReturnView()
+        {
+            // Arrange
+            IEnumerable<FinansoData.DataViewModel.Balance.BalanceViewModel> balanceViewModels = new List<FinansoData.DataViewModel.Balance.BalanceViewModel>()
+            {
+                new FinansoData.DataViewModel.Balance.BalanceViewModel { Id = 1, Name = "Bank 1", Amount = 1, Currency = new FinansoData.Models.Currency { Id = 1, Name = "PLN" }, Group = new FinansoData.Models.Group { Id = 1, Name = "Test group 1" } },
+                new FinansoData.DataViewModel.Balance.BalanceViewModel { Id = 2, Name = "Bank 2", Amount = 2, Currency = new FinansoData.Models.Currency { Id = 2, Name = "USD" }, Group = new FinansoData.Models.Group { Id = 2, Name = "Test group 2" } }
+            };
+
+            _balanceQueryRepositoryMock.Setup(x => x.GetListOfBalancesForUser(It.IsAny<string>())).ReturnsAsync(FinansoData.RepositoryResult<IEnumerable<FinansoData.DataViewModel.Balance.BalanceViewModel>>.Success(balanceViewModels));
+
+
+            // Claims Principal Mock
+            string appUser = "appuser";
+            Mock<ClaimsPrincipal> mockPrincipal = new Mock<ClaimsPrincipal>();
+            mockPrincipal.Setup(p => p.Identity.Name).Returns(appUser);
+            mockPrincipal.Setup(p => p.Identity.IsAuthenticated).Returns(true);
+
+            Mock<HttpContext> context = new Mock<HttpContext>();
+            context.SetupGet(ctx => ctx.User).Returns(mockPrincipal.Object);
+
+
+            BalanceController controller = new BalanceController(_balanceManagmentRepositoryMock.Object, _currencyQueryRepositoryMock.Object, _groupQueryRepositoryMock.Object, _groupUsersQueryRepositoryMock.Object, _balanceQueryRepositoryMock.Object)
+            {
+                ControllerContext = new ControllerContext
+                {
+                    HttpContext = context.Object
+                }
+            };
+
+            // Act
+            IActionResult result = await controller.Index();
+
+            // Assert
+            Assert.NotNull(result);
+            Assert.IsType<ViewResult>(result);
+
+        }
+
+        #endregion
 
         #region AddBalance GET
 
@@ -45,7 +91,7 @@ namespace FinansoApp.Tests.Controllers
                 new FinansoData.DataViewModel.Group.GetUserGroupsViewModel { Id = 1, Name = "Group 1" },
             };
 
-            _currencyRepositoryMock.Setup(x => x.GetAllCurrencies()).ReturnsAsync(FinansoData.RepositoryResult<IEnumerable<FinansoData.DataViewModel.Currency.CurrencyViewModel>>.Success(currencyViewModels));
+            _currencyQueryRepositoryMock.Setup(x => x.GetAllCurrencies()).ReturnsAsync(FinansoData.RepositoryResult<IEnumerable<FinansoData.DataViewModel.Currency.CurrencyViewModel>>.Success(currencyViewModels));
             _groupQueryRepositoryMock.Setup(x => x.GetUserGroups(It.IsAny<string>())).ReturnsAsync(FinansoData.RepositoryResult<IEnumerable<FinansoData.DataViewModel.Group.GetUserGroupsViewModel>?>.Success(groups));
 
             // Claims Principal Mock
@@ -58,7 +104,7 @@ namespace FinansoApp.Tests.Controllers
             context.SetupGet(ctx => ctx.User).Returns(mockPrincipal.Object);
 
 
-            BalanceController controller = new BalanceController(_balanceManagmentRepositoryMock.Object, _currencyRepositoryMock.Object, _groupQueryRepositoryMock.Object, _groupUsersQueryRepositoryMock.Object)
+            BalanceController controller = new BalanceController(_balanceManagmentRepositoryMock.Object, _currencyQueryRepositoryMock.Object, _groupQueryRepositoryMock.Object, _groupUsersQueryRepositoryMock.Object, _balanceQueryRepositoryMock.Object)
             {
                 ControllerContext = new ControllerContext
                 {
@@ -87,7 +133,7 @@ namespace FinansoApp.Tests.Controllers
 
             IEnumerable<FinansoData.DataViewModel.Group.GetUserGroupsViewModel> groups = new List<FinansoData.DataViewModel.Group.GetUserGroupsViewModel>();
 
-            _currencyRepositoryMock.Setup(x => x.GetAllCurrencies()).ReturnsAsync(FinansoData.RepositoryResult<IEnumerable<FinansoData.DataViewModel.Currency.CurrencyViewModel>>.Success(currencyViewModels));
+            _currencyQueryRepositoryMock.Setup(x => x.GetAllCurrencies()).ReturnsAsync(FinansoData.RepositoryResult<IEnumerable<FinansoData.DataViewModel.Currency.CurrencyViewModel>>.Success(currencyViewModels));
             _groupQueryRepositoryMock.Setup(x => x.GetUserGroups(It.IsAny<string>())).ReturnsAsync(FinansoData.RepositoryResult<IEnumerable<FinansoData.DataViewModel.Group.GetUserGroupsViewModel>?>.Success(groups));
 
             // Claims Principal Mock
@@ -100,7 +146,7 @@ namespace FinansoApp.Tests.Controllers
             context.SetupGet(ctx => ctx.User).Returns(mockPrincipal.Object);
 
 
-            BalanceController controller = new BalanceController(_balanceManagmentRepositoryMock.Object, _currencyRepositoryMock.Object, _groupQueryRepositoryMock.Object, _groupUsersQueryRepositoryMock.Object)
+            BalanceController controller = new BalanceController(_balanceManagmentRepositoryMock.Object, _currencyQueryRepositoryMock.Object, _groupQueryRepositoryMock.Object, _groupUsersQueryRepositoryMock.Object, _balanceQueryRepositoryMock.Object)
             {
                 ControllerContext = new ControllerContext
                 {
@@ -149,7 +195,7 @@ namespace FinansoApp.Tests.Controllers
 
 
             _groupUsersQueryRepositoryMock.Setup(x => x.GetUserMembershipInGroupAsync(It.IsAny<int>(), It.IsAny<string>())).ReturnsAsync(FinansoData.RepositoryResult<FinansoData.DataViewModel.Group.GetUserMembershipInGroupViewModel>.Success(new FinansoData.DataViewModel.Group.GetUserMembershipInGroupViewModel { IsMember = true, IsOwner = false }));
-            _currencyRepositoryMock.Setup(x => x.GetCurrencyModelById(It.IsAny<int>())).ReturnsAsync(FinansoData.RepositoryResult<FinansoData.Models.Currency>.Success(new FinansoData.Models.Currency { Id = 1, Name = "PLN" }));
+            _currencyQueryRepositoryMock.Setup(x => x.GetCurrencyModelById(It.IsAny<int>())).ReturnsAsync(FinansoData.RepositoryResult<FinansoData.Models.Currency>.Success(new FinansoData.Models.Currency { Id = 1, Name = "PLN" }));
             _groupQueryRepositoryMock.Setup(x => x.GetGroupById(It.IsAny<int>())).ReturnsAsync(FinansoData.RepositoryResult<FinansoData.Models.Group?>.Success(new FinansoData.Models.Group { Id = 1, Name = "Name" }));
             _balanceManagmentRepositoryMock.Setup(x => x.AddBalance(It.IsAny<FinansoData.DataViewModel.Balance.BalanceViewModel>())).ReturnsAsync(FinansoData.RepositoryResult<bool>.Success(true));
 
@@ -164,7 +210,7 @@ namespace FinansoApp.Tests.Controllers
             context.SetupGet(ctx => ctx.User).Returns(mockPrincipal.Object);
 
 
-            BalanceController controller = new BalanceController(_balanceManagmentRepositoryMock.Object, _currencyRepositoryMock.Object, _groupQueryRepositoryMock.Object, _groupUsersQueryRepositoryMock.Object)
+            BalanceController controller = new BalanceController(_balanceManagmentRepositoryMock.Object, _currencyQueryRepositoryMock.Object, _groupQueryRepositoryMock.Object, _groupUsersQueryRepositoryMock.Object, _balanceQueryRepositoryMock.Object)
             {
                 ControllerContext = new ControllerContext
                 {
@@ -213,7 +259,7 @@ namespace FinansoApp.Tests.Controllers
 
 
             _groupUsersQueryRepositoryMock.Setup(x => x.GetUserMembershipInGroupAsync(It.IsAny<int>(), It.IsAny<string>())).ReturnsAsync(FinansoData.RepositoryResult<FinansoData.DataViewModel.Group.GetUserMembershipInGroupViewModel>.Success(new FinansoData.DataViewModel.Group.GetUserMembershipInGroupViewModel { IsMember = true, IsOwner = false }));
-            _currencyRepositoryMock.Setup(x => x.GetCurrencyModelById(It.IsAny<int>())).ReturnsAsync(FinansoData.RepositoryResult<FinansoData.Models.Currency>.Success(new FinansoData.Models.Currency { Id = 1, Name = "PLN" }));
+            _currencyQueryRepositoryMock.Setup(x => x.GetCurrencyModelById(It.IsAny<int>())).ReturnsAsync(FinansoData.RepositoryResult<FinansoData.Models.Currency>.Success(new FinansoData.Models.Currency { Id = 1, Name = "PLN" }));
             _groupQueryRepositoryMock.Setup(x => x.GetGroupById(It.IsAny<int>())).ReturnsAsync(FinansoData.RepositoryResult<FinansoData.Models.Group?>.Success(new FinansoData.Models.Group { Id = 1, Name = "Name" }));
             _balanceManagmentRepositoryMock.Setup(x => x.AddBalance(It.IsAny<FinansoData.DataViewModel.Balance.BalanceViewModel>())).ReturnsAsync(FinansoData.RepositoryResult<bool>.Failure(null, FinansoData.ErrorType.ServerError));
 
@@ -228,7 +274,7 @@ namespace FinansoApp.Tests.Controllers
             context.SetupGet(ctx => ctx.User).Returns(mockPrincipal.Object);
 
 
-            BalanceController controller = new BalanceController(_balanceManagmentRepositoryMock.Object, _currencyRepositoryMock.Object, _groupQueryRepositoryMock.Object, _groupUsersQueryRepositoryMock.Object)
+            BalanceController controller = new BalanceController(_balanceManagmentRepositoryMock.Object, _currencyQueryRepositoryMock.Object, _groupQueryRepositoryMock.Object, _groupUsersQueryRepositoryMock.Object, _balanceQueryRepositoryMock.Object)
             {
                 ControllerContext = new ControllerContext
                 {
@@ -286,7 +332,7 @@ namespace FinansoApp.Tests.Controllers
             context.SetupGet(ctx => ctx.User).Returns(mockPrincipal.Object);
 
 
-            BalanceController controller = new BalanceController(_balanceManagmentRepositoryMock.Object, _currencyRepositoryMock.Object, _groupQueryRepositoryMock.Object, _groupUsersQueryRepositoryMock.Object)
+            BalanceController controller = new BalanceController(_balanceManagmentRepositoryMock.Object, _currencyQueryRepositoryMock.Object, _groupQueryRepositoryMock.Object, _groupUsersQueryRepositoryMock.Object, _balanceQueryRepositoryMock.Object)
             {
                 ControllerContext = new ControllerContext
                 {
@@ -344,7 +390,7 @@ namespace FinansoApp.Tests.Controllers
             context.SetupGet(ctx => ctx.User).Returns(mockPrincipal.Object);
 
 
-            BalanceController controller = new BalanceController(_balanceManagmentRepositoryMock.Object, _currencyRepositoryMock.Object, _groupQueryRepositoryMock.Object, _groupUsersQueryRepositoryMock.Object)
+            BalanceController controller = new BalanceController(_balanceManagmentRepositoryMock.Object, _currencyQueryRepositoryMock.Object, _groupQueryRepositoryMock.Object, _groupUsersQueryRepositoryMock.Object, _balanceQueryRepositoryMock.Object)
             {
                 ControllerContext = new ControllerContext
                 {
@@ -388,7 +434,7 @@ namespace FinansoApp.Tests.Controllers
             };
 
 
-            _currencyRepositoryMock.Setup(x => x.GetCurrencyModelById(It.IsAny<int>())).ReturnsAsync(FinansoData.RepositoryResult<FinansoData.Models.Currency>.Success(new FinansoData.Models.Currency { Id = 1, Name = "PLN" }));
+            _currencyQueryRepositoryMock.Setup(x => x.GetCurrencyModelById(It.IsAny<int>())).ReturnsAsync(FinansoData.RepositoryResult<FinansoData.Models.Currency>.Success(new FinansoData.Models.Currency { Id = 1, Name = "PLN" }));
             _groupUsersQueryRepositoryMock.Setup(x => x.GetUserMembershipInGroupAsync(It.IsAny<int>(), It.IsAny<string>())).ReturnsAsync(FinansoData.RepositoryResult<FinansoData.DataViewModel.Group.GetUserMembershipInGroupViewModel>.Success(new FinansoData.DataViewModel.Group.GetUserMembershipInGroupViewModel { IsMember = true, IsOwner = false }));
             _groupQueryRepositoryMock.Setup(x => x.GetGroupById(It.IsAny<int>())).ReturnsAsync(FinansoData.RepositoryResult<FinansoData.Models.Group?>.Failure(null, FinansoData.ErrorType.ServerError));
 
@@ -402,7 +448,7 @@ namespace FinansoApp.Tests.Controllers
             context.SetupGet(ctx => ctx.User).Returns(mockPrincipal.Object);
 
 
-            BalanceController controller = new BalanceController(_balanceManagmentRepositoryMock.Object, _currencyRepositoryMock.Object, _groupQueryRepositoryMock.Object, _groupUsersQueryRepositoryMock.Object)
+            BalanceController controller = new BalanceController(_balanceManagmentRepositoryMock.Object, _currencyQueryRepositoryMock.Object, _groupQueryRepositoryMock.Object, _groupUsersQueryRepositoryMock.Object, _balanceQueryRepositoryMock.Object)
             {
                 ControllerContext = new ControllerContext
                 {
@@ -446,7 +492,7 @@ namespace FinansoApp.Tests.Controllers
             };
 
 
-            _currencyRepositoryMock.Setup(x => x.GetCurrencyModelById(It.IsAny<int>())).ReturnsAsync(FinansoData.RepositoryResult<FinansoData.Models.Currency>.Failure(null, FinansoData.ErrorType.ServerError));
+            _currencyQueryRepositoryMock.Setup(x => x.GetCurrencyModelById(It.IsAny<int>())).ReturnsAsync(FinansoData.RepositoryResult<FinansoData.Models.Currency>.Failure(null, FinansoData.ErrorType.ServerError));
             _groupUsersQueryRepositoryMock.Setup(x => x.GetUserMembershipInGroupAsync(It.IsAny<int>(), It.IsAny<string>())).ReturnsAsync(FinansoData.RepositoryResult<FinansoData.DataViewModel.Group.GetUserMembershipInGroupViewModel>.Success(new FinansoData.DataViewModel.Group.GetUserMembershipInGroupViewModel { IsMember = true, IsOwner = false }));
             _groupQueryRepositoryMock.Setup(x => x.GetGroupById(It.IsAny<int>())).ReturnsAsync(FinansoData.RepositoryResult<FinansoData.Models.Group?>.Success(new FinansoData.Models.Group { Id = 1, Name = "Name" }));
 
@@ -460,7 +506,7 @@ namespace FinansoApp.Tests.Controllers
             context.SetupGet(ctx => ctx.User).Returns(mockPrincipal.Object);
 
 
-            BalanceController controller = new BalanceController(_balanceManagmentRepositoryMock.Object, _currencyRepositoryMock.Object, _groupQueryRepositoryMock.Object, _groupUsersQueryRepositoryMock.Object)
+            BalanceController controller = new BalanceController(_balanceManagmentRepositoryMock.Object, _currencyQueryRepositoryMock.Object, _groupQueryRepositoryMock.Object, _groupUsersQueryRepositoryMock.Object, _balanceQueryRepositoryMock.Object)
             {
                 ControllerContext = new ControllerContext
                 {
