@@ -87,6 +87,11 @@ namespace FinansoData.Data
                 .Property(b => b.Created)
                 .HasDefaultValueSql("GETDATE()");
 
+            modelBuilder
+                .Entity<Settings>()
+                .Property(s => s.Updated)
+                .HasDefaultValueSql("GETDATE()");
+
 
         }
 
@@ -97,5 +102,7 @@ namespace FinansoData.Data
         public DbSet<GroupUser> GroupUsers { get; set; }
         public DbSet<BalanceTransaction> BalanceTransactions { get; set; }
         public DbSet<TransactionType> TransactionTypes { get; set; }
+
+        public DbSet<Settings> Settings { get; set; }
     }
 }
