@@ -18,75 +18,95 @@ namespace FinansoData.Repository.Currency
 
         public async Task<RepositoryResult<IEnumerable<CurrencyViewModel>>> GetAllCurrencies()
         {
-            if (!_cacheWrapper.TryGetValue("AllCurrencies", out IEnumerable<CurrencyViewModel>? currencies))
+            if (_cacheWrapper.TryGetValue("AllCurrencies", out IEnumerable<CurrencyViewModel>? cacheAllCurrencies))
             {
-                IQueryable<CurrencyViewModel> query = from currency in _context.Currencies
-                                                      select new CurrencyViewModel
-                                                      {
-                                                          Id = currency.Id,
-                                                          Name = currency.Name
-                                                      };
-
-                try
-                {
-                    currencies = await query.ToListAsync();
-                    _cacheWrapper.Set("AllCurrencies", currencies, _cacheDuration);
-                    return RepositoryResult<IEnumerable<CurrencyViewModel>>.Success(currencies);
-                }
-                catch
-                {
-                    return RepositoryResult<IEnumerable<CurrencyViewModel>>.Failure(null, ErrorType.ServerError);
-                }
+                return RepositoryResult<IEnumerable<CurrencyViewModel>>.Success(cacheAllCurrencies);
             }
+
+            IQueryable<CurrencyViewModel> query = from currency in _context.Currencies
+                                                  select new CurrencyViewModel
+                                                  {
+                                                      Id = currency.Id,
+                                                      Name = currency.Name
+                                                  };
+
+
+            IEnumerable<CurrencyViewModel>? currencies;
+            try
+            {
+                currencies = await query.ToListAsync();
+            }
+            catch
+            {
+                return RepositoryResult<IEnumerable<CurrencyViewModel>>.Failure(null, ErrorType.ServerError);
+            }
+
+            _cacheWrapper.Set("AllCurrencies", currencies, _cacheDuration);
             return RepositoryResult<IEnumerable<CurrencyViewModel>>.Success(currencies);
         }
 
         public async Task<RepositoryResult<Models.Currency?>> GetCurrencyModelById(int id)
         {
-            if (!_cacheWrapper.TryGetValue($"CurrencyModel_{id}", out Models.Currency? currency))
+            if (_cacheWrapper.TryGetValue($"CurrencyModel_{id}", out Models.Currency? cacheCurrency))
             {
-                IQueryable<Models.Currency> query = from c in _context.Currencies
-                                                    where c.Id == id
-                                                    select c;
-
-                try
-                {
-                    currency = await query.SingleOrDefaultAsync();
-                    _cacheWrapper.Set($"CurrencyModel_{id}", currency, _cacheDuration);
-                    return RepositoryResult<Models.Currency?>.Success(currency);
-                }
-                catch
-                {
-                    return RepositoryResult<Models.Currency>.Failure(null, ErrorType.ServerError);
-                }
+                return RepositoryResult<Models.Currency?>.Success(cacheCurrency);
             }
+
+            IQueryable<Models.Currency> query = from c in _context.Currencies
+                                                where c.Id == id
+                                                select c;
+
+            Models.Currency? currency;
+            try
+            {
+                currency = await query.SingleOrDefaultAsync();
+            }
+            catch
+            {
+                return RepositoryResult<Models.Currency>.Failure(null, ErrorType.ServerError);
+            }
+
+            if (currency == null)
+            {
+                return RepositoryResult<Models.Currency>.Success(null);
+            }
+
+            _cacheWrapper.Set($"CurrencyModel_{id}", currency, _cacheDuration);
             return RepositoryResult<Models.Currency?>.Success(currency);
         }
 
         public async Task<RepositoryResult<CurrencyViewModel?>> GetCurrencyById(int id)
         {
-            if (!_cacheWrapper.TryGetValue($"Currency_{id}", out CurrencyViewModel? currency))
+            if(_cacheWrapper.TryGetValue($"CurrencyViewModel_{id}", out CurrencyViewModel? cacheCurrency))
             {
-                IQueryable<CurrencyViewModel> query = from c in _context.Currencies
-                                                      where c.Id == id
-                                                      select new CurrencyViewModel
-                                                      {
-                                                          Id = c.Id,
-                                                          Name = c.Name
-                                                      };
-
-                try
-                {
-                    currency = await query.SingleOrDefaultAsync();
-                    _cacheWrapper.Set($"Currency_{id}", currency, _cacheDuration);
-                    return RepositoryResult<CurrencyViewModel>.Success(currency);
-                }
-                catch
-                {
-                    return RepositoryResult<CurrencyViewModel>.Failure(null, ErrorType.ServerError);
-                }
+                return RepositoryResult<CurrencyViewModel?>.Success(cacheCurrency);
             }
-            return RepositoryResult<CurrencyViewModel>.Success(currency);
+
+            IQueryable<CurrencyViewModel> query = from c in _context.Currencies
+                                                  where c.Id == id
+                                                  select new CurrencyViewModel
+                                                  {
+                                                      Id = c.Id,
+                                                      Name = c.Name
+                                                  };
+
+            CurrencyViewModel? currency;
+            try
+            {
+                currency = await query.SingleOrDefaultAsync();
+            }
+            catch
+            {
+                return RepositoryResult<CurrencyViewModel>.Failure(null, ErrorType.ServerError);
+            }
+
+            if (currency == null)
+            {
+                return RepositoryResult<CurrencyViewModel>.Success(null);
+            }
+
+            _cacheWrapper.Set($"CurrencyViewModel_{id}", currency, _cacheDuration);
+            return RepositoryResult<CurrencyViewModel?>.Success(currency);
         }
     }
 }
