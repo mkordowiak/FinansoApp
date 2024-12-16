@@ -14,18 +14,27 @@ namespace FinansoApp.Controllers
         private readonly ICurrencyQueryRepository _currencyRepository;
         private readonly IGroupQueryRepository _groupQueryRepository;
         private readonly IGroupUsersQueryRepository _groupUsersQueryRepository;
+        private readonly IBalanceQueryRepository _balanceQueryRepository;
 
-        public BalanceController(IBalanceManagmentRepository balanceManagmentRepository, ICurrencyQueryRepository currency, IGroupQueryRepository group, IGroupUsersQueryRepository groupUsersQueryRepository)
+        public BalanceController(IBalanceManagmentRepository balanceManagmentRepository, ICurrencyQueryRepository currency, IGroupQueryRepository group, IGroupUsersQueryRepository groupUsersQueryRepository, IBalanceQueryRepository balanceQueryRepository)
         {
             _balanceManagmentRepository = balanceManagmentRepository;
             _currencyRepository = currency;
             _groupQueryRepository = group;
             _groupUsersQueryRepository = groupUsersQueryRepository;
+            _balanceQueryRepository = balanceQueryRepository;
         }
 
-        public IActionResult Index()
+        public async Task<IActionResult> Index()
         {
-            return RedirectToAction("AddBalance", "Balance");
+            FinansoData.RepositoryResult<IEnumerable<BalanceViewModel>> repositoryResult = await _balanceQueryRepository.GetListOfBalancesForUser(User.Identity.Name);
+
+            if (!repositoryResult.IsSuccess)
+            {
+                return BadRequest();
+            }
+
+            return View(repositoryResult.Value);
         }
 
 

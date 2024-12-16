@@ -1,0 +1,64 @@
+﻿
+@using FinansoData.DataViewModel.Balance
+
+@model IEnumerable<BalanceViewModel>
+
+@{
+}
+
+
+<div class="row">
+    <div class="col-md-12">
+        <a type="button" class="btn btn-secondary mb-1" asp-action="AddBalance" asp-controller="Balance">New balance</a>
+        <h2>Balance</h2> 
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>
+                        ID
+                    </th>
+                    <th>
+                        Name
+                    </th>
+                    <th>
+                        Amount
+                    </th>
+                    <th>
+                        Currency
+                    </th>
+                    <th>
+                        Group
+                    </th>
+                    <th>
+                        Edit
+                    </th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var i in Model)
+                {
+                    <tr>
+                        <td>
+                            @i.Id
+                        </td>
+                        <td>
+                            @i.Name
+                        </td>
+                        <td>
+                            @i.Amount
+                        </td>
+                        <td>
+                            @i.Currency.Name
+                        </td>
+                        <td>
+                            @i.Group.Name
+                            </td>
+                        <td>
+                            <a type="button" class="btn btn-secondary mb-1" asp-action="Edit" asp-controller="Balance" asp-route-id="@i.Id">Edit</a>
+                            <a type="button" class="btn btn-secondary mb-1" asp-action="Delete" asp-controller="Balance" asp-route-id="@i.Id">Delete</a>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
