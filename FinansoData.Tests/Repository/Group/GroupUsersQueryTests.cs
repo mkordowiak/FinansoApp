@@ -227,7 +227,7 @@ namespace FinansoData.Tests.Repository.Group
 
                 GroupUsersQuery repository = new GroupUsersQuery(context, _cacheWrapperMock.Object);
 
-                int groupUserId = context.GroupUsers.Where(x => x.AppUserId == "4").Select(x => x.Id).FirstOrDefault();
+                int groupUserId = context.GroupUsers.Where(x => x.AppUserId == "4").Select(x => x.Id).SingleOrDefault();
 
                 // Act 
                 RepositoryResult<bool> result = await repository.IsUserInvited(groupUserId, _group3Invite.UserName);

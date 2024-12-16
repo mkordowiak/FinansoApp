@@ -110,7 +110,7 @@ namespace FinansoData.Tests.Repository.Group
                 // Assert 
                 result.IsSuccess.Should().BeTrue();
                 context.Groups.Should().HaveCount(1);
-                context.Groups.FirstOrDefault().Id.Should().Be(2);
+                context.Groups.SingleOrDefault().Id.Should().Be(2);
 
                 // Destroy in-memory database to prevent running multiple instance
                 context.Database.EnsureDeleted();

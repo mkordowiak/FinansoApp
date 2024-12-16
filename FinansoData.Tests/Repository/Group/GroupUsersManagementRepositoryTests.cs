@@ -204,7 +204,7 @@ namespace FinansoData.Tests.Repository.Group
 
                 // Assert
                 result.IsSuccess.Should().BeTrue();
-                context.GroupUsers.Where(x => x.Id == _groupInvitation.Id).FirstOrDefault().Should().BeNull();
+                context.GroupUsers.Where(x => x.Id == _groupInvitation.Id).SingleOrDefault().Should().BeNull();
 
                 // Destroy in-memory database to prevent running multiple instance
                 context.Database.EnsureDeleted();

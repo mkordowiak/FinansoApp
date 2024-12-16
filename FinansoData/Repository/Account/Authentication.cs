@@ -3,6 +3,7 @@ using FinansoData.Models;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.ChangeTracking;
+using Microsoft.Identity.Client;
 
 namespace FinansoData.Repository.Account
 {
@@ -10,20 +11,24 @@ namespace FinansoData.Repository.Account
     {
         private readonly ApplicationDbContext _context;
         private readonly UserManager<AppUser> _userManager;
+        private readonly ILookupNormalizer _lookupNormalizer;
 
 
-        public Authentication(ApplicationDbContext context, UserManager<AppUser> userManager)
+        public Authentication(ApplicationDbContext context, UserManager<AppUser> userManager, ILookupNormalizer lookupNormalizer)
         {
             _context = context;
             _userManager = userManager;
+            _lookupNormalizer = lookupNormalizer;
         }
 
         public async Task<RepositoryResult<AppUser?>> GetUserAsync(string username)
         {
+            string normalizedUsername = _lookupNormalizer.NormalizeName(username);
             AppUser user;
+
             try
             {
-                user = await _context.AppUsers.FirstOrDefaultAsync(x => x.UserName.Equals(username));
+                user = await _context.AppUsers.SingleOrDefaultAsync(x => x.NormalizedUserName.Equals(normalizedUsername));
             }
             catch
             {
@@ -35,11 +40,12 @@ namespace FinansoData.Repository.Account
 
         public async Task<RepositoryResult<AppUser?>> GetUserByEmailAsync(string email)
         {
+            string normalizedEmail = _lookupNormalizer.NormalizeEmail(email);
             AppUser user;
+
             try
             {
-                user = await _context.AppUsers.FirstOrDefaultAsync(x => x.NormalizedEmail.Equals(email));
-
+                user = await _context.AppUsers.SingleOrDefaultAsync(x => x.NormalizedEmail.Equals(normalizedEmail));
             }
             catch
             {
@@ -51,11 +57,12 @@ namespace FinansoData.Repository.Account
 
         public async Task<RepositoryResult<bool>> IsUserExistsAsync(string username)
         {
+            string normalizedUsername = _lookupNormalizer.NormalizeName(username);
             AppUser user;
 
             try
             {
-                user = await _context.AppUsers.FirstOrDefaultAsync(x => x.UserName.Equals(username));
+                user = await _context.AppUsers.SingleOrDefaultAsync(x => x.NormalizedUserName.Equals(normalizedUsername));
             }
             catch
             {
@@ -80,7 +87,7 @@ namespace FinansoData.Repository.Account
             try
             {
                 user = await _context.AppUsers
-                .FirstOrDefaultAsync(x => x.NormalizedEmail == emailNormalized);
+                .SingleOrDefaultAsync(x => x.NormalizedEmail == emailNormalized);
             }
             catch
             {
@@ -101,11 +108,15 @@ namespace FinansoData.Repository.Account
 
         public async Task<RepositoryResult<AppUser?>> LoginAsync(string Email, string Password)
         {
+            string normalizedEmail = _lookupNormalizer.NormalizeEmail(Email);
+
             // Check if user exists
             AppUser? user;
             try
             {
-                user = await _userManager.FindByEmailAsync(Email);
+                
+                //user = await _userManager.FindByEmailAsync(normalizedEmail);
+                user = await _context.AppUsers.SingleOrDefaultAsync(x => x.NormalizedUserName.Equals(normalizedEmail));
             }
             catch
             {
