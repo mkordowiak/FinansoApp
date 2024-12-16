@@ -28,6 +28,9 @@ builder.Services.AddScoped<ICurrencyQueryRepository, CurrencyQueryRepository>();
 builder.Services.AddScoped<IBalanceManagmentRepository, BalanceManagementRepository>();
 builder.Services.AddScoped<IBalanceQueryRepository, BalanceQueryRepository>();
 
+
+builder.Services.AddScoped<ICacheWrapper, CacheWrapper>();
+
 // Repository account
 builder.Services.AddScoped<IAuthentication, Authentication>();
 builder.Services.AddScoped<IUserManagement, UserManagement>();
