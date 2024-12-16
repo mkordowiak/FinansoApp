@@ -33,9 +33,9 @@ namespace FinansoData.Tests.Repository.Balance
                 context.Database.EnsureCreated();
 
                 _currencies = new List<Models.Currency>();
-                _currencies.Add(new Models.Currency { Id = 1, Name = "PLN" });
-                _currencies.Add(new Models.Currency { Id = 2, Name = "USD" });
-                _currencies.Add(new Models.Currency { Id = 3, Name = "EUR" });
+                _currencies.Add(new Models.Currency { Id = 1, Code = "PLN", Name = "Polski zloty" });
+                _currencies.Add(new Models.Currency { Id = 2, Code = "USD", Name = "Dolar amerykanski" });
+                _currencies.Add(new Models.Currency { Id = 3, Code = "EUR", Name = "Euro" });
 
                 _appUsers = new List<Models.AppUser>();
                 _appUsers.Add(new Models.AppUser{ Id = "1", UserName = "1", FirstName = "1", LastName = "1" });

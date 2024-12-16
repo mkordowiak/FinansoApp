@@ -32,9 +32,9 @@ namespace FinansoData.Tests.Repository.Balance
 
             _currencies = new List<FinansoData.Models.Currency>
             {
-                new FinansoData.Models.Currency { Id = 1, Name = "PLN" },
-                new FinansoData.Models.Currency { Id = 2, Name = "USD" },
-                new FinansoData.Models.Currency { Id = 3, Name = "EUR" }
+                new FinansoData.Models.Currency { Id = 1, Code = "PLN", Name = "Polski zloty" },
+                new FinansoData.Models.Currency { Id = 2, Code = "USD", Name = "Dolar amerykanski" },
+                new FinansoData.Models.Currency { Id = 3, Code = "EUR", Name = "Euro" }
             };
 
             _groups = new List<FinansoData.Models.Group>
