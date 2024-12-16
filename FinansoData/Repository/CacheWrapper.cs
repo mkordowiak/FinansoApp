@@ -11,6 +11,11 @@ namespace FinansoData.Repository
             _memoryCache = memoryCache;
         }
 
+        public void Remove(string key)
+        {
+            _memoryCache.Remove(key);
+        }
+
         public void Set(string key, object value, TimeSpan cacheDuration)
         {
             _memoryCache.Set(key, value, cacheDuration);

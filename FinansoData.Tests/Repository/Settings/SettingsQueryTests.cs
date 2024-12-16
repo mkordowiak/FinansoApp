@@ -21,7 +21,7 @@ namespace FinansoData.Tests.Repository.Settings
                 .Options;
 
             _cacheWrapperMock = new Mock<ICacheWrapper>();
-            
+
 
             _settings = new Models.Settings { Id = 1, Key = "TestSetting1", Value = "25", Type = "int", Description = "" };
 

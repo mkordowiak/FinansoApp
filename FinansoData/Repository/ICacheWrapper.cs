@@ -4,6 +4,7 @@ namespace FinansoData.Repository
     {
         void Set(string key, object value, TimeSpan cacheDuration);
         bool TryGetValue<T>(string key, out T value);
+        void Remove(string key);
     }
 
 }

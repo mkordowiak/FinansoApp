@@ -8,10 +8,12 @@ namespace FinansoData.Repository.Group
     public class GroupQueryRepository : IGroupQueryRepository
     {
         private readonly ApplicationDbContext _context;
+        private readonly ICacheWrapper _cacheWrapper;
 
-        public GroupQueryRepository(ApplicationDbContext context)
+        public GroupQueryRepository(ApplicationDbContext context, ICacheWrapper cacheWrapper)
         {
             _context = context;
+            _cacheWrapper = cacheWrapper;
         }
 
         public async Task<RepositoryResult<Models.Group?>> GetGroupById(int groupId)
@@ -29,6 +31,12 @@ namespace FinansoData.Repository.Group
 
         public async Task<RepositoryResult<IEnumerable<GetUserGroupsViewModel>?>> GetUserGroups(string appUser)
         {
+            var cacheKey = $"GroupQueryRepository_GetUserGroups_{appUser}";
+            if (_cacheWrapper.TryGetValue(cacheKey, out IEnumerable<GetUserGroupsViewModel>? cacheData))
+            {
+                return RepositoryResult<IEnumerable<GetUserGroupsViewModel>?>.Success(cacheData);
+            }
+
             // Query to get all groups where user is owner
             IQueryable<GetUserGroupsViewModel> ownerQuery = from g in _context.Groups
                                                             join u in _context.AppUsers on g.OwnerAppUser.Id equals u.Id into gu
@@ -64,7 +72,6 @@ namespace FinansoData.Repository.Group
             List<GetUserGroupsViewModel> data;
             try
             {
-                //data = await query.ToListAsync();
                 data = await ownerQuery.Union(memberQuery).OrderBy(x => x.Name).ToListAsync();
             }
             catch (Exception)
@@ -72,6 +79,7 @@ namespace FinansoData.Repository.Group
                 return RepositoryResult<IEnumerable<GetUserGroupsViewModel>?>.Failure(null, ErrorType.ServerError);
             }
 
+            _cacheWrapper.Set(cacheKey, data, TimeSpan.FromSeconds(5));
             return RepositoryResult<IEnumerable<GetUserGroupsViewModel>?>.Success(data);
         }
 

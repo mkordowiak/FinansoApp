@@ -6,7 +6,6 @@ using FinansoData.Repository.Group;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Moq;
-using System.Collections.Generic;
 
 namespace FinansoData.Tests.Repository.Group
 {
@@ -79,7 +78,7 @@ namespace FinansoData.Tests.Repository.Group
 
 
         [Fact]
-        public async Task GetGroupMembersAsync_ShouldReturnOwnerAndUsersWithoutIntitations()
+        public async Task GetGroupMembersAsync_ShouldReturnOwnerAndUsersWithoutInvitations()
         {
             // Arrange
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
@@ -298,7 +297,7 @@ namespace FinansoData.Tests.Repository.Group
         public async Task GetGroupInvitations_ShouldReturnInvitationsFromCache()
         {
             // Arrange
-            
+
 
             IEnumerable<GetGroupInvitationsViewModel> cachedGetGroupInvitationsVM = new List<GetGroupInvitationsViewModel>
             {
@@ -310,7 +309,7 @@ namespace FinansoData.Tests.Repository.Group
                     GroupOwnerLastName = "Cache owner last name",
                     GroupMembersNum = 33
                 }
-            }; 
+            };
 
 
             _cacheWrapperMock.Setup(x => x.TryGetValue(It.IsAny<string>(), out cachedGetGroupInvitationsVM))
