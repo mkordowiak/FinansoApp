@@ -2,6 +2,7 @@
 using FinansoData.DataViewModel.Group;
 using FinansoData.Models;
 using Microsoft.EntityFrameworkCore;
+using System.Collections.Generic;
 
 namespace FinansoData.Repository.Group
 {
@@ -18,6 +19,11 @@ namespace FinansoData.Repository.Group
 
         public async Task<RepositoryResult<IEnumerable<GetGroupInvitationsViewModel>>> GetGroupInvitations(string appUser)
         {
+            if(_cacheWrapper.TryGetValue($"GetGroupInvitations_{appUser}", out IEnumerable<GetGroupInvitationsViewModel>? cacheInvitations))
+            {
+                return RepositoryResult<IEnumerable<GetGroupInvitationsViewModel>>.Success(cacheInvitations);
+            }
+
             IQueryable<GetGroupInvitationsViewModel> query = from gu in _context.GroupUsers
                                                              join g in _context.Groups on gu.Group.Id equals g.Id
                                                              join u in _context.AppUsers on gu.AppUser.Id equals u.Id
@@ -31,17 +37,18 @@ namespace FinansoData.Repository.Group
                                                                  GroupOwnerLastName = g.OwnerAppUser.LastName,
                                                                  GroupMembersNum = g.GroupUser.Count()
                                                              };
-
+            List<GetGroupInvitationsViewModel> result;
             try
             {
-                List<GetGroupInvitationsViewModel> result = await query.ToListAsync();
-                return RepositoryResult<IEnumerable<GetGroupInvitationsViewModel>>.Success(result);
+                result = await query.ToListAsync();
             }
             catch
             {
                 return RepositoryResult<IEnumerable<GetGroupInvitationsViewModel>>.Failure(null, ErrorType.ServerError);
             }
 
+            _cacheWrapper.Set($"GetGroupInvitations_{appUser}", result, TimeSpan.FromSeconds(30));
+            return RepositoryResult<IEnumerable<GetGroupInvitationsViewModel>>.Success(result);
         }
 
         public async Task<RepositoryResult<IEnumerable<GetGroupMembersViewModel>>> GetGroupMembersAsync(int id, bool IncludeInvitations = true)

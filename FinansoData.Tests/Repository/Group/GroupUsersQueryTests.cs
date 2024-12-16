@@ -6,6 +6,7 @@ using FinansoData.Repository.Group;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Moq;
+using System.Collections.Generic;
 
 namespace FinansoData.Tests.Repository.Group
 {
@@ -258,8 +259,9 @@ namespace FinansoData.Tests.Repository.Group
             }
         }
 
+        #region GetGroupInvitations
         [Fact]
-        public async Task GetGroupInvitations_ShouldReturnInvitations()
+        public async Task GetGroupInvitations_ShouldReturnInvitationsFromDB()
         {
             // Arrange
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
@@ -273,5 +275,65 @@ namespace FinansoData.Tests.Repository.Group
                 result.Value.Should().HaveCount(1);
             }
         }
+
+        [Fact]
+        public async Task GetGroupInvitations_ShouldSaveCache()
+        {
+            // Arrange
+            using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
+            {
+                GroupUsersQuery repository = new GroupUsersQuery(context, _cacheWrapperMock.Object);
+                // Act 
+                RepositoryResult<IEnumerable<GetGroupInvitationsViewModel>> result = await repository.GetGroupInvitations(_group3Invite.NormalizedEmail);
+                context.Database.EnsureDeleted();
+                // Assert
+                result.IsSuccess.Should().BeTrue();
+                result.Value.Should().HaveCount(1);
+
+                _cacheWrapperMock.Verify(x => x.Set(It.IsAny<string>(), It.IsAny<IEnumerable<GetGroupInvitationsViewModel>>(), It.IsAny<TimeSpan>()), Times.Once);
+            }
+        }
+
+        [Fact]
+        public async Task GetGroupInvitations_ShouldReturnInvitationsFromCache()
+        {
+            // Arrange
+            
+
+            IEnumerable<GetGroupInvitationsViewModel> cachedGetGroupInvitationsVM = new List<GetGroupInvitationsViewModel>
+            {
+                new GetGroupInvitationsViewModel
+                {
+                    GroupUserId = 888,
+                    GroupName = "Cache group name",
+                    GroupOwnerFirstName = "Cache owner first name",
+                    GroupOwnerLastName = "Cache owner last name",
+                    GroupMembersNum = 33
+                }
+            }; 
+
+
+            _cacheWrapperMock.Setup(x => x.TryGetValue(It.IsAny<string>(), out cachedGetGroupInvitationsVM))
+                .Returns(true);
+
+            RepositoryResult<IEnumerable<GetGroupInvitationsViewModel>> result;
+
+            using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
+            {
+                GroupUsersQuery repository = new GroupUsersQuery(context, _cacheWrapperMock.Object);
+                // Act 
+                result = await repository.GetGroupInvitations(_group3Invite.NormalizedEmail);
+                context.Database.EnsureDeleted();
+            }
+
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            result.Value.Should().HaveCount(1);
+
+            result.Value.Should().BeEquivalentTo(cachedGetGroupInvitationsVM);
+        }
+
+        #endregion
     }
 }

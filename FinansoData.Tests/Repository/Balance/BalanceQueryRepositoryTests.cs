@@ -1,9 +1,11 @@
 ﻿using FinansoData.Data;
 using FinansoData.DataViewModel.Balance;
 using FinansoData.Models;
+using FinansoData.Repository;
 using FinansoData.Repository.Balance;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+using Moq;
 
 namespace FinansoData.Tests.Repository.Balance
 {
@@ -15,10 +17,12 @@ namespace FinansoData.Tests.Repository.Balance
         private readonly List<FinansoData.Models.Group> _groups;
         private readonly List<FinansoData.Models.Currency> _currencies;
         private readonly List<FinansoData.Models.GroupUser> _groupUsers;
+        private readonly Mock<ICacheWrapper> _cacheWrapper;
 
 
         public BalanceQueryRepositoryTests()
         {
+            _cacheWrapper = new Mock<ICacheWrapper>();
             _dbContextOptions = new DbContextOptionsBuilder<ApplicationDbContext>()
                 .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
                 .Options;
@@ -79,25 +83,56 @@ namespace FinansoData.Tests.Repository.Balance
 
 
         [Fact]
-        public async Task GetListOfBalancesForUser_WhenUserExists_ReturnsListOfBalances()
+        public async Task GetListOfBalancesForUser_WhenUserExists_ReturnsListOfBalancesFromDB()
         {
             // Arrange
             RepositoryResult<IEnumerable<BalanceViewModel>> result;
 
+            _cacheWrapper.Setup(x => x.TryGetValue(It.IsAny<string>(), out It.Ref<List<BalanceViewModel>>.IsAny))
+                .Returns(false);
+
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
-                IBalanceQueryRepository balanceQueryRepository = new BalanceQueryRepository(context);
+                IBalanceQueryRepository balanceQueryRepository = new BalanceQueryRepository(context, _cacheWrapper.Object);
+                
+                // Act
                 result = await balanceQueryRepository.GetListOfBalancesForUser("1");
-            }
 
-            // Act
-            //var result = await balanceQueryRepository.GetListOfBalancesForUser(userName);
+                context.Database.EnsureDeleted();
+            }
 
             // Assert
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
             result.Value.Should().NotBeNull();
         }
+
+        [Fact]
+        public async Task GetListOfBalancesForUser_WhenUserExists_ReturnsListOfBalancesFromCache()
+        {
+            // Arrange
+            RepositoryResult<IEnumerable<BalanceViewModel>> result;
+
+            _cacheWrapper.Setup(x => x.TryGetValue(It.IsAny<string>(), out It.Ref<List<BalanceViewModel>>.IsAny))
+                .Returns(false);
+
+            using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
+            {
+                IBalanceQueryRepository balanceQueryRepository = new BalanceQueryRepository(context, _cacheWrapper.Object);
+
+                // Act
+                result = await balanceQueryRepository.GetListOfBalancesForUser("1");
+
+                context.Database.EnsureDeleted();
+            }
+
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Value.Should().NotBeNull();
+        }
+
 
         [Fact]
         public async Task GetListOfBalancesForUser_WhenUserDoesNotExist_ReturnsNull()
@@ -108,9 +143,12 @@ namespace FinansoData.Tests.Repository.Balance
 
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
-                IBalanceQueryRepository balanceQueryRepository = new BalanceQueryRepository(context);
+                IBalanceQueryRepository balanceQueryRepository = new BalanceQueryRepository(context, _cacheWrapper.Object);
 
+                // Act
                 result = await balanceQueryRepository.GetListOfBalancesForUser(userName);
+
+                context.Database.EnsureDeleted();
 
             }
 
@@ -128,17 +166,23 @@ namespace FinansoData.Tests.Repository.Balance
 
 
         [Fact]
-        public async Task GetListOfBalancesForGroup_WhenGroupExists_ReturnsListOfBalances()
+        public async Task GetListOfBalancesForGroup_WhenGroupExists_ReturnsListOfBalancesFromDB()
         {
             // Arrange
             int groupId = 1;
             RepositoryResult<IEnumerable<BalanceViewModel>> result;
 
+            _cacheWrapper.Setup(x => x.TryGetValue(It.IsAny<string>(), out It.Ref<List<BalanceViewModel>>.IsAny))
+                .Returns(false);
+
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
-                IBalanceQueryRepository balanceQueryRepository = new BalanceQueryRepository(context);
+                IBalanceQueryRepository balanceQueryRepository = new BalanceQueryRepository(context, _cacheWrapper.Object);
 
+                // Act
                 result = await balanceQueryRepository.GetListOfBalancesForGroup(groupId);
+
+                context.Database.EnsureDeleted();
             }
 
             // Assert
@@ -155,6 +199,70 @@ namespace FinansoData.Tests.Repository.Balance
             result.Value.First().Group.Name.Should().Be(expectedBalance.Group.Name);
         }
 
+        [Fact]
+        public async Task GetListOfBalancesForGroup_WhenGroupExists_ReturnsListOfBalancesFromCache()
+        {
+            // Arrange
+            int groupId = 1;
+            RepositoryResult<IEnumerable<BalanceViewModel>> result;
+
+
+            List<BalanceViewModel> cachedBalances = new List<BalanceViewModel>
+            {
+                new BalanceViewModel { Id = 999, Name = "Bank 1", Amount = 1, Currency = _currencies[0], Group = _groups[0] }
+            };
+            _cacheWrapper.Setup(x => x.TryGetValue(It.IsAny<string>(), out cachedBalances))
+                .Returns(true);
+
+            using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
+            {
+                IBalanceQueryRepository balanceQueryRepository = new BalanceQueryRepository(context, _cacheWrapper.Object);
+
+                // Act
+                result = await balanceQueryRepository.GetListOfBalancesForGroup(groupId);
+
+                context.Database.EnsureDeleted();
+            }
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Value.Should().NotBeNull();
+
+            //result.Value[0].Should().BeEquivalentTo(cachedBalances);
+            List<BalanceViewModel> resultBalanceList = result.Value.ToList();
+            List<BalanceViewModel> cachedBalanceList = cachedBalances.ToList();
+
+            resultBalanceList.Should().BeEquivalentTo(cachedBalanceList);
+        }
+
+
+        [Fact]
+        public async Task GetListOfBalancesForGroup_WhenGroupExists_ShoudSaveCache()
+        {
+            // Arrange
+            int groupId = 1;
+            RepositoryResult<IEnumerable<BalanceViewModel>> result;
+
+            _cacheWrapper.Setup(x => x.TryGetValue(It.IsAny<string>(), out It.Ref<List<BalanceViewModel>>.IsAny))
+                .Returns(false);
+
+            using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
+            {
+                IBalanceQueryRepository balanceQueryRepository = new BalanceQueryRepository(context, _cacheWrapper.Object);
+
+                // Act
+                result = await balanceQueryRepository.GetListOfBalancesForGroup(groupId);
+
+                context.Database.EnsureDeleted();
+            }
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+
+            _cacheWrapper.Verify(x => x.Set(It.IsAny<string>(), It.IsAny<List<BalanceViewModel>>(), It.IsAny<TimeSpan>()), Times.Once);
+        }
 
         #endregion
 
