@@ -290,9 +290,9 @@ namespace FinansoData.Tests.Repository.Account
 
                 // Assert
                 result.IsSuccess.Should().BeTrue();
-                context.AppUsers.FirstOrDefault(x => x.Id == updateAppUser.Id).Should().NotBeNull();
-                context.AppUsers.FirstOrDefault(x => x.Id == updateAppUser.Id).FirstName.Should().Be(NewFirstName);
-                context.AppUsers.FirstOrDefault(x => x.Id == updateAppUser.Id).LastName.Should().Be(NewLastName);
+                context.AppUsers.SingleOrDefault(x => x.Id == updateAppUser.Id).Should().NotBeNull();
+                context.AppUsers.SingleOrDefault(x => x.Id == updateAppUser.Id).FirstName.Should().Be(NewFirstName);
+                context.AppUsers.SingleOrDefault(x => x.Id == updateAppUser.Id).LastName.Should().Be(NewLastName);
 
                 // DESTROY IN MEMORY DATABASE - prevent to run multiple instances of database
                 context.Database.EnsureDeleted();
