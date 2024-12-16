@@ -1,7 +1,9 @@
 ﻿using FinansoData.Data;
+using FinansoData.Repository;
 using FinansoData.Repository.Currency;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+using Moq;
 
 namespace FinansoData.Tests.Repository.Currency
 {
@@ -9,13 +11,22 @@ namespace FinansoData.Tests.Repository.Currency
     public class CurrencyQueryRepositoryTests
     {
         private readonly DbContextOptions<ApplicationDbContext> _dbContextOptions;
+        private readonly Mock<ICacheWrapper> _cacheWrapperMock;
         private List<FinansoData.Models.Currency> _currencies;
+
 
         public CurrencyQueryRepositoryTests()
         {
             _dbContextOptions = new DbContextOptionsBuilder<ApplicationDbContext>()
                 .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
                 .Options;
+
+
+            _cacheWrapperMock = new Mock<ICacheWrapper>();
+            _cacheWrapperMock.Setup(x => x.TryGetValue(It.IsAny<string>(), out It.Ref<object>.IsAny))
+                .Returns(false);
+
+            _cacheWrapperMock.Setup(x => x.Set(It.IsAny<string>(), It.IsAny<object>(), It.IsAny<TimeSpan>()));
 
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
@@ -41,7 +52,9 @@ namespace FinansoData.Tests.Repository.Currency
             // Arrange
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
-                ICurrencyQueryRepository currencyQueryRepository = new CurrencyQueryRepository(context);
+                Mock<ICacheWrapper> cacheWrapperMock = new Mock<ICacheWrapper>();
+
+                CurrencyQueryRepository currencyQueryRepository = new CurrencyQueryRepository(context, _cacheWrapperMock.Object);
                 FinansoData.Models.Currency expectedCurrency = _currencies.First();
 
                 // Act
@@ -63,7 +76,7 @@ namespace FinansoData.Tests.Repository.Currency
             // Arrange
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
-                ICurrencyQueryRepository currencyQueryRepository = new CurrencyQueryRepository(context);
+                ICurrencyQueryRepository currencyQueryRepository = new CurrencyQueryRepository(context, _cacheWrapperMock.Object);
                 int wrongId = 999;
 
                 // Act
@@ -88,7 +101,7 @@ namespace FinansoData.Tests.Repository.Currency
             // Arrange
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
-                ICurrencyQueryRepository currencyQueryRepository = new CurrencyQueryRepository(context);
+                ICurrencyQueryRepository currencyQueryRepository = new CurrencyQueryRepository(context, _cacheWrapperMock.Object);
                 FinansoData.Models.Currency expectedCurrency = _currencies.First();
 
                 // Act
@@ -110,7 +123,7 @@ namespace FinansoData.Tests.Repository.Currency
             // Arrange
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
-                ICurrencyQueryRepository currencyQueryRepository = new CurrencyQueryRepository(context);
+                ICurrencyQueryRepository currencyQueryRepository = new CurrencyQueryRepository(context, _cacheWrapperMock.Object);
                 int wrongId = 999;
 
                 // Act
@@ -135,7 +148,7 @@ namespace FinansoData.Tests.Repository.Currency
             // Arrange
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
-                ICurrencyQueryRepository currencyQueryRepository = new CurrencyQueryRepository(context);
+                ICurrencyQueryRepository currencyQueryRepository = new CurrencyQueryRepository(context, _cacheWrapperMock.Object);
 
                 // Act
                 RepositoryResult<IEnumerable<DataViewModel.Currency.CurrencyViewModel>> result = await currencyQueryRepository.GetAllCurrencies();
