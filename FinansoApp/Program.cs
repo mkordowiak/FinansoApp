@@ -11,6 +11,7 @@ using FinansoData.Repository.Account;
 using FinansoData.Repository.Group;
 using FinansoData.Repository.Currency;
 using FinansoData.Repository.Balance;
+using FinansoData.Repository.Settings;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -30,6 +31,7 @@ builder.Services.AddScoped<IBalanceQueryRepository, BalanceQueryRepository>();
 
 
 builder.Services.AddScoped<ICacheWrapper, CacheWrapper>();
+builder.Services.AddScoped<ISettingsQuery, SettingsQuery>();
 
 // Repository account
 builder.Services.AddScoped<IAuthentication, Authentication>();
