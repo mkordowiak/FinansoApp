@@ -47,7 +47,7 @@ namespace FinansoData.Tests.Repository.Settings
 
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
-                SettingsQuery settingsQueryRepository = new SettingsQuery(context, _cacheWrapperMock.Object);
+                SettingsQueryRepository settingsQueryRepository = new SettingsQueryRepository(context, _cacheWrapperMock.Object);
 
                 // Act
                 int result = await settingsQueryRepository.GetSettingsAsync<int>(_settings.Key);
@@ -73,7 +73,7 @@ namespace FinansoData.Tests.Repository.Settings
 
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
-                SettingsQuery settingsQueryRepository = new SettingsQuery(context, _cacheWrapperMock.Object);
+                SettingsQueryRepository settingsQueryRepository = new SettingsQueryRepository(context, _cacheWrapperMock.Object);
 
                 // Act
                 int result = await settingsQueryRepository.GetSettingsAsync<int>(_settings.Key);
@@ -97,7 +97,7 @@ namespace FinansoData.Tests.Repository.Settings
 
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
-                SettingsQuery settingsQueryRepository = new SettingsQuery(context, _cacheWrapperMock.Object);
+                SettingsQueryRepository settingsQueryRepository = new SettingsQueryRepository(context, _cacheWrapperMock.Object);
 
                 // Act
                 int result = await settingsQueryRepository.GetSettingsAsync<int>(_settings.Key);
