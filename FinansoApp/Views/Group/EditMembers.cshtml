@@ -35,7 +35,16 @@ else
                         <a class="btn btn-outline-secondary" asp-controller="Group" asp-action="DeleteGroupUser" asp-route-id="@i.GroupUserId">Remove</a>
                     </div>
                 }
-
+                <div class="col">
+                    @if (i.InvitationAccepted == true)
+                    {
+                        <div> </div>
+                    }
+                    else
+                    {
+                        <div>Not yet accepted</div>
+                    }
+                </div>
             </div>
 
         }

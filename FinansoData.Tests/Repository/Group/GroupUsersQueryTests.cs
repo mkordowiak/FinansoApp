@@ -1,15 +1,18 @@
 ﻿using FinansoData.Data;
 using FinansoData.DataViewModel.Group;
 using FinansoData.Models;
+using FinansoData.Repository;
 using FinansoData.Repository.Group;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+using Moq;
 
 namespace FinansoData.Tests.Repository.Group
 {
     public class GroupUsersQueryTests
     {
         private readonly DbContextOptions<ApplicationDbContext> _dbContextOptions;
+        private readonly Mock<ICacheWrapper> _cacheWrapperMock;
         private AppUser _group1Owner;
         private AppUser _group1Member;
         private AppUser _group2Member;
@@ -18,8 +21,10 @@ namespace FinansoData.Tests.Repository.Group
         private Models.Group _group2;
         private Models.Group _group3;
 
+
         public GroupUsersQueryTests()
         {
+            _cacheWrapperMock = new Mock<ICacheWrapper>();
             _dbContextOptions = new DbContextOptionsBuilder<ApplicationDbContext>()
                 .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
                 .Options;
@@ -73,15 +78,15 @@ namespace FinansoData.Tests.Repository.Group
 
 
         [Fact]
-        public async Task GetGroupMembersAsync_ShouldReturnOwnerAndUser()
+        public async Task GetGroupMembersAsync_ShouldReturnOwnerAndUsersWithoutIntitations()
         {
             // Arrange
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
-                GroupUsersQuery repository = new GroupUsersQuery(context);
+                GroupUsersQuery repository = new GroupUsersQuery(context, _cacheWrapperMock.Object);
 
                 // Act 
-                RepositoryResult<IEnumerable<GetGroupMembersViewModel>> result = await repository.GetGroupMembersAsync(_group1.Id);
+                RepositoryResult<IEnumerable<GetGroupMembersViewModel>> result = await repository.GetGroupMembersAsync(_group1.Id, false);
                 context.Database.EnsureDeleted();
 
                 // Assert
@@ -94,13 +99,37 @@ namespace FinansoData.Tests.Repository.Group
         }
 
         [Fact]
+        public async Task GetGroupMembersAsync_ShouldReturnOwnerAndUserWithInvitations()
+        {
+            // Arrange
+            using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
+            {
+                GroupUsersQuery repository = new GroupUsersQuery(context, _cacheWrapperMock.Object);
+
+                // Act 
+                RepositoryResult<IEnumerable<GetGroupMembersViewModel>> result = await repository.GetGroupMembersAsync(_group1.Id, true);
+                context.Database.EnsureDeleted();
+
+                // Assert
+                result.IsSuccess.Should().BeTrue();
+                result.Value.Should().HaveCount(3);
+
+                result.Value.Should().Contain(x => x.FirstName == _group1Owner.FirstName && x.LastName == _group1Owner.LastName && x.IsOwner == true);
+                result.Value.Should().Contain(x => x.FirstName == _group1Member.FirstName && x.LastName == _group1Member.LastName && x.IsOwner == false);
+                result.Value.Should().Contain(x => x.FirstName == _group3Invite.FirstName && x.LastName == _group3Invite.LastName && x.IsOwner == false && x.InvitationAccepted == false);
+            }
+        }
+
+
+
+        [Fact]
         public async Task GroupUsersQuery_GetGroupMembersAsync_ShouldReturnOnlyOwner()
         {
             // Arrange
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
 
-                GroupUsersQuery repository = new GroupUsersQuery(context);
+                GroupUsersQuery repository = new GroupUsersQuery(context, _cacheWrapperMock.Object);
 
                 // Act 
                 RepositoryResult<IEnumerable<GetGroupMembersViewModel>> result = await repository.GetGroupMembersAsync(_group3.Id);
@@ -119,7 +148,7 @@ namespace FinansoData.Tests.Repository.Group
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
 
-                GroupUsersQuery repository = new GroupUsersQuery(context);
+                GroupUsersQuery repository = new GroupUsersQuery(context, _cacheWrapperMock.Object);
 
                 // Act 
                 RepositoryResult<bool> result = await repository.IsUserGroupOwner(_group1.Id, _group1Owner.UserName);
@@ -139,7 +168,7 @@ namespace FinansoData.Tests.Repository.Group
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
 
-                GroupUsersQuery repository = new GroupUsersQuery(context);
+                GroupUsersQuery repository = new GroupUsersQuery(context, _cacheWrapperMock.Object);
 
                 // Act 
                 RepositoryResult<bool> result = await repository.IsUserGroupOwner(_group1.Id, _group1Member.UserName);
@@ -158,7 +187,7 @@ namespace FinansoData.Tests.Repository.Group
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
 
-                GroupUsersQuery repository = new GroupUsersQuery(context);
+                GroupUsersQuery repository = new GroupUsersQuery(context, _cacheWrapperMock.Object);
 
                 // Act 
                 RepositoryResult<int> result = await repository.GetInvitationCountForGroup(_group3Invite.UserName);
@@ -177,7 +206,7 @@ namespace FinansoData.Tests.Repository.Group
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
 
-                GroupUsersQuery repository = new GroupUsersQuery(context);
+                GroupUsersQuery repository = new GroupUsersQuery(context, _cacheWrapperMock.Object);
 
                 // Act 
                 RepositoryResult<int> result = await repository.GetInvitationCountForGroup(_group2Member.UserName);
@@ -196,7 +225,7 @@ namespace FinansoData.Tests.Repository.Group
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
 
-                GroupUsersQuery repository = new GroupUsersQuery(context);
+                GroupUsersQuery repository = new GroupUsersQuery(context, _cacheWrapperMock.Object);
 
                 int groupUserId = context.GroupUsers.Where(x => x.AppUserId == "4").Select(x => x.Id).FirstOrDefault();
 
@@ -217,7 +246,7 @@ namespace FinansoData.Tests.Repository.Group
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
 
-                GroupUsersQuery repository = new GroupUsersQuery(context);
+                GroupUsersQuery repository = new GroupUsersQuery(context, _cacheWrapperMock.Object);
 
                 // Act 
                 RepositoryResult<bool> result = await repository.IsUserInvited(100, _group3Invite.UserName);
@@ -226,6 +255,22 @@ namespace FinansoData.Tests.Repository.Group
                 // Assert
                 result.IsSuccess.Should().BeTrue();
                 result.Value.Should().BeFalse();
+            }
+        }
+
+        [Fact]
+        public async Task GetGroupInvitations_ShouldReturnInvitations()
+        {
+            // Arrange
+            using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
+            {
+                GroupUsersQuery repository = new GroupUsersQuery(context, _cacheWrapperMock.Object);
+                // Act 
+                RepositoryResult<IEnumerable<GetGroupInvitationsViewModel>> result = await repository.GetGroupInvitations(_group3Invite.NormalizedEmail);
+                context.Database.EnsureDeleted();
+                // Assert
+                result.IsSuccess.Should().BeTrue();
+                result.Value.Should().HaveCount(1);
             }
         }
     }

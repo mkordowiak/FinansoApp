@@ -5,6 +5,7 @@ using FinansoData.DataViewModel.Group;
 using FinansoData.Models;
 using FinansoData.Repository.Account;
 using FinansoData.Repository.Group;
+using FinansoData.Repository.Settings;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -18,6 +19,7 @@ namespace FinansoApp.Controllers
         private readonly IGroupUsersQueryRepository _groupUsersQuery;
         private readonly IGroupUsersManagementRepository _groupUsersManagementRepository;
         private readonly IUserQuery _userQuery;
+        private readonly ISettingsQueryRepository _settingsQueryRepository;
 
         public GroupController(
             IMapper mapper,
@@ -25,7 +27,8 @@ namespace FinansoApp.Controllers
             IGroupManagementRepository groupManagementRepository,
             IGroupUsersQueryRepository groupUsersQuery,
             IGroupUsersManagementRepository groupUsersManagementRepository,
-            IUserQuery userQuery)
+            IUserQuery userQuery,
+            ISettingsQueryRepository settingsQueryRepository)
         {
             _mapper = mapper;
             _groupQueryRepository = groupQueryRepository;
@@ -33,6 +36,7 @@ namespace FinansoApp.Controllers
             _groupUsersQuery = groupUsersQuery;
             _groupUsersManagementRepository = groupUsersManagementRepository;
             _userQuery = userQuery;
+            _settingsQueryRepository = settingsQueryRepository;
         }
 
         /// <summary>
@@ -121,6 +125,13 @@ namespace FinansoApp.Controllers
 
             // get data
             FinansoData.RepositoryResult<IEnumerable<GetGroupMembersViewModel>> data = await _groupUsersQuery.GetGroupMembersAsync(id);
+
+            if(data.IsSuccess == false)
+            {
+                return BadRequest();
+            }
+
+
             List<GroupMembersViewModel> members = _mapper.Map<List<GroupMembersViewModel>>(data.Value);
 
             ListMembersViewModel listMembersViewModel = new ListMembersViewModel
@@ -359,6 +370,26 @@ namespace FinansoApp.Controllers
                 });
             }
 
+
+
+            // Check if group user count is not exceeded
+            FinansoData.RepositoryResult<int> groupUserCount = await _groupUsersQuery.GetGroupUsersCount(model.GroupId);
+            int maxGroupUsers = await _settingsQueryRepository.GetSettingsAsync<int>("MaxGroupUsersLimit");
+
+            if (groupUserCount.Value >= maxGroupUsers)
+            {
+                return View("AddGroupUser", new AddGroupUserViemModel
+                {
+                    GroupId = model.GroupId,
+                    UserName = model.UserName,
+                    Error = new AddGroupUserViemModel.AddGroupUserErrorInfo { MaxGroupUsersLimitReached = true }
+                });
+            }
+
+
+
+
+
             // Get user by email
             FinansoData.RepositoryResult<AppUser?> getUserByEmailResult = await _userQuery.GetUserByEmail(model.UserName);
 
@@ -450,7 +481,7 @@ namespace FinansoApp.Controllers
                 return BadRequest();
             }
 
-            if(isUserInvited.Value == false)
+            if (isUserInvited.Value == false)
             {
                 return Unauthorized();
             }

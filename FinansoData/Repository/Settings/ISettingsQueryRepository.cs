@@ -1,6 +1,6 @@
 ﻿namespace FinansoData.Repository.Settings
 {
-    public interface ISettingsQuery
+    public interface ISettingsQueryRepository
     {
         Task<T> GetSettingsAsync<T>(string key);
     }

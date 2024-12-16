@@ -8,8 +8,9 @@ namespace FinansoData.Repository.Group
         /// Get all group members
         /// </summary>
         /// <param name="id"></param>
+        /// <param name="IncludeInvitations"></param>
         /// <returns></returns>
-        Task<RepositoryResult<IEnumerable<GetGroupMembersViewModel>>> GetGroupMembersAsync(int id);
+        Task<RepositoryResult<IEnumerable<GetGroupMembersViewModel>>> GetGroupMembersAsync(int id, bool IncludeInvitations = true);
 
         /// <summary>
         /// Get user info for delete page
@@ -58,5 +59,13 @@ namespace FinansoData.Repository.Group
         /// <param name="appUser"></param>
         /// <returns></returns>
         Task<RepositoryResult<bool>> IsUserInvited(int groupUserId, string appUser);
+
+        /// <summary>
+        /// Get group users count
+        /// </summary>
+        /// <param name="groupId"></param>
+        /// <param name="includingGroupOwner">Includes group owner to count</param>
+        /// <returns></returns>
+        Task<RepositoryResult<int>> GetGroupUsersCount(int groupId, bool includingGroupOwner = true);
     }
 }

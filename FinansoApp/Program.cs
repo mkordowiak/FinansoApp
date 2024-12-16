@@ -31,7 +31,7 @@ builder.Services.AddScoped<IBalanceQueryRepository, BalanceQueryRepository>();
 
 
 builder.Services.AddScoped<ICacheWrapper, CacheWrapper>();
-builder.Services.AddScoped<ISettingsQuery, SettingsQuery>();
+builder.Services.AddScoped<ISettingsQueryRepository, SettingsQueryRepository>();
 
 // Repository account
 builder.Services.AddScoped<IAuthentication, Authentication>();

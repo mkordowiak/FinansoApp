@@ -3,13 +3,13 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FinansoData.Repository.Settings
 {
-    public class SettingsQuery : ISettingsQuery
+    public class SettingsQueryRepository : ISettingsQueryRepository
     {
         private readonly ApplicationDbContext _context;
         private readonly ICacheWrapper _cacheWrapper;
         private readonly TimeSpan _cacheDuration = TimeSpan.FromMinutes(120);
 
-        public SettingsQuery(ApplicationDbContext applicationDbContext, ICacheWrapper cacheWrapper)
+        public SettingsQueryRepository(ApplicationDbContext applicationDbContext, ICacheWrapper cacheWrapper)
         {
             _context = applicationDbContext;
             _cacheWrapper = cacheWrapper;
