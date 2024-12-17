@@ -20,92 +20,220 @@ namespace FinansoData.Data
 
         /// <summary>
         /// Static method to run ONLY when project is initialized
+        /// Seed user roles
         /// </summary>
         /// <param name="applicationBuilder"></param>
-        /// <param name="defaultPassword"></param>
-        /// <returns></returns>
-        /// <exception cref="InvalidOperationException"></exception>
-        public static async Task SeedUsers(IApplicationBuilder applicationBuilder, string defaultPassword)
+        public static void SeedRoles(IApplicationBuilder applicationBuilder)
         {
-            using (var serviceScope = applicationBuilder.ApplicationServices.CreateScope())
+            using (IServiceScope serviceScope = applicationBuilder.ApplicationServices.CreateScope())
             {
-                var roleManager = serviceScope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
+                RoleManager<IdentityRole> roleManager = serviceScope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole>>();
 
-                // Create roles if they dont exists
-                if (!await roleManager.RoleExistsAsync(UserRoles.Admin))
-                    await roleManager.CreateAsync(new IdentityRole(UserRoles.Admin));
-                if (!await roleManager.RoleExistsAsync(UserRoles.User))
-                    await roleManager.CreateAsync(new IdentityRole(UserRoles.User));
+                bool adminRoleExists;
+                bool userRoleExists;
 
-                // Create users
-                var userManager = serviceScope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
-                string adminUserEmail = "admin1@gmail.com";
-
-
-                var adminUser = await userManager.FindByEmailAsync(adminUserEmail);
-                if (adminUser == null)
+                Task.Run(async () =>
                 {
-                    var newAdminUser = new AppUser()
+                    adminRoleExists = await roleManager.RoleExistsAsync(UserRoles.Admin);
+                    userRoleExists = await roleManager.RoleExistsAsync(UserRoles.User);
+
+                    if (!adminRoleExists)
                     {
-                        UserName = "admin1",
-                        Email = adminUserEmail,
-                        EmailConfirmed = true,
-                        CreatedAt = DateTime.Now
-
-                    };
-
-                    var adminUserCreation = await userManager.CreateAsync(newAdminUser, defaultPassword);
-
-                    if (adminUserCreation.Succeeded == false)
-                    {
-                        throw new InvalidOperationException(adminUserCreation.Errors.ToString());
+                        IdentityResult identityAdmin = await roleManager.CreateAsync(new IdentityRole(UserRoles.Admin));
                     }
 
-                    var adminUserRoleAssign = await userManager.AddToRoleAsync(newAdminUser, UserRoles.Admin);
-
-                    if (adminUserRoleAssign.Succeeded == false)
+                    if (!userRoleExists)
                     {
-                        throw new InvalidOperationException(adminUserRoleAssign.Errors.ToString());
+                        IdentityResult identityUser = await roleManager.CreateAsync(new IdentityRole(UserRoles.User));
                     }
-                }
+                }).Wait();
+            }
+        }
 
-                string appUserEmail = "user@user1.pl";
 
-                var appUser = await userManager.FindByEmailAsync(appUserEmail);
-                if (appUser == null)
+        /// <summary>
+        /// Static method to run ONLY when project is initialized
+        /// Seed currencies
+        /// </summary>
+        /// <param name="applicationBuilder"></param>
+        public static void SeedCurrencies(IApplicationBuilder applicationBuilder)
+        {
+            using (IServiceScope serviceScope = applicationBuilder.ApplicationServices.CreateScope())
+            {
+                ApplicationDbContext context = serviceScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                context.Database.EnsureCreated();
+                if (!context.Currencies.Any())
                 {
-                    var newRegularUser = new AppUser()
-                    {
-                        UserName = "user1",
-                        Email = appUserEmail,
-                        EmailConfirmed = true,
-                        FirstName = "user",
-                        CreatedAt = DateTime.Now
-
-                    };
-                    var regularUserCreation = await userManager.CreateAsync(newRegularUser, defaultPassword);
-                    if (regularUserCreation.Succeeded == false)
-                    {
-                        throw new InvalidOperationException(regularUserCreation.Errors.ToString());
-                    }
-                    var regularUserRoleCreation = await userManager.AddToRoleAsync(newRegularUser, UserRoles.User);
-                    if (regularUserRoleCreation.Succeeded == false)
-                    {
-                        throw new InvalidOperationException(regularUserRoleCreation.Errors.ToString());
-                    }
+                    context.Currencies.AddRange(
+                        new Currency { Code = "PLN", Name = "Polski złoty", ExchangeRate = 1, UpdatedAt = DateTime.Now },
+                        new Currency { Code = "EUR", Name = "Euro", ExchangeRate = 4.5, UpdatedAt = DateTime.Now },
+                        new Currency { Code = "USD", Name = "Dolar amerykański", ExchangeRate = 4.2, UpdatedAt = DateTime.Now },
+                        new Currency { Code = "GBP", Name = "Funt brytyjski", ExchangeRate = 4.8, UpdatedAt = DateTime.Now },
+                        new Currency { Code = "CHF", Name = "Frank szwajcarski", ExchangeRate = 4.1, UpdatedAt = DateTime.Now },
+                        new Currency { Code = "JPY", Name = "Jen japoński", ExchangeRate = 3.9, UpdatedAt = DateTime.Now },
+                        new Currency { Code = "CZK", Name = "Korona czeska", ExchangeRate = 3.7, UpdatedAt = DateTime.Now },
+                        new Currency { Code = "SEK", Name = "Korona szwedzka", ExchangeRate = 3.6, UpdatedAt = DateTime.Now },
+                        new Currency { Code = "NOK", Name = "Korona norweska", ExchangeRate = 3.5, UpdatedAt = DateTime.Now },
+                        new Currency { Code = "DKK", Name = "Korona duńska", ExchangeRate = 3.4, UpdatedAt = DateTime.Now },
+                        new Currency { Code = "CAD", Name = "Dolar kanadyjski", ExchangeRate = 3.3, UpdatedAt = DateTime.Now },
+                        new Currency { Code = "AUD", Name = "Dolar australijski", ExchangeRate = 3.2, UpdatedAt = DateTime.Now },
+                        new Currency { Code = "NZD", Name = "Dolar nowozelandzki", ExchangeRate = 3.1, UpdatedAt = DateTime.Now }
+                    );
+                    context.SaveChanges();
                 }
             }
         }
 
-        public async Task<bool> SeedCurrencies()
+        /// <summary>
+        /// Static method to run ONLY when project is initialized
+        /// Seed transaction types
+        /// </summary>
+        /// <param name="applicationBuilder"></param>
+        public static void SeedTransactionTypes(IApplicationBuilder applicationBuilder)
         {
-            //_currencyRepository.Add(new Currency { Name = "PLN", ExchangeRate = 1, UpdatedAt = DateTime.Now });
-            //_currencyRepository.Add(new Currency { Name = "EUR", ExchangeRate = 4.5, UpdatedAt = DateTime.Now });
-            //_currencyRepository.Add(new Currency { Name = "USD", ExchangeRate = 4.2, UpdatedAt = DateTime.Now });
+            using (IServiceScope serviceScope = applicationBuilder.ApplicationServices.CreateScope())
+            {
+                ApplicationDbContext context = serviceScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                context.Database.EnsureCreated();
+                if (!context.TransactionTypes.Any())
+                {
+                    context.TransactionTypes.AddRange(
+                        new TransactionType { Name = "Income" },
+                        new TransactionType { Name = "Expense" }
+                    );
+                    context.SaveChanges();
+                }
+            }
+        }
 
-            //_currencyRepository.Save();
+        /// <summary>
+        /// Static method to run ONLY when project is initialized
+        /// Seed transaction statuses
+        /// </summary>
+        /// <param name="applicationBuilder"></param>
+        public static void SeedTransactionStatuses(IApplicationBuilder applicationBuilder)
+        {
+            using (IServiceScope serviceScope = applicationBuilder.ApplicationServices.CreateScope())
+            {
+                ApplicationDbContext context = serviceScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                context.Database.EnsureCreated();
+                if (!context.TransactionStatuses.Any())
+                {
+                    context.TransactionStatuses.AddRange(
+                        new TransactionStatus { Name = "Planded" },
+                        new TransactionStatus { Name = "Completed" },
+                        new TransactionStatus { Name = "Canceled" }
+                    );
+                    context.SaveChanges();
+                }
+            }
+        }
 
-            return true;
+        /// <summary>
+        /// Static method to run ONLY when project is initialized
+        /// Seed settings
+        /// </summary>
+        /// <param name="applicationBuilder"></param>
+        public static void SeedSettings(IApplicationBuilder applicationBuilder)
+        {
+            using (IServiceScope serviceScope = applicationBuilder.ApplicationServices.CreateScope())
+            {
+                ApplicationDbContext context = serviceScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                context.Database.EnsureCreated();
+                if (!context.Settings.Any())
+                {
+                    context.Settings.AddRange(
+                        new Settings { Key = "MaxGroupUsersLimit", Value = "10", Type = "int", Description = "Limit of group users" }
+                    );
+                    context.SaveChanges();
+                }
+            }
+        }
+
+        /// <summary>
+        /// Static method to run ONLY when project is initialized
+        /// Seed users
+        /// </summary>
+        /// <param name="applicationBuilder"></param>
+        /// <param name="defaultPassword"></param>
+        /// <returns></returns>
+        public static async Task SeedUsers(IApplicationBuilder applicationBuilder, string defaultPassword)
+        {
+            using (IServiceScope serviceScope = applicationBuilder.ApplicationServices.CreateScope())
+            {
+                UserManager<AppUser> userManager = serviceScope.ServiceProvider.GetRequiredService<UserManager<AppUser>>();
+
+
+                AppUser adminUser = new AppUser
+                {
+                    FirstName = "Admin",
+                    LastName = "Admin",
+                    UserName = "admin1@username.com",
+                    Email = "admin1@username.com",
+                    EmailConfirmed = true,
+                    CreatedAt = DateTime.Now
+                };
+
+                Task.Run(async () =>
+                {
+                    AppUser? user = await userManager.FindByEmailAsync(adminUser.Email);
+                    if (user == null)
+                    {
+                        IdentityResult result = await userManager.CreateAsync(adminUser, defaultPassword);
+                        if (result.Succeeded)
+                        {
+                            await userManager.AddToRoleAsync(adminUser, UserRoles.Admin);
+                        }
+                    }
+                }).Wait();
+
+
+                List<AppUser> appUsers = new List<AppUser>
+                {
+                    new AppUser
+                    {
+                        FirstName = "User",
+                        LastName = "1",
+                        UserName = "user1@username.com",
+                        Email = "user1@username.com",
+                        EmailConfirmed = true,
+                        CreatedAt = DateTime.Now
+                    },
+                    new AppUser
+                    {
+                        FirstName = "User",
+                        LastName = "2",
+                        UserName = "user2@username.com",
+                        Email = "user2@username.com",
+                        EmailConfirmed = true,
+                        CreatedAt = DateTime.Now
+                    }
+                };
+
+                foreach (AppUser user in appUsers)
+                {
+                    Task.Run(async () =>
+                    {
+                        AppUser? userInDb = await userManager.FindByEmailAsync(user.Email);
+
+                        if (userInDb == null)
+                        {
+                            IdentityResult result = await userManager.CreateAsync(user, defaultPassword);
+                            if (result.Succeeded)
+                            {
+                                await userManager.AddToRoleAsync(user, UserRoles.User);
+                            }
+                        }
+
+                    }).Wait();
+                }
+            }
+        }
+
+
+        public Task<bool> SeedCurrencies()
+        {
+            throw new NotImplementedException();
         }
     }
 }
