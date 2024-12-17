@@ -3,6 +3,7 @@ using FinansoApp.ViewModels;
 using FinansoData;
 using FinansoData.Models;
 using FinansoData.Repository.Account;
+using FinansoData.Repository.Group;
 using FluentAssertions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -23,6 +24,7 @@ namespace FinansoApp.Tests.Controllers
         private readonly Mock<IAuthentication> _authenticationMock;
         private readonly Mock<IUserManagement> _userManagementMock;
         private readonly Mock<IUserQuery> _userQueryMock;
+        private readonly Mock<IGroupManagementRepository> _groupManagementRepositoryMock;
 
 
         public AccountControllerTest()
@@ -32,6 +34,7 @@ namespace FinansoApp.Tests.Controllers
             _userManagerMock.Setup(x => x.FindByIdAsync(It.IsAny<string>()))
                 .ReturnsAsync(new AppUser { UserName = "testuser" });
 
+            _groupManagementRepositoryMock = new Mock<IGroupManagementRepository>();
             _userQueryMock = new Mock<IUserQuery>();
 
             _contextAccessorMock = new Mock<IHttpContextAccessor>();
@@ -94,6 +97,7 @@ namespace FinansoApp.Tests.Controllers
                 _authenticationMock.Object,
                 _userManagementMock.Object,
                 _userQueryMock.Object,
+                _groupManagementRepositoryMock.Object,
                 _signInManagerMock.Object);
 
 
@@ -149,6 +153,7 @@ namespace FinansoApp.Tests.Controllers
                 _authenticationMock.Object,
                 _userManagementMock.Object,
                 _userQueryMock.Object,
+                _groupManagementRepositoryMock.Object,
                 _signInManagerMock.Object);
 
 
@@ -198,7 +203,7 @@ namespace FinansoApp.Tests.Controllers
 
             // Mock 
             RepositoryResult<AppUser?> createAppUserResult = RepositoryResult<AppUser?>.Failure(null, ErrorType.EmailAlreadyExists);
-            _userManagementMock.Setup(x => x.CreateAppUser(email, password))
+            _userManagementMock.Setup(x => x.CreateAppUser(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
                 .ReturnsAsync(createAppUserResult);
 
 
@@ -208,6 +213,7 @@ namespace FinansoApp.Tests.Controllers
                 _authenticationMock.Object,
                 _userManagementMock.Object,
                 _userQueryMock.Object,
+                _groupManagementRepositoryMock.Object,
                 _signInManagerMock.Object);
             #endregion
 
@@ -250,7 +256,7 @@ namespace FinansoApp.Tests.Controllers
 
 
             // Mock 
-            _userManagementMock.Setup(x => x.CreateAppUser(email, password))
+            _userManagementMock.Setup(x => x.CreateAppUser(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
                 .ReturnsAsync(createUserMock);
 
 
@@ -260,6 +266,7 @@ namespace FinansoApp.Tests.Controllers
                 _authenticationMock.Object,
                 _userManagementMock.Object,
                 _userQueryMock.Object,
+                _groupManagementRepositoryMock.Object,
                 _signInManagerMock.Object);
 
             #endregion
@@ -277,7 +284,56 @@ namespace FinansoApp.Tests.Controllers
             #endregion
         }
 
+        [Fact]
+        public async Task AccountController_Register_ShouldCreateNewGroupForUser()
+        {
+            #region Arrange
 
+            // Input data
+            string email = "test@mail.com";
+            string password = "Password";
+            string confirmPassword = password;
+
+
+
+            // Input ViewModels
+            RegisterViewModel registerViewModel = new RegisterViewModel
+            {
+                Email = email,
+                Password = password,
+                ConfirmPassword = confirmPassword
+            };
+            AppUser user = new AppUser { };
+
+            RepositoryResult<AppUser?> createAppUserResult = RepositoryResult<AppUser?>.Success(new AppUser { });
+
+
+            // Mock 
+            _userManagementMock.Setup(x => x.CreateAppUser(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
+                .ReturnsAsync(createAppUserResult);
+
+
+            // Arrange controller
+            AccountController accountController = new AccountController(
+                _userManagerMock.Object,
+                _authenticationMock.Object,
+                _userManagementMock.Object,
+                _userQueryMock.Object,
+                _groupManagementRepositoryMock.Object,
+                _signInManagerMock.Object);
+
+            #endregion
+
+
+            #region ACT
+            Microsoft.AspNetCore.Mvc.IActionResult registerActionResult = await accountController.Register(registerViewModel);
+            #endregion
+
+
+            #region ASSERT
+            _groupManagementRepositoryMock.Verify(x => x.Add(It.IsAny<string>(), It.IsAny<string>()), Times.Once);
+            #endregion
+        }
 
 
         [Fact]
@@ -305,7 +361,7 @@ namespace FinansoApp.Tests.Controllers
 
 
             // Mock 
-            _userManagementMock.Setup(x => x.CreateAppUser(email, password))
+            _userManagementMock.Setup(x => x.CreateAppUser(It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>()))
                 .ReturnsAsync(createAppUserResult);
 
 
@@ -315,6 +371,7 @@ namespace FinansoApp.Tests.Controllers
                 _authenticationMock.Object,
                 _userManagementMock.Object,
                 _userQueryMock.Object,
+                _groupManagementRepositoryMock.Object,
                 _signInManagerMock.Object);
 
             #endregion
@@ -380,6 +437,7 @@ namespace FinansoApp.Tests.Controllers
                 _authenticationMock.Object,
                 _userManagementMock.Object,
                 _userQueryMock.Object,
+                _groupManagementRepositoryMock.Object,
                 _signInManagerMock.Object)
             {
                 ControllerContext = new ControllerContext
@@ -430,6 +488,7 @@ namespace FinansoApp.Tests.Controllers
                 _authenticationMock.Object,
                 _userManagementMock.Object,
                 _userQueryMock.Object,
+                _groupManagementRepositoryMock.Object,
                 _signInManagerMock.Object)
             {
                 ControllerContext = new ControllerContext
@@ -457,7 +516,7 @@ namespace FinansoApp.Tests.Controllers
         public async Task AccountController_Edit_HttpPost_ShouldBeAuthorized()
         {
             #region Arrange
-            MethodInfo httpGetMethodInfo = typeof(AccountController).GetMethod(nameof(AccountController.Edit), new[] {typeof(FinansoApp.ViewModels.Account.EditAccountViewModel) } );
+            MethodInfo httpGetMethodInfo = typeof(AccountController).GetMethod(nameof(AccountController.Edit), new[] { typeof(FinansoApp.ViewModels.Account.EditAccountViewModel) });
             #endregion
 
             #region Act
@@ -488,6 +547,7 @@ namespace FinansoApp.Tests.Controllers
                 _authenticationMock.Object,
                 _userManagementMock.Object,
                 _userQueryMock.Object,
+                _groupManagementRepositoryMock.Object,
                 _signInManagerMock.Object);
 
             accountController.ModelState.AddModelError("FirstName", "FirstName is required");
@@ -542,6 +602,7 @@ namespace FinansoApp.Tests.Controllers
                 _authenticationMock.Object,
                 _userManagementMock.Object,
                 _userQueryMock.Object,
+                _groupManagementRepositoryMock.Object,
                 _signInManagerMock.Object)
             {
                 ControllerContext = new ControllerContext
@@ -600,6 +661,7 @@ namespace FinansoApp.Tests.Controllers
                 _authenticationMock.Object,
                 _userManagementMock.Object,
                 _userQueryMock.Object,
+                _groupManagementRepositoryMock.Object,
                 _signInManagerMock.Object)
             {
                 ControllerContext = new ControllerContext

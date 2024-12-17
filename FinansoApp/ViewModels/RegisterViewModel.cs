@@ -4,6 +4,15 @@ namespace FinansoApp.ViewModels
 {
     public class RegisterViewModel
     {
+        /// <summary>
+        /// First name
+        /// </summary>
+        [Required(ErrorMessage = "Name is required")]
+        [Display(Name = "Name")]
+        [MinLength(2, ErrorMessage = "Name must be at least 2 characters long")]
+        [MaxLength(50, ErrorMessage = "Name must be at most 50 characters long")]
+        public string Name { get; set; }
+
         [Required(ErrorMessage = "Email is required")]
         [EmailAddress]
         [Display(Name = "Email address")]
