@@ -2,6 +2,7 @@
 using FinansoData;
 using FinansoData.Models;
 using FinansoData.Repository.Account;
+using FinansoData.Repository.Group;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
@@ -15,14 +16,16 @@ namespace FinansoApp.Controllers
         private readonly IUserQuery _userQuery;
         private readonly IAuthentication _authentication;
         private readonly IUserManagement _userManagement;
+        private readonly IGroupManagementRepository _groupManagementRepository;
 
-        public AccountController(UserManager<AppUser> userManager, IAuthentication authentication, IUserManagement userManagement, IUserQuery userQuery, SignInManager<AppUser> signInManager = null)
+        public AccountController(UserManager<AppUser> userManager, IAuthentication authentication, IUserManagement userManagement, IUserQuery userQuery, IGroupManagementRepository groupManagementRepository, SignInManager<AppUser> signInManager = null)
         {
             _userManager = userManager;
             _signInManager = signInManager;
             _userQuery = userQuery;
             _authentication = authentication;
             _userManagement = userManagement;
+            _groupManagementRepository = groupManagementRepository;
         }
 
 
@@ -95,7 +98,7 @@ namespace FinansoApp.Controllers
             }
 
 
-            RepositoryResult<AppUser?> user = await _userManagement.CreateAppUser(registerViewModel.Email, registerViewModel.Password);
+            RepositoryResult<AppUser?> user = await _userManagement.CreateAppUser(registerViewModel.Email, registerViewModel.Password, registerViewModel.Name);
 
             if (user.IsSuccess == false && user.ErrorType == FinansoData.ErrorType.ServerError)
             {
@@ -121,6 +124,7 @@ namespace FinansoApp.Controllers
                 return View(registerViewModel);
             }
 
+            RepositoryResult<bool?> groupManagementRepositoryResult = await _groupManagementRepository.Add("Default group", registerViewModel.Email);
 
             return RedirectToAction("Index", "Home");
         }
@@ -142,7 +146,7 @@ namespace FinansoApp.Controllers
                 return NotFound();
             }
 
-            if(repositoryResult.Value == null)
+            if (repositoryResult.Value == null)
             {
                 return NotFound();
             }
