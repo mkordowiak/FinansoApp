@@ -24,5 +24,13 @@ namespace FinansoData.Repository.Balance
         /// <param name="id"></param>
         /// <returns></returns>
         Task<RepositoryResult<bool>> DeleteBalance(int id);
+
+        /// <summary>
+        /// Set balance money amount
+        /// </summary>
+        /// <param name="id">balance ID</param>
+        /// <param name="amount">Money amount</param>
+        /// <returns></returns>
+        Task<RepositoryResult<bool?>> SetBalanceAmount(int id, double amount);
     }
 }
