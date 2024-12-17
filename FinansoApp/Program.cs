@@ -1,19 +1,16 @@
-using FinansoApp.Controllers;
 using FinansoData.Data;
 using FinansoData.Models;
 using FinansoData.Repository;
+using FinansoData.Repository.Account;
+using FinansoData.Repository.Balance;
+using FinansoData.Repository.Currency;
+using FinansoData.Repository.Group;
+using FinansoData.Repository.Settings;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using AutoMapper;
-using FinansoData.Repository.Account;
-using FinansoData.Repository.Group;
-using FinansoData.Repository.Currency;
-using FinansoData.Repository.Balance;
-using FinansoData.Repository.Settings;
 
-var builder = WebApplication.CreateBuilder(args);
+WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 // Scopes
 builder.Services.AddScoped<IAccountRepository, AccountRepository>();
@@ -70,15 +67,45 @@ builder.Services.AddSession();
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
     .AddCookie();
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
-var app = builder.Build();
+WebApplication app = builder.Build();
 
 
 
 
-if (args.Length == 1 && args[0].ToLower() == "seeddata")
+if (args.Length == 1 && args[0].ToLower() == "seeddata" || true)
 {
     string defaultPassword = builder.Configuration.GetValue<string>("DefaultPassword");
-    Seed.SeedUsers(app, defaultPassword);
+    Console.WriteLine($"Default password: \"{defaultPassword}\"");
+
+
+    Console.WriteLine("Seeding data");
+
+    Seed.SeedSettings(app);
+
+    Console.WriteLine("Settings seeded");
+
+    Seed.SeedTransactionTypes(app);
+
+    Console.WriteLine("Transaction types seeded");
+
+    Seed.SeedTransactionStatuses(app);
+
+    Console.WriteLine("Transaction statuses seeded");
+
+    Seed.SeedRoles(app);
+
+    Console.WriteLine("User roles seeded");
+
+    Seed.SeedCurrencies(app);
+
+    Console.WriteLine("Currencies seeded");
+
+    //Seed.SeedUsers(app, defaultPassword);
+    Seed.SeedUsers2(app, defaultPassword);
+
+    Console.WriteLine("Users seeded");
+
+    return;
 }
 
 
