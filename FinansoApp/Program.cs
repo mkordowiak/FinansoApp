@@ -72,7 +72,7 @@ WebApplication app = builder.Build();
 
 
 
-if (args.Length == 1 && args[0].ToLower() == "seeddata" || true)
+if (args.Length == 1 && args[0].ToLower() == "seeddata")
 {
     string defaultPassword = builder.Configuration.GetValue<string>("DefaultPassword");
     Console.WriteLine($"Default password: \"{defaultPassword}\"");
@@ -101,7 +101,7 @@ if (args.Length == 1 && args[0].ToLower() == "seeddata" || true)
     Console.WriteLine("Currencies seeded");
 
     //Seed.SeedUsers(app, defaultPassword);
-    Seed.SeedUsers2(app, defaultPassword);
+    Seed.SeedUsers(app, defaultPassword);
 
     Console.WriteLine("Users seeded");
 
