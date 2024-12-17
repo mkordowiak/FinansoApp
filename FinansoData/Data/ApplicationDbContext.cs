@@ -13,8 +13,6 @@ namespace FinansoData.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder);
-
             modelBuilder
                 .Entity<BalanceTransaction>()
                 .HasOne(a => a.Currency)
@@ -99,6 +97,11 @@ namespace FinansoData.Data
                 .IsUnique();
 
             modelBuilder
+                .Entity<Currency>()
+                .HasIndex(c => new { c.Code })
+                .IsUnique();
+
+            modelBuilder
                 .Entity<BalanceTransaction>()
                 .HasIndex(bt => new { bt.TransactionDate });
             modelBuilder
@@ -140,9 +143,7 @@ namespace FinansoData.Data
                 .Property(bt => bt.CreatedAt)
                 .HasDefaultValueSql("GETDATE()");
 
-
-            
-
+            base.OnModelCreating(modelBuilder);
         }
 
         public DbSet<Currency> Currencies { get; set; }
