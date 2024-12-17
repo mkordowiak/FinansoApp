@@ -1,0 +1,48 @@
+﻿@using FinansoApp.ViewModels.Balance
+@model SetBalanceAmountViewModel
+
+@{
+    ViewData["Title"] = "Create group";
+}
+
+<div class="row">
+    <div class="col-md-6 offset-3">
+        <p>
+            <h4>Set balance amount</h4>
+        </p>
+        @if (Model != null && Model.Error.IsError())
+        {
+            @if (Model.Error.InternalError)
+            {
+                <div class="col-md-12 alert alert-danger">
+                    <span>
+                        <b>Sorry!</b> An error occurred while creating group, please try again later
+                    </span>
+                </div>
+            }
+
+        }
+
+
+        <div class="row">
+            <div class="col-md-8 offset-2">
+                <form asp-action="SetBalanceAmount">
+                    <input asp-for="BalanceId" type="hidden" />
+                    @Model.BalanceName / @Model.GroupName
+                    <div></div>
+                    <div asp-validation-summary="All" class="text-danger"></div>
+                    <div class="form-group">
+                        <label asp-for="Amount" class="control-label"></label>
+                        <input asp-for="Amount" class="form-control">
+                        <span asp-validation-for="Amount" class="text-danger"></span>
+                    </div>
+
+                    <div class="form-group">
+                        <input class="btn btn-outline-success float right" type="submit" value="Save" />
+                        <a class="btn btn-outline-secondary" asp-controller="Balance" asp-action="Index">Cancel</a>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>

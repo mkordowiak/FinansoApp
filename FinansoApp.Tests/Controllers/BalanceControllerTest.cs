@@ -4,9 +4,11 @@ using FinansoData.Repository.Balance;
 using FinansoData.Repository.Currency;
 using FinansoData.Repository.Group;
 using FluentAssertions;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
+using System.Reflection;
 using System.Security.Claims;
 
 namespace FinansoApp.Tests.Controllers
@@ -521,6 +523,221 @@ namespace FinansoApp.Tests.Controllers
 
             result.Should().NotBeNull();
             result.Should().BeOfType<BadRequestResult>();
+        }
+        #endregion
+
+        #region SetBalanceAmount GET
+
+        [Fact]
+        public async Task BalanceController_SetBalanceAmount_GET_ShouldReturnView()
+        {
+            // Arrange
+            _balanceQueryRepositoryMock.Setup(x => x.HasUserAccessToBalance(It.IsAny<string>(), It.IsAny<int>()))
+                .ReturnsAsync(FinansoData.RepositoryResult<bool?>.Success(true));
+
+            _balanceQueryRepositoryMock.Setup(x => x.GetBalance(It.IsAny<int>()))
+                .ReturnsAsync(FinansoData.RepositoryResult<FinansoData.DataViewModel.Balance.BalanceViewModel>
+                .Success(
+                    new FinansoData.DataViewModel.Balance.BalanceViewModel
+                    {
+                        Id = 1,
+                        Name = "Bank 1",
+                        Amount = 1,
+                        Currency = new FinansoData.Models.Currency { Id = 1, Name = "PLN" },
+                        Group = new FinansoData.Models.Group { Id = 1, Name = "Test group 1" }
+                    }));
+
+
+
+            // Claims Principal Mock
+            string appUser = "appuser";
+            Mock<ClaimsPrincipal> mockPrincipal = new Mock<ClaimsPrincipal>();
+            mockPrincipal.Setup(p => p.Identity.Name).Returns(appUser);
+            mockPrincipal.Setup(p => p.Identity.IsAuthenticated).Returns(true);
+
+            Mock<HttpContext> context = new Mock<HttpContext>();
+            context.SetupGet(ctx => ctx.User).Returns(mockPrincipal.Object);
+
+
+            BalanceController controller = new BalanceController(_balanceManagmentRepositoryMock.Object, _currencyQueryRepositoryMock.Object, _groupQueryRepositoryMock.Object, _groupUsersQueryRepositoryMock.Object, _balanceQueryRepositoryMock.Object)
+            {
+                ControllerContext = new ControllerContext
+                {
+                    HttpContext = context.Object
+                }
+            };
+
+
+            // Act
+            IActionResult result = await controller.SetBalanceAmount(1);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Should().BeOfType<ViewResult>();
+
+            ((ViewResult)result).Model.Should().BeOfType<SetBalanceAmountViewModel>();
+        }
+
+        [Fact]
+        public async Task BalanceController_SetBalanceAmount_GET_ShouldReturnUnauthorizedWhenNoAccess()
+        {
+            // Arrange
+            _balanceQueryRepositoryMock.Setup(x => x.HasUserAccessToBalance(It.IsAny<string>(), It.IsAny<int>()))
+                .ReturnsAsync(FinansoData.RepositoryResult<bool?>.Success(false));
+
+
+            // Claims Principal Mock
+            string appUser = "appuser";
+            Mock<ClaimsPrincipal> mockPrincipal = new Mock<ClaimsPrincipal>();
+            mockPrincipal.Setup(p => p.Identity.Name).Returns(appUser);
+            mockPrincipal.Setup(p => p.Identity.IsAuthenticated).Returns(true);
+
+            Mock<HttpContext> context = new Mock<HttpContext>();
+            context.SetupGet(ctx => ctx.User).Returns(mockPrincipal.Object);
+
+
+            BalanceController controller = new BalanceController(_balanceManagmentRepositoryMock.Object, _currencyQueryRepositoryMock.Object, _groupQueryRepositoryMock.Object, _groupUsersQueryRepositoryMock.Object, _balanceQueryRepositoryMock.Object)
+            {
+                ControllerContext = new ControllerContext
+                {
+                    HttpContext = context.Object
+                }
+            };
+
+
+            // Act
+            IActionResult result = await controller.SetBalanceAmount(1);
+
+            // Assert
+            result.Should().NotBeNull();
+            result.Should().BeOfType<UnauthorizedResult>();
+
+        }
+
+        [Fact]
+        public async Task BalanceController_SetBalanceAmount_GET_ShouldBeAuthorized()
+        {
+            #region Arrange
+            MethodInfo httpGetMethodInfo = typeof(BalanceController).GetMethod(nameof(BalanceController.SetBalanceAmount), new[] { typeof(int) });
+            #endregion
+
+            #region Act
+            AuthorizeAttribute? httpGetAuthorizeAttribute = httpGetMethodInfo.GetCustomAttribute<AuthorizeAttribute>();
+
+            #endregion
+
+            #region Assert
+            httpGetAuthorizeAttribute.Should().NotBeNull("this method should be protected by authorization");
+            #endregion
+        }
+
+        #endregion
+
+
+        #region SetBalanceAmount POST
+
+        [Fact]
+        public async Task BalanceController_SetBalanceAmount_POST_ShouldBeAuthorized()
+        {
+            #region Arrange
+            MethodInfo httpGetMethodInfo = typeof(BalanceController).GetMethod(nameof(BalanceController.SetBalanceAmount), new[] { typeof(SetBalanceAmountViewModel) });
+            #endregion
+
+            #region Act
+            AuthorizeAttribute? httpGetAuthorizeAttribute = httpGetMethodInfo.GetCustomAttribute<AuthorizeAttribute>();
+
+            #endregion
+
+            #region Assert
+            httpGetAuthorizeAttribute.Should().NotBeNull("this method should be protected by authorization");
+            #endregion
+        }
+
+        [Fact]
+        public async Task BalanceController_SetBalanceAmount_POST_ShouldReturnRedirectToIndex()
+        {
+            // Arrange
+            _balanceQueryRepositoryMock.Setup(x => x.HasUserAccessToBalance(It.IsAny<string>(), It.IsAny<int>()))
+                .ReturnsAsync(FinansoData.RepositoryResult<bool?>.Success(true));
+
+            _balanceManagmentRepositoryMock.Setup(x => x.SetBalanceAmount(It.IsAny<int>(), It.IsAny<double>()))
+                .ReturnsAsync(FinansoData.RepositoryResult<bool?>.Success(true));
+
+            SetBalanceAmountViewModel setBalanceAmountViewModel = new SetBalanceAmountViewModel
+            {
+                BalanceId = 1,
+                Amount = 100,
+                BalanceName = "Bank 1",
+                GroupName = "Test group 1"
+            };
+
+            // Claims Principal Mock
+            string appUser = "appuser";
+            Mock<ClaimsPrincipal> mockPrincipal = new Mock<ClaimsPrincipal>();
+            mockPrincipal.Setup(p => p.Identity.Name).Returns(appUser);
+            mockPrincipal.Setup(p => p.Identity.IsAuthenticated).Returns(true);
+
+            Mock<HttpContext> context = new Mock<HttpContext>();
+            context.SetupGet(ctx => ctx.User).Returns(mockPrincipal.Object);
+
+
+            BalanceController controller = new BalanceController(_balanceManagmentRepositoryMock.Object, _currencyQueryRepositoryMock.Object, _groupQueryRepositoryMock.Object, _groupUsersQueryRepositoryMock.Object, _balanceQueryRepositoryMock.Object)
+            {
+                ControllerContext = new ControllerContext
+                {
+                    HttpContext = context.Object
+                }
+            };
+
+            // Act
+            IActionResult repositoryResult = await controller.SetBalanceAmount(setBalanceAmountViewModel);
+
+            // Assert
+            repositoryResult.Should().NotBeNull();
+            repositoryResult.Should().BeOfType<RedirectToActionResult>();
+            ((RedirectToActionResult)repositoryResult).ActionName.Should().Be("Index");
+            ((RedirectToActionResult)repositoryResult).ControllerName.Should().Be("Balance");
+        }
+
+        [Fact]
+        public async Task BalanceController_SetBalanceAmount_POST_ShouldReturnUnauthorizedWhenNoAccess()
+        {
+            // Arrange
+            _balanceQueryRepositoryMock.Setup(x => x.HasUserAccessToBalance(It.IsAny<string>(), It.IsAny<int>()))
+                .ReturnsAsync(FinansoData.RepositoryResult<bool?>.Success(false));
+
+            SetBalanceAmountViewModel setBalanceAmountViewModel = new SetBalanceAmountViewModel
+            {
+                BalanceId = 1,
+                Amount = 100,
+                BalanceName = "Bank 1",
+                GroupName = "Test group 1"
+            };
+
+            // Claims Principal Mock
+            string appUser = "appuser";
+            Mock<ClaimsPrincipal> mockPrincipal = new Mock<ClaimsPrincipal>();
+            mockPrincipal.Setup(p => p.Identity.Name).Returns(appUser);
+            mockPrincipal.Setup(p => p.Identity.IsAuthenticated).Returns(true);
+
+            Mock<HttpContext> context = new Mock<HttpContext>();
+            context.SetupGet(ctx => ctx.User).Returns(mockPrincipal.Object);
+
+
+            BalanceController controller = new BalanceController(_balanceManagmentRepositoryMock.Object, _currencyQueryRepositoryMock.Object, _groupQueryRepositoryMock.Object, _groupUsersQueryRepositoryMock.Object, _balanceQueryRepositoryMock.Object)
+            {
+                ControllerContext = new ControllerContext
+                {
+                    HttpContext = context.Object
+                }
+            };
+
+            // Act
+            IActionResult repositoryResult = await controller.SetBalanceAmount(setBalanceAmountViewModel);
+
+            // Assert
+            repositoryResult.Should().NotBeNull();
+            repositoryResult.Should().BeOfType<UnauthorizedResult>();
         }
         #endregion
     }

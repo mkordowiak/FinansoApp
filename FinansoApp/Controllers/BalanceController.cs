@@ -130,5 +130,71 @@ namespace FinansoApp.Controllers
         }
 
         #endregion
+
+        #region SetBalanceAmount
+
+
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> SetBalanceAmount(int id)
+        {
+            // Check if user has access to selected group
+            FinansoData.RepositoryResult<bool?> hasUserAccessToGroup = await _balanceQueryRepository.HasUserAccessToBalance(User.Identity.Name, id);
+
+            if (!hasUserAccessToGroup.IsSuccess)
+            {
+                return BadRequest();
+            }
+
+            if (hasUserAccessToGroup.Value == false)
+            {
+                return Unauthorized();
+            }
+
+            var balance = await _balanceQueryRepository.GetBalance(id);
+
+            SetBalanceAmountViewModel setBalanceAmountViewModel = new SetBalanceAmountViewModel
+            {
+                BalanceName = balance.Value.Name,
+                GroupName = balance.Value.Group.Name,
+                BalanceId = id,
+                Amount = balance.Value.Amount
+            };
+            return View(setBalanceAmountViewModel);
+        }
+
+        [HttpPost]
+        [Authorize]
+        public async Task<IActionResult> SetBalanceAmount(SetBalanceAmountViewModel setBalanceAmountViewModel)
+        {
+            if (!ModelState.IsValid)
+            {
+                return View(setBalanceAmountViewModel);
+            }
+
+            // Check if user has access to selected group
+            FinansoData.RepositoryResult<bool?> hasUserAccessToGroup = await _balanceQueryRepository.HasUserAccessToBalance(User.Identity.Name, setBalanceAmountViewModel.BalanceId);
+
+            if (!hasUserAccessToGroup.IsSuccess)
+            {
+                return BadRequest();
+            }
+
+            if (hasUserAccessToGroup.Value == false)
+            {
+                return Unauthorized();
+            }
+
+
+            FinansoData.RepositoryResult<bool?> repositoryResult = await _balanceManagmentRepository.SetBalanceAmount(setBalanceAmountViewModel.BalanceId, setBalanceAmountViewModel.Amount);
+            if (repositoryResult.IsSuccess == false)
+            {
+                return BadRequest();
+            }
+
+            return RedirectToAction("Index", "Balance");
+        }
+
+        #endregion
     }
 }
