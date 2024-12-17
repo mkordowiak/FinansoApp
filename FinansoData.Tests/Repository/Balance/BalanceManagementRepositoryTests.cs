@@ -1,15 +1,8 @@
 ﻿using FinansoData.Data;
 using FinansoData.DataViewModel.Balance;
-using FinansoData.DataViewModel.Group;
 using FinansoData.Repository.Balance;
-using Microsoft.EntityFrameworkCore;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using FinansoData.Models;
 using FluentAssertions;
+using Microsoft.EntityFrameworkCore;
 
 namespace FinansoData.Tests.Repository.Balance
 {
@@ -38,7 +31,7 @@ namespace FinansoData.Tests.Repository.Balance
                 _currencies.Add(new Models.Currency { Id = 3, Code = "EUR", Name = "Euro" });
 
                 _appUsers = new List<Models.AppUser>();
-                _appUsers.Add(new Models.AppUser{ Id = "1", UserName = "1", FirstName = "1", LastName = "1" });
+                _appUsers.Add(new Models.AppUser { Id = "1", UserName = "1", FirstName = "1", LastName = "1" });
                 _appUsers.Add(new Models.AppUser { Id = "2", UserName = "2", FirstName = "2", LastName = "2" });
 
                 _groups = new List<Models.Group>();
@@ -54,7 +47,7 @@ namespace FinansoData.Tests.Repository.Balance
                 context.Balances.AddRange(_balances);
 
                 context.SaveChanges();
-            }    
+            }
         }
 
         #region AddBalance
@@ -91,6 +84,62 @@ namespace FinansoData.Tests.Repository.Balance
             }
         }
 
-            #endregion
+        #endregion
+
+        #region SetBalanceAmount
+
+        [Fact]
+        public async Task BalanceManagementRepository_SetBalanceAmount_ShouldUpdateAmount()
+        {
+            // Arrange
+
+            RepositoryResult<bool?> repositoryResult;
+            Models.Balance inMemoryBalance;
+            double expecedAmount = 5;
+
+            using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
+            {
+                BalanceManagementRepository balanceManagementRepository = new BalanceManagementRepository(context);
+
+                // Act
+                repositoryResult = await balanceManagementRepository.SetBalanceAmount(1, expecedAmount);
+
+                inMemoryBalance = context.Balances.First();
+
+
+                // Delete in-memory database
+                context.Database.EnsureDeleted();
+            }
+
+            // Assert
+            repositoryResult.IsSuccess.Should().BeTrue();
+            inMemoryBalance.Amount.Should().Be(expecedAmount);
         }
+
+
+        [Fact]
+        public async Task BalanceManagementRepository_SetBalanceAmount_ShouldReturnFailureWhenCantFindBalance()
+        {
+            // Arrange
+
+            RepositoryResult<bool?> repositoryResult;
+
+            using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
+            {
+                BalanceManagementRepository balanceManagementRepository = new BalanceManagementRepository(context);
+
+                // Act
+                repositoryResult = await balanceManagementRepository.SetBalanceAmount(999, 5);
+
+                // Delete in-memory database
+                context.Database.EnsureDeleted();
+            }
+
+            // Assert
+            repositoryResult.IsSuccess.Should().BeFalse();
+            repositoryResult.ErrorType.Should().Be(ErrorType.NotFound);
+        }
+
+        #endregion
+    }
 }

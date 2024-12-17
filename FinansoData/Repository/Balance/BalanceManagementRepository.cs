@@ -1,10 +1,6 @@
 ﻿using FinansoData.Data;
 using FinansoData.DataViewModel.Balance;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+using Microsoft.EntityFrameworkCore;
 
 namespace FinansoData.Repository.Balance
 {
@@ -19,7 +15,7 @@ namespace FinansoData.Repository.Balance
 
         public async Task<RepositoryResult<bool>> AddBalance(BalanceViewModel balance)
         {
-            var newBalance = new Models.Balance
+            Models.Balance newBalance = new Models.Balance
             {
                 Name = balance.Name,
                 Amount = balance.Amount,
@@ -43,6 +39,40 @@ namespace FinansoData.Repository.Balance
         public Task<RepositoryResult<bool>> DeleteBalance(int id)
         {
             throw new NotImplementedException();
+        }
+
+        public async Task<RepositoryResult<bool?>> SetBalanceAmount(int id, double amount)
+        {
+            Models.Balance? balance;
+
+            try
+            {
+                balance = await _context.Balances.SingleOrDefaultAsync(x => x.Id == id);
+            }
+            catch
+            {
+                return RepositoryResult<bool?>.Failure("Can't access database", ErrorType.ServerError);
+            }
+
+            if(balance == null)
+            {
+                return RepositoryResult<bool?>.Failure("Can't find balance", ErrorType.NotFound);
+            }
+
+            try
+            {
+
+                balance.Amount = amount;
+                balance.Modified = DateTime.Now;
+                await _context.SaveChangesAsync();
+                return RepositoryResult<bool?>.Success(true);
+
+            }
+            catch
+            {
+                return RepositoryResult<bool?>.Failure("Can't update balance", ErrorType.ServerError);
+            }
+            
         }
 
         public Task<RepositoryResult<bool>> UpdateBalance(BalanceViewModel balance)
