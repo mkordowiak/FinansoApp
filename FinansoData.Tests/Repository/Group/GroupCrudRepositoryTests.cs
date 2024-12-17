@@ -35,7 +35,7 @@ namespace FinansoData.Tests.Repository.Group
                 {
                     Name = "Group name",
                     OwnerAppUser = new Models.AppUser(),
-                    Created = DateTime.Now
+                    CreatedAt = DateTime.Now
                 };
 
                 // Act 
@@ -58,7 +58,7 @@ namespace FinansoData.Tests.Repository.Group
                 {
                     Name = "Group name",
                     OwnerAppUser = new Models.AppUser(),
-                    Created = DateTime.Now
+                    CreatedAt = DateTime.Now
                 };
                 context.Groups.Add(group);
                 context.SaveChanges();
@@ -83,19 +83,19 @@ namespace FinansoData.Tests.Repository.Group
                 {
                     Name = "Group name",
                     OwnerAppUser = new Models.AppUser(),
-                    Created = DateTime.Now
+                    CreatedAt = DateTime.Now
                 };
                 context.Groups.Add(group);
                 context.SaveChanges();
 
                 // Act
-                group.Name = "Updated group name";
+                group.Name = "UpdatedAt group name";
                 bool result = groupCrudRepository.Update(group);
 
                 // Assert
                 Assert.True(result);
                 Assert.Contains(group, context.Groups);
-                Assert.Equal("Updated group name", group.Name);
+                Assert.Equal("UpdatedAt group name", group.Name);
             }
         }
 
@@ -110,19 +110,19 @@ namespace FinansoData.Tests.Repository.Group
                 {
                     Name = "Group name",
                     OwnerAppUser = new Models.AppUser(),
-                    Created = DateTime.Now
+                    CreatedAt = DateTime.Now
                 };
                 context.Groups.Add(group);
                 await context.SaveChangesAsync();
 
                 // Act
-                group.Name = "Updated group name";
+                group.Name = "UpdatedAt group name";
                 bool result = await groupCrudRepository.UpdateAsync(group);
 
                 // Assert
                 Assert.True(result);
                 Assert.Contains(group, context.Groups);
-                Assert.Equal("Updated group name", group.Name);
+                Assert.Equal("UpdatedAt group name", group.Name);
             }
         }
     }

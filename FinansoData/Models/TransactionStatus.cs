@@ -1,12 +1,16 @@
-﻿using Microsoft.EntityFrameworkCore;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace FinansoData.Models
 {
     /// <summary>
-    /// TransactionType model
+    /// TransactionStatus model
     /// </summary>
-    public class TransactionType
+    public class TransactionStatus
     {
         /// <summary>
         /// Primary key
@@ -15,7 +19,7 @@ namespace FinansoData.Models
         public int Id { get; set; }
 
         /// <summary>
-        /// Name of transaction type
+        /// Name of status
         /// </summary>
         [Required]
         [MaxLength(50)]

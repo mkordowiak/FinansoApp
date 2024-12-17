@@ -124,7 +124,7 @@ namespace FinansoData.Repository.Account
                 UserName = Email,
                 Email = Email,
                 EmailConfirmed = false,
-                Created = DateTime.Now
+                CreatedAt = DateTime.Now
             };
 
 

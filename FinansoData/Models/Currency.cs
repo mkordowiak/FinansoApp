@@ -2,6 +2,9 @@
 
 namespace FinansoData.Models
 {
+    /// <summary>
+    /// Currency model
+    /// </summary>
     public class Currency
     {
         /// <summary>
@@ -37,6 +40,6 @@ namespace FinansoData.Models
         /// DateTime of ExchangeRate field update
         /// </summary>
         [Required]
-        public DateTime Updated { get; set; }
+        public DateTime UpdatedAt { get; set; }
     }
 }

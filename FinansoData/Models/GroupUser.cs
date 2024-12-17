@@ -4,6 +4,9 @@ using System.ComponentModel.DataAnnotations.Schema;
 
 namespace FinansoData.Models
 {
+    /// <summary>
+    /// GroupUser model
+    /// </summary>
     public class GroupUser
     {
         /// <summary>
@@ -27,8 +30,6 @@ namespace FinansoData.Models
         [ForeignKey(nameof(AppUserId))]
         public AppUser AppUser { get; set; }
 
-        
-
         /// <summary>
         /// Is user active
         /// </summary>
@@ -39,7 +40,7 @@ namespace FinansoData.Models
         /// Creation datetime
         /// </summary>
         [Required]
-        public DateTime Created { get; set; }
+        public DateTime CreatedAt { get; set; }
 
         /// <summary>
         /// Modification datetime

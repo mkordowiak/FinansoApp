@@ -50,7 +50,7 @@ namespace FinansoData.Data
                         UserName = "admin1",
                         Email = adminUserEmail,
                         EmailConfirmed = true,
-                        Created = DateTime.Now
+                        CreatedAt = DateTime.Now
 
                     };
 
@@ -80,7 +80,7 @@ namespace FinansoData.Data
                         Email = appUserEmail,
                         EmailConfirmed = true,
                         FirstName = "user",
-                        Created = DateTime.Now
+                        CreatedAt = DateTime.Now
 
                     };
                     var regularUserCreation = await userManager.CreateAsync(newRegularUser, defaultPassword);
@@ -99,9 +99,9 @@ namespace FinansoData.Data
 
         public async Task<bool> SeedCurrencies()
         {
-            //_currencyRepository.Add(new Currency { Name = "PLN", ExchangeRate = 1, Updated = DateTime.Now });
-            //_currencyRepository.Add(new Currency { Name = "EUR", ExchangeRate = 4.5, Updated = DateTime.Now });
-            //_currencyRepository.Add(new Currency { Name = "USD", ExchangeRate = 4.2, Updated = DateTime.Now });
+            //_currencyRepository.Add(new Currency { Name = "PLN", ExchangeRate = 1, UpdatedAt = DateTime.Now });
+            //_currencyRepository.Add(new Currency { Name = "EUR", ExchangeRate = 4.5, UpdatedAt = DateTime.Now });
+            //_currencyRepository.Add(new Currency { Name = "USD", ExchangeRate = 4.2, UpdatedAt = DateTime.Now });
 
             //_currencyRepository.Save();
 

@@ -43,7 +43,7 @@ namespace FinansoData.Repository.Group
             Models.Group group = new Models.Group
             {
                 Name = groupName,
-                Created = DateTime.Now,
+                CreatedAt = DateTime.Now,
                 OwnerAppUser = user
             };
 
