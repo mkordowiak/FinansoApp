@@ -63,6 +63,7 @@ namespace FinansoData.Repository.Balance
             {
 
                 balance.Amount = amount;
+                balance.Modified = DateTime.Now;
                 await _context.SaveChangesAsync();
                 return RepositoryResult<bool?>.Success(true);
 
