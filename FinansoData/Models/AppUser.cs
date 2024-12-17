@@ -3,6 +3,9 @@ using System.ComponentModel.DataAnnotations;
 
 namespace FinansoData.Models
 {
+    /// <summary>
+    /// Application user model
+    /// </summary>
     public class AppUser : IdentityUser
     {
         /// <summary>
@@ -30,11 +33,14 @@ namespace FinansoData.Models
         /// Creation datetime
         /// </summary>
         [Required]
-        public DateTime Created { get; set; }
+        public DateTime CreatedAt { get; set; }
 
         /// <summary>
         /// Modification datetime
         /// </summary>
         public DateTime? Modified { get; set; }
+
+        // Navigation properties
+        public virtual ICollection<BalanceTransaction> BalanceTransactions { get; set; }
     }
 }

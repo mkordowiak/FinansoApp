@@ -93,7 +93,7 @@ namespace FinansoData.Repository.Balance
                 return RepositoryResult<IEnumerable<BalanceViewModel>>.Failure(null, ErrorType.ServerError);
             }
 
-            _cacheWrapper.Set($"GetListOfBalancesForUser_{userName}", result, TimeSpan.FromSeconds(30));
+            _cacheWrapper.Set($"GetListOfBalancesForUser_{userName}", result, TimeSpan.FromSeconds(3));
             return RepositoryResult<IEnumerable<BalanceViewModel>>.Success(result);
         }
     }

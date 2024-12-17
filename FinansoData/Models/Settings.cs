@@ -7,6 +7,9 @@ using System.Threading.Tasks;
 
 namespace FinansoData.Models
 {
+    /// <summary>
+    /// Settings model
+    /// </summary>
     public class Settings
     {
         /// <summary>
@@ -43,6 +46,6 @@ namespace FinansoData.Models
         /// <summary>
         /// DateTime of setting update
         /// </summary>
-        public DateTime Updated { get; set; }
+        public DateTime UpdatedAt { get; set; }
     }
 }

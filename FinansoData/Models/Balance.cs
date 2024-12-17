@@ -4,6 +4,9 @@ using System.Text.RegularExpressions;
 
 namespace FinansoData.Models
 {
+    /// <summary>
+    /// Balance model
+    /// </summary>
     public class Balance
     {
         /// <summary>
@@ -19,6 +22,8 @@ namespace FinansoData.Models
         /// <summary>
         /// Amount of fund on balance
         /// </summary>
+        [Required]
+        [Column(TypeName = "decimal(18, 2)")]
         public Double Amount { get; set; }
 
         /// <summary>
@@ -49,12 +54,16 @@ namespace FinansoData.Models
         /// Creation datetime
         /// </summary>
         [Required]
-        public DateTime Created { get; set; } = DateTime.Now;
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         /// <summary>
         /// Modification datetime
         /// </summary>
         public DateTime? Modified { get; set; }
+
+
+        // Navigation properties
+        public virtual ICollection<BalanceTransaction> BalanceTransactions { get; set; }
 
     }
 }

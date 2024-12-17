@@ -1,7 +1,12 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace FinansoData.Models
 {
+    /// <summary>
+    /// Balance transaction model
+    /// </summary>
     public class BalanceTransaction
     {
         /// <summary>
@@ -11,18 +16,47 @@ namespace FinansoData.Models
         public int Id { get; set; }
 
         [Required]
+        [Column(TypeName = "decimal(18, 2)")]
         public double Amount { get; set; }
 
         [Required]
-        public Currency Currency { get; set; }
+        public DateTime TransactionDate { get; set; }
 
-        public Balance Balance { get; set; }
+        [Required]
+        [MaxLength(256)]
+        public string Description { get; set; }
 
-        public TransactionType TransactionType { get; set; }
+        [Required]
+        public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-        public int Day { get; set; }
+        [Required]
+        public DateTime? ModifiedAt { get; set; }
 
-        public DateTime Date { get; set; }
+        [Required]
+        public string AppUserId { get; set; }
+
+        [Required]
+        public int GroupId { get; set; }
+
+        [Required]
+        public int BalanceId { get; set; }
+
+        [Required]
+        public int TransactionTypeId { get; set; }
+
+        [Required]
+        public int TransactionStatusId { get; set; }
+
+        [Required]
+        public int CurrencyId { get; set; }
+
+        // Navigation properties
+        public virtual AppUser AppUser { get; set; }
+        public virtual Group Group { get; set; }
+        public virtual Balance Balance { get; set; }
+        public virtual TransactionType TransactionType { get; set; }
+        public virtual TransactionStatus TransactionStatus { get; set; }
+        public virtual Currency Currency { get; set; }
 
     }
 }
