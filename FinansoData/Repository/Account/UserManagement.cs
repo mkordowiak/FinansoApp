@@ -100,7 +100,7 @@ namespace FinansoData.Repository.Account
 
         }
 
-        public async Task<RepositoryResult<AppUser?>> CreateAppUser(string Email, string Password)
+        public async Task<RepositoryResult<AppUser?>> CreateAppUser(string Email, string Password, string FirstName)
         {
             // Check if user is already exists
             RepositoryResult<AppUser?> user = await _authentication.GetUserByEmailAsync(Email);
@@ -121,6 +121,7 @@ namespace FinansoData.Repository.Account
             // New user object
             AppUser newUser = new AppUser()
             {
+                FirstName = FirstName,
                 UserName = Email,
                 Email = Email,
                 EmailConfirmed = false,
