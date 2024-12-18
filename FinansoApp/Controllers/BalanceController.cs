@@ -15,26 +15,41 @@ namespace FinansoApp.Controllers
         private readonly IGroupQueryRepository _groupQueryRepository;
         private readonly IGroupUsersQueryRepository _groupUsersQueryRepository;
         private readonly IBalanceQueryRepository _balanceQueryRepository;
+        private readonly IBalanceSumAmount _balanceSumAmount;
 
-        public BalanceController(IBalanceManagmentRepository balanceManagmentRepository, ICurrencyQueryRepository currency, IGroupQueryRepository group, IGroupUsersQueryRepository groupUsersQueryRepository, IBalanceQueryRepository balanceQueryRepository)
+        public BalanceController(IBalanceManagmentRepository balanceManagmentRepository, ICurrencyQueryRepository currency, IGroupQueryRepository group, IGroupUsersQueryRepository groupUsersQueryRepository, IBalanceQueryRepository balanceQueryRepository, IBalanceSumAmount balanceSumAmount)
         {
             _balanceManagmentRepository = balanceManagmentRepository;
             _currencyRepository = currency;
             _groupQueryRepository = group;
             _groupUsersQueryRepository = groupUsersQueryRepository;
             _balanceQueryRepository = balanceQueryRepository;
+            _balanceSumAmount = balanceSumAmount;
+            _balanceSumAmount = balanceSumAmount;
         }
 
         public async Task<IActionResult> Index()
         {
-            FinansoData.RepositoryResult<IEnumerable<BalanceViewModel>> repositoryResult = await _balanceQueryRepository.GetListOfBalancesForUser(User.Identity.Name);
 
+            // Get list of balances for user
+            FinansoData.RepositoryResult<IEnumerable<BalanceViewModel>> repositoryResult = await _balanceQueryRepository.GetListOfBalancesForUser(User.Identity.Name);
             if (!repositoryResult.IsSuccess)
             {
                 return BadRequest();
             }
 
-            return View(repositoryResult.Value);
+            // Get sum of all balances for user
+            FinansoData.RepositoryResult<double?> sumAmountResult = await _balanceSumAmount.GetBalancesSumAmountForUser(User.Identity.Name);
+            if (!sumAmountResult.IsSuccess)
+            {
+                BadRequest();
+            }
+
+            ViewModels.Balance.IndexViewModel indexViewModel = new ViewModels.Balance.IndexViewModel();
+            indexViewModel.Balances = repositoryResult.Value;
+            indexViewModel.SumAmount = sumAmountResult.Value;
+
+            return View(indexViewModel);
         }
 
 

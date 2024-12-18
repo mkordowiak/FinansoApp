@@ -1,9 +1,18 @@
-﻿
-@using FinansoData.DataViewModel.Balance
+﻿@using FinansoData.DataViewModel.Balance
+@using FinansoApp.ViewModels.Balance
 
-@model IEnumerable<BalanceViewModel>
+@model FinansoApp.ViewModels.Balance.IndexViewModel
 
 @{
+    double roundedSumOfBalances;
+    if(Model.SumAmount == null) 
+    {
+        roundedSumOfBalances = 0;
+    }
+    else
+    {
+        roundedSumOfBalances = Math.Round((double)Model.SumAmount, 2);
+    }
 }
 
 
@@ -35,7 +44,7 @@
                 </tr>
             </thead>
             <tbody>
-                @foreach (var i in Model)
+                @foreach (var i in Model.Balances)
                 {
                     <tr>
                         <td>
@@ -61,4 +70,5 @@
                 }
             </tbody>
         </table>
+        <div>Sum of all balances: @roundedSumOfBalances zł</div>
     </div>
