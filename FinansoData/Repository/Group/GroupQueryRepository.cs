@@ -15,39 +15,6 @@ namespace FinansoData.Repository.Group
             _cacheWrapper = cacheWrapper;
         }
 
-        public async Task<RepositoryResult<double?>> GetGroupBalancesAmount(int groupId)
-        {
-            string cacheKey = $"GroupQueryRepository_GetGroupBalancesAmount_{groupId}";
-            if (_cacheWrapper.TryGetValue(cacheKey, out double? cacheSum))
-            {
-                return RepositoryResult<double?>.Success(cacheSum);
-            }
-
-            var query = from b in _context.Balances
-                        join c in _context.Currencies on b.Currency.Id equals c.Id
-                        where b.Group.Id == groupId
-                        group new { b, c } by b.GroupId into g
-                        select new
-                        {
-                            GroupId = g.Key,
-                            Sum = g.Sum(x => x.b.Amount * x.c.ExchangeRate)
-                        };
-
-            double sum;
-            try
-            {
-                var result = await query.FirstOrDefaultAsync();
-                sum = result.Sum;
-            }
-            catch
-            {
-                return RepositoryResult<double?>.Failure(null, ErrorType.ServerError);
-            }
-
-            _cacheWrapper.Set(cacheKey, sum, TimeSpan.FromSeconds(60));
-            return RepositoryResult<double?>.Success(sum);
-        }
-
         public async Task<RepositoryResult<Models.Group?>> GetGroupById(int groupId)
         {
             try

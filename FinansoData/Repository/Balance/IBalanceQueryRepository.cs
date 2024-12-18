@@ -1,9 +1,4 @@
 ﻿using FinansoData.DataViewModel.Balance;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FinansoData.Repository.Balance
 {
@@ -37,12 +32,5 @@ namespace FinansoData.Repository.Balance
         /// <param name="balanceId">Id of balance</param>
         /// <returns></returns>
         Task<RepositoryResult<BalanceViewModel>> GetBalance(int balanceId);
-
-        /// <summary>
-        /// Get sum of all balances for user
-        /// </summary>
-        /// <param name="userName"></param>
-        /// <returns></returns>
-        Task<RepositoryResult<double?>> GetBalancesSumAmountForUser(string userName);
     }
 }

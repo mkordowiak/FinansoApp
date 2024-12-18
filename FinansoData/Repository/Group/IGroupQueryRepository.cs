@@ -25,13 +25,6 @@ namespace FinansoData.Repository.Group
         /// <param name="groupId"></param>
         /// <returns></returns>
         Task<RepositoryResult<Models.Group?>> GetGroupById(int groupId);
-
-        /// <summary>
-        /// Get group balances amount
-        /// </summary>
-        /// <param name="groupId"></param>
-        /// <returns></returns>
-        Task<RepositoryResult<double?>> GetGroupBalancesAmount(int groupId);
     }
 
 }

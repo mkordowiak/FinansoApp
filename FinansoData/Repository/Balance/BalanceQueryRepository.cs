@@ -56,8 +56,6 @@ namespace FinansoData.Repository.Balance
             {
                 return RepositoryResult<IEnumerable<BalanceViewModel>>.Success(cachedBalanceVM);
             }
-
-
             IQueryable<BalanceViewModel> queryGroupMember = from u in _context.Users
                                                             join gu in _context.GroupUsers on u.Id equals gu.AppUserId
                                                             join g in _context.Groups on gu.Group.Id equals g.Id
@@ -174,56 +172,6 @@ namespace FinansoData.Repository.Balance
             return RepositoryResult<BalanceViewModel>.Success(result);
         }
 
-        public async Task<RepositoryResult<double?>> GetBalancesSumAmountForUser(string userName)
-        {
-            string cacheKey = $"BalanceQueryRepository_GetBalancesSumAmountForUser_{userName}";
-            if (_cacheWrapper.TryGetValue(cacheKey, out double? cachedSum))
-            {
-                return RepositoryResult<double?>.Success(cachedSum);
-            }
-
-            var queryGroupsOwnedByUser = from g in _context.Groups
-                                         join u in _context.AppUsers on g.OwnerAppUser.Id equals u.Id
-                                         join b in _context.Balances on g.Id equals b.GroupId
-                                         join c in _context.Currencies on b.CurrencyId equals c.Id
-                                         where u.NormalizedUserName == userName
-                                         select new
-                                         {
-                                             g.Name,
-                                             b.Amount,
-                                             c.ExchangeRate,
-                                             AmountNorm = b.Amount * c.ExchangeRate
-                                         };
-
-            var queryGroupsMember = from u in _context.AppUsers
-                                    join gu in _context.GroupUsers on u.Id equals gu.AppUserId
-                                    join g in _context.Groups on gu.GroupId equals g.Id
-                                    join b in _context.Balances on g.Id equals b.GroupId
-                                    join c in _context.Currencies on b.CurrencyId equals c.Id
-                                    where u.NormalizedUserName == userName
-                                    select new
-                                    {
-                                        g.Name,
-                                        b.Amount,
-                                        c.ExchangeRate,
-                                        AmountNorm = b.Amount * c.ExchangeRate
-                                    };
-
-            var unionQuery = queryGroupsMember.Union(queryGroupsOwnedByUser);
-            double sumAmountOfAllBalancesForUser;
-            try
-            {
-
-                sumAmountOfAllBalancesForUser = await unionQuery.SumAsync(x => x.AmountNorm);
-
-            }
-            catch
-            {
-                return RepositoryResult<double?>.Failure(null, ErrorType.ServerError);
-            }
-
-            _cacheWrapper.Set(cacheKey, sumAmountOfAllBalancesForUser, TimeSpan.FromSeconds(60));
-            return RepositoryResult<double?>.Success(sumAmountOfAllBalancesForUser);
-        }
+        
     }
 }
