@@ -77,7 +77,8 @@ namespace FinansoData.Data
                         new Currency { Code = "DKK", Name = "Korona duńska", ExchangeRate = 3.4, UpdatedAt = DateTime.Now },
                         new Currency { Code = "CAD", Name = "Dolar kanadyjski", ExchangeRate = 3.3, UpdatedAt = DateTime.Now },
                         new Currency { Code = "AUD", Name = "Dolar australijski", ExchangeRate = 3.2, UpdatedAt = DateTime.Now },
-                        new Currency { Code = "NZD", Name = "Dolar nowozelandzki", ExchangeRate = 3.1, UpdatedAt = DateTime.Now }
+                        new Currency { Code = "NZD", Name = "Dolar nowozelandzki", ExchangeRate = 3.1, UpdatedAt = DateTime.Now },
+                        new Currency { Code = "BTC", Name = "Bitcoin", ExchangeRate = 424069, UpdatedAt = DateTime.Now }
                     );
                     context.SaveChanges();
                 }
