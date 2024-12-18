@@ -18,9 +18,9 @@ namespace FinansoData.Repository.Group
         public async Task<RepositoryResult<double?>> GetGroupBalancesAmount(int groupId)
         {
             string cacheKey = $"GroupQueryRepository_GetGroupBalancesAmount_{groupId}";
-            if (_cacheWrapper.TryGetValue(cacheKey, out double? cacheData))
+            if (_cacheWrapper.TryGetValue(cacheKey, out double? cacheSum))
             {
-                return RepositoryResult<double?>.Success(cacheData);
+                return RepositoryResult<double?>.Success(cacheSum);
             }
 
             var query = from b in _context.Balances
