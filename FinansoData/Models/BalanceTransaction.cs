@@ -16,7 +16,6 @@ namespace FinansoData.Models
         public int Id { get; set; }
 
         [Required]
-        [Column(TypeName = "decimal(18, 2)")]
         public double Amount { get; set; }
 
         [Required]

@@ -23,7 +23,6 @@ namespace FinansoData.Models
         /// Amount of fund on balance
         /// </summary>
         [Required]
-        [Column(TypeName = "decimal(18, 2)")]
         public Double Amount { get; set; }
 
         /// <summary>
