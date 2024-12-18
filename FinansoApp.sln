@@ -9,7 +9,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FinansoData", "FinansoData\
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FinansoApp.Tests", "FinansoApp.Tests\FinansoApp.Tests.csproj", "{93F3BCE6-A141-416E-9A56-8DF0133BF9F5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "FinansoData.Tests", "FinansoData.Tests\FinansoData.Tests.csproj", "{68415D76-C943-41BE-8257-26B9B7E14A8F}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "FinansoData.Tests", "FinansoData.Tests\FinansoData.Tests.csproj", "{68415D76-C943-41BE-8257-26B9B7E14A8F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
