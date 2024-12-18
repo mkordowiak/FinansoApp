@@ -1,5 +1,7 @@
 ﻿@using FinansoApp.ViewModels.Balance
+@using System.Globalization
 @model SetBalanceAmountViewModel
+
 
 @{
     ViewData["Title"] = "Create group";
@@ -46,3 +48,16 @@
         </div>
     </div>
 </div>
+
+
+<!-- Change . to , -->
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        const amountInput = document.querySelector('[name="Amount"]');
+        if (amountInput) {
+            amountInput.addEventListener('input', () => {
+                amountInput.value = amountInput.value.replace('.', ',');
+            });
+        }
+    });
+</script>

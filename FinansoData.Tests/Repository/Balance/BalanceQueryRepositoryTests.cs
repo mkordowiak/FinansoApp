@@ -17,12 +17,12 @@ namespace FinansoData.Tests.Repository.Balance
         private readonly List<FinansoData.Models.Group> _groups;
         private readonly List<FinansoData.Models.Currency> _currencies;
         private readonly List<FinansoData.Models.GroupUser> _groupUsers;
-        private readonly Mock<ICacheWrapper> _cacheWrapper;
+        private readonly Mock<ICacheWrapper> _cacheWrapperMock;
 
 
         public BalanceQueryRepositoryTests()
         {
-            _cacheWrapper = new Mock<ICacheWrapper>();
+            _cacheWrapperMock = new Mock<ICacheWrapper>();
             _dbContextOptions = new DbContextOptionsBuilder<ApplicationDbContext>()
                 .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
                 .Options;
@@ -88,12 +88,12 @@ namespace FinansoData.Tests.Repository.Balance
             // Arrange
             RepositoryResult<IEnumerable<BalanceViewModel>> result;
 
-            _cacheWrapper.Setup(x => x.TryGetValue(It.IsAny<string>(), out It.Ref<List<BalanceViewModel>>.IsAny))
+            _cacheWrapperMock.Setup(x => x.TryGetValue(It.IsAny<string>(), out It.Ref<List<BalanceViewModel>>.IsAny))
                 .Returns(false);
 
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
-                IBalanceQueryRepository balanceQueryRepository = new BalanceQueryRepository(context, _cacheWrapper.Object);
+                IBalanceQueryRepository balanceQueryRepository = new BalanceQueryRepository(context, _cacheWrapperMock.Object);
 
                 // Act
                 result = await balanceQueryRepository.GetListOfBalancesForUser("1");
@@ -113,12 +113,12 @@ namespace FinansoData.Tests.Repository.Balance
             // Arrange
             RepositoryResult<IEnumerable<BalanceViewModel>> result;
 
-            _cacheWrapper.Setup(x => x.TryGetValue(It.IsAny<string>(), out It.Ref<List<BalanceViewModel>>.IsAny))
+            _cacheWrapperMock.Setup(x => x.TryGetValue(It.IsAny<string>(), out It.Ref<List<BalanceViewModel>>.IsAny))
                 .Returns(false);
 
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
-                IBalanceQueryRepository balanceQueryRepository = new BalanceQueryRepository(context, _cacheWrapper.Object);
+                IBalanceQueryRepository balanceQueryRepository = new BalanceQueryRepository(context, _cacheWrapperMock.Object);
 
                 // Act
                 result = await balanceQueryRepository.GetListOfBalancesForUser("1");
@@ -143,7 +143,7 @@ namespace FinansoData.Tests.Repository.Balance
 
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
-                IBalanceQueryRepository balanceQueryRepository = new BalanceQueryRepository(context, _cacheWrapper.Object);
+                IBalanceQueryRepository balanceQueryRepository = new BalanceQueryRepository(context, _cacheWrapperMock.Object);
 
                 // Act
                 result = await balanceQueryRepository.GetListOfBalancesForUser(userName);
@@ -172,12 +172,12 @@ namespace FinansoData.Tests.Repository.Balance
             int groupId = 1;
             RepositoryResult<IEnumerable<BalanceViewModel>> result;
 
-            _cacheWrapper.Setup(x => x.TryGetValue(It.IsAny<string>(), out It.Ref<List<BalanceViewModel>>.IsAny))
+            _cacheWrapperMock.Setup(x => x.TryGetValue(It.IsAny<string>(), out It.Ref<List<BalanceViewModel>>.IsAny))
                 .Returns(false);
 
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
-                IBalanceQueryRepository balanceQueryRepository = new BalanceQueryRepository(context, _cacheWrapper.Object);
+                IBalanceQueryRepository balanceQueryRepository = new BalanceQueryRepository(context, _cacheWrapperMock.Object);
 
                 // Act
                 result = await balanceQueryRepository.GetListOfBalancesForGroup(groupId);
@@ -211,12 +211,12 @@ namespace FinansoData.Tests.Repository.Balance
             {
                 new BalanceViewModel { Id = 999, Name = "Bank 1", Amount = 1, Currency = _currencies[0], Group = _groups[0] }
             };
-            _cacheWrapper.Setup(x => x.TryGetValue(It.IsAny<string>(), out cachedBalances))
+            _cacheWrapperMock.Setup(x => x.TryGetValue(It.IsAny<string>(), out cachedBalances))
                 .Returns(true);
 
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
-                IBalanceQueryRepository balanceQueryRepository = new BalanceQueryRepository(context, _cacheWrapper.Object);
+                IBalanceQueryRepository balanceQueryRepository = new BalanceQueryRepository(context, _cacheWrapperMock.Object);
 
                 // Act
                 result = await balanceQueryRepository.GetListOfBalancesForGroup(groupId);
@@ -244,12 +244,12 @@ namespace FinansoData.Tests.Repository.Balance
             int groupId = 1;
             RepositoryResult<IEnumerable<BalanceViewModel>> result;
 
-            _cacheWrapper.Setup(x => x.TryGetValue(It.IsAny<string>(), out It.Ref<List<BalanceViewModel>>.IsAny))
+            _cacheWrapperMock.Setup(x => x.TryGetValue(It.IsAny<string>(), out It.Ref<List<BalanceViewModel>>.IsAny))
                 .Returns(false);
 
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
-                IBalanceQueryRepository balanceQueryRepository = new BalanceQueryRepository(context, _cacheWrapper.Object);
+                IBalanceQueryRepository balanceQueryRepository = new BalanceQueryRepository(context, _cacheWrapperMock.Object);
 
                 // Act
                 result = await balanceQueryRepository.GetListOfBalancesForGroup(groupId);
@@ -261,7 +261,7 @@ namespace FinansoData.Tests.Repository.Balance
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
 
-            _cacheWrapper.Verify(x => x.Set(It.IsAny<string>(), It.IsAny<List<BalanceViewModel>>(), It.IsAny<TimeSpan>()), Times.Once);
+            _cacheWrapperMock.Verify(x => x.Set(It.IsAny<string>(), It.IsAny<List<BalanceViewModel>>(), It.IsAny<TimeSpan>()), Times.Once);
         }
 
         #endregion
@@ -272,13 +272,13 @@ namespace FinansoData.Tests.Repository.Balance
         public async Task HasUserAccessToBalance_WhenUserIsMember_ShoultReturnTrueFromDb()
         {
             // Arrange
-            _cacheWrapper.Setup(x => x.TryGetValue(It.IsAny<string>(), out It.Ref<bool>.IsAny))
+            _cacheWrapperMock.Setup(x => x.TryGetValue(It.IsAny<string>(), out It.Ref<bool>.IsAny))
                 .Returns(false);
 
             RepositoryResult<bool?> repositoryResult;
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
-                IBalanceQueryRepository balanceQueryRepository = new BalanceQueryRepository(context, _cacheWrapper.Object);
+                IBalanceQueryRepository balanceQueryRepository = new BalanceQueryRepository(context, _cacheWrapperMock.Object);
                 // Act
                 repositoryResult = await balanceQueryRepository.HasUserAccessToBalance("1", 1);
 
@@ -295,13 +295,13 @@ namespace FinansoData.Tests.Repository.Balance
         public async Task HasUserAccessToBalance_WhenUserIsOwner_ShoultReturnTrueFromDb()
         {
             // Arrange
-            _cacheWrapper.Setup(x => x.TryGetValue(It.IsAny<string>(), out It.Ref<bool>.IsAny))
+            _cacheWrapperMock.Setup(x => x.TryGetValue(It.IsAny<string>(), out It.Ref<bool>.IsAny))
                 .Returns(false);
 
             RepositoryResult<bool?> repositoryResult;
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
-                IBalanceQueryRepository balanceQueryRepository = new BalanceQueryRepository(context, _cacheWrapper.Object);
+                IBalanceQueryRepository balanceQueryRepository = new BalanceQueryRepository(context, _cacheWrapperMock.Object);
                 // Act
                 repositoryResult = await balanceQueryRepository.HasUserAccessToBalance("1", 2);
 
@@ -319,13 +319,13 @@ namespace FinansoData.Tests.Repository.Balance
         {
             // Arrange
             bool cachedResult = true;
-            _cacheWrapper.Setup(x => x.TryGetValue(It.IsAny<string>(), out cachedResult))
+            _cacheWrapperMock.Setup(x => x.TryGetValue(It.IsAny<string>(), out cachedResult))
                 .Returns(true);
 
             RepositoryResult<bool?> repositoryResult;
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
-                IBalanceQueryRepository balanceQueryRepository = new BalanceQueryRepository(context, _cacheWrapper.Object);
+                IBalanceQueryRepository balanceQueryRepository = new BalanceQueryRepository(context, _cacheWrapperMock.Object);
                 // Act
                 repositoryResult = await balanceQueryRepository.HasUserAccessToBalance("999", 1);
 
@@ -341,13 +341,13 @@ namespace FinansoData.Tests.Repository.Balance
         public async Task HasUserAccessToBalance_WhenUserIsNotMemberOrOwner_ShoultReturnFalse()
         {
             // Arrange
-            _cacheWrapper.Setup(x => x.TryGetValue(It.IsAny<string>(), out It.Ref<bool>.IsAny))
+            _cacheWrapperMock.Setup(x => x.TryGetValue(It.IsAny<string>(), out It.Ref<bool>.IsAny))
                 .Returns(false);
 
             RepositoryResult<bool?> repositoryResult;
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
-                IBalanceQueryRepository balanceQueryRepository = new BalanceQueryRepository(context, _cacheWrapper.Object);
+                IBalanceQueryRepository balanceQueryRepository = new BalanceQueryRepository(context, _cacheWrapperMock.Object);
                 // Act
                 repositoryResult = await balanceQueryRepository.HasUserAccessToBalance("3", 1);
 
@@ -366,13 +366,13 @@ namespace FinansoData.Tests.Repository.Balance
         public async Task HasUserAccessToBalance_ShoultSaveCache()
         {
             // Arrange
-            _cacheWrapper.Setup(x => x.TryGetValue(It.IsAny<string>(), out It.Ref<bool>.IsAny))
+            _cacheWrapperMock.Setup(x => x.TryGetValue(It.IsAny<string>(), out It.Ref<bool>.IsAny))
                 .Returns(false);
 
             RepositoryResult<bool?> repositoryResult;
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
-                IBalanceQueryRepository balanceQueryRepository = new BalanceQueryRepository(context, _cacheWrapper.Object);
+                IBalanceQueryRepository balanceQueryRepository = new BalanceQueryRepository(context, _cacheWrapperMock.Object);
                 // Act
                 repositoryResult = await balanceQueryRepository.HasUserAccessToBalance("3", 1);
 
@@ -380,7 +380,7 @@ namespace FinansoData.Tests.Repository.Balance
                 context.Database.EnsureDeleted();
             }
             // Assert
-            _cacheWrapper.Verify(x => x.Set(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<TimeSpan>()), Times.Once);
+            _cacheWrapperMock.Verify(x => x.Set(It.IsAny<string>(), It.IsAny<bool>(), It.IsAny<TimeSpan>()), Times.Once);
         }
 
         #endregion
@@ -391,13 +391,13 @@ namespace FinansoData.Tests.Repository.Balance
         public async Task GetBalance_WhenBalanceExists_ShouldReturnBalanceFromDB()
         {
            // Arrange
-           _cacheWrapper.Setup(x => x.TryGetValue(It.IsAny<string>(), out It.Ref<BalanceViewModel>.IsAny))
+           _cacheWrapperMock.Setup(x => x.TryGetValue(It.IsAny<string>(), out It.Ref<BalanceViewModel>.IsAny))
                .Returns(false);
 
             RepositoryResult<BalanceViewModel> repositoryResult;
             using (ApplicationDbContext applicationDbContext =  new ApplicationDbContext(_dbContextOptions))
             {
-                IBalanceQueryRepository balanceQueryRepository = new BalanceQueryRepository(applicationDbContext, _cacheWrapper.Object);
+                IBalanceQueryRepository balanceQueryRepository = new BalanceQueryRepository(applicationDbContext, _cacheWrapperMock.Object);
                 // Act
                 repositoryResult = await balanceQueryRepository.GetBalance(1);
                 applicationDbContext.Database.EnsureDeleted();
@@ -423,13 +423,13 @@ namespace FinansoData.Tests.Repository.Balance
                 Currency = new FinansoData.Models.Currency { Id = 1, Code = "PLN", Name = "Polski zloty" },
                 Group = new FinansoData.Models.Group { Id = 1, Name = "Test group 1", OwnerAppUser = new FinansoData.Models.AppUser { Id = "1", UserName = "1", NormalizedUserName = "1", FirstName = "1", LastName = "1" } }
             };
-            _cacheWrapper.Setup(x => x.TryGetValue(It.IsAny<string>(), out cachedBalance))
+            _cacheWrapperMock.Setup(x => x.TryGetValue(It.IsAny<string>(), out cachedBalance))
                 .Returns(true);
 
             RepositoryResult<BalanceViewModel> repositoryResult;
             using (ApplicationDbContext applicationDbContext = new ApplicationDbContext(_dbContextOptions))
             {
-                IBalanceQueryRepository balanceQueryRepository = new BalanceQueryRepository(applicationDbContext, _cacheWrapper.Object);
+                IBalanceQueryRepository balanceQueryRepository = new BalanceQueryRepository(applicationDbContext, _cacheWrapperMock.Object);
                 // Act
                 repositoryResult = await balanceQueryRepository.GetBalance(1);
                 applicationDbContext.Database.EnsureDeleted();
@@ -446,13 +446,13 @@ namespace FinansoData.Tests.Repository.Balance
         public async Task GetBalance_WhenBalanceDoesNotExist_ShouldReturnFailure()
         {
             // Arrange
-            _cacheWrapper.Setup(x => x.TryGetValue(It.IsAny<string>(), out It.Ref<BalanceViewModel>.IsAny))
+            _cacheWrapperMock.Setup(x => x.TryGetValue(It.IsAny<string>(), out It.Ref<BalanceViewModel>.IsAny))
                 .Returns(false);
 
             RepositoryResult<BalanceViewModel> repositoryResult;
             using (ApplicationDbContext applicationDbContext = new ApplicationDbContext(_dbContextOptions))
             {
-                IBalanceQueryRepository balanceQueryRepository = new BalanceQueryRepository(applicationDbContext, _cacheWrapper.Object);
+                IBalanceQueryRepository balanceQueryRepository = new BalanceQueryRepository(applicationDbContext, _cacheWrapperMock.Object);
                 // Act
                 repositoryResult = await balanceQueryRepository.GetBalance(999);
                 applicationDbContext.Database.EnsureDeleted();
@@ -468,20 +468,20 @@ namespace FinansoData.Tests.Repository.Balance
         public async Task GetBalance_ShouldSaveCache()
         {
             // Arrange
-            _cacheWrapper.Setup(x => x.TryGetValue(It.IsAny<string>(), out It.Ref<BalanceViewModel>.IsAny))
+            _cacheWrapperMock.Setup(x => x.TryGetValue(It.IsAny<string>(), out It.Ref<BalanceViewModel>.IsAny))
                 .Returns(false);
 
             RepositoryResult<BalanceViewModel> repositoryResult;
             using (ApplicationDbContext applicationDbContext = new ApplicationDbContext(_dbContextOptions))
             {
-                IBalanceQueryRepository balanceQueryRepository = new BalanceQueryRepository(applicationDbContext, _cacheWrapper.Object);
+                IBalanceQueryRepository balanceQueryRepository = new BalanceQueryRepository(applicationDbContext, _cacheWrapperMock.Object);
                 // Act
                 repositoryResult = await balanceQueryRepository.GetBalance(1);
                 applicationDbContext.Database.EnsureDeleted();
             }
 
             // Assert
-            _cacheWrapper.Verify(x => x.Set(It.IsAny<string>(), It.IsAny<BalanceViewModel>(), It.IsAny<TimeSpan>()), Times.Once);
+            _cacheWrapperMock.Verify(x => x.Set(It.IsAny<string>(), It.IsAny<BalanceViewModel>(), It.IsAny<TimeSpan>()), Times.Once);
         }
 
         #endregion

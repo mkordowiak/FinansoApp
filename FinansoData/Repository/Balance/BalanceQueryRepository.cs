@@ -17,7 +17,8 @@ namespace FinansoData.Repository.Balance
 
         public async Task<RepositoryResult<IEnumerable<BalanceViewModel>?>> GetListOfBalancesForGroup(int groupId)
         {
-            if (_cacheWrapper.TryGetValue($"BalanceQueryRepository_GetListOfBalancesForGroup_{groupId}", out List<BalanceViewModel> cachedBalanceVM))
+            string cacheKey = $"BalanceQueryRepository_GetListOfBalancesForGroup_{groupId}";
+            if (_cacheWrapper.TryGetValue(cacheKey, out List<BalanceViewModel> cachedBalanceVM))
             {
                 return RepositoryResult<IEnumerable<BalanceViewModel>>.Success(cachedBalanceVM);
             }
@@ -44,18 +45,17 @@ namespace FinansoData.Repository.Balance
                 return RepositoryResult<IEnumerable<BalanceViewModel>>.Failure(null, ErrorType.ServerError);
             }
 
-            _cacheWrapper.Set($"BalanceQueryRepository_GetListOfBalancesForGroup_{groupId}", result, TimeSpan.FromSeconds(30));
+            _cacheWrapper.Set(cacheKey, result, TimeSpan.FromSeconds(30));
             return RepositoryResult<IEnumerable<BalanceViewModel>>.Success(result);
         }
 
         public async Task<RepositoryResult<IEnumerable<BalanceViewModel>?>> GetListOfBalancesForUser(string userName)
         {
-            if (_cacheWrapper.TryGetValue($"BalanceQueryRepository_GetListOfBalancesForUser_{userName}", out List<BalanceViewModel> cachedBalanceVM))
+            string cacheKey = $"BalanceQueryRepository_GetListOfBalancesForUser_{userName}";
+            if (_cacheWrapper.TryGetValue(cacheKey, out List<BalanceViewModel> cachedBalanceVM))
             {
                 return RepositoryResult<IEnumerable<BalanceViewModel>>.Success(cachedBalanceVM);
             }
-
-
             IQueryable<BalanceViewModel> queryGroupMember = from u in _context.Users
                                                             join gu in _context.GroupUsers on u.Id equals gu.AppUserId
                                                             join g in _context.Groups on gu.Group.Id equals g.Id
@@ -92,13 +92,14 @@ namespace FinansoData.Repository.Balance
                 return RepositoryResult<IEnumerable<BalanceViewModel>>.Failure(null, ErrorType.ServerError);
             }
 
-            _cacheWrapper.Set($"BalanceQueryRepository_GetListOfBalancesForUser_{userName}", result, TimeSpan.FromSeconds(3));
+            _cacheWrapper.Set(cacheKey, result, TimeSpan.FromSeconds(3));
             return RepositoryResult<IEnumerable<BalanceViewModel>>.Success(result);
         }
 
         public async Task<RepositoryResult<bool?>> HasUserAccessToBalance(string userName, int balanceId)
         {
-            if (_cacheWrapper.TryGetValue($"BalanceQueryRepository_HasUserAccessToBalance_{userName}_{balanceId}", out bool cachedResult))
+            string cacheKey = $"BalanceQueryRepository_HasUserAccessToBalance_{userName}_{balanceId}";
+            if (_cacheWrapper.TryGetValue(cacheKey, out bool cachedResult))
             {
                 return RepositoryResult<bool?>.Success(cachedResult);
             }
@@ -106,15 +107,15 @@ namespace FinansoData.Repository.Balance
             IQueryable<bool> queryGroupOwner = from u in _context.Users
                                                join g in _context.Groups on u.Id equals g.OwnerAppUser.Id
                                                join b in _context.Balances on g.Id equals b.Group.Id
-                                               where u.NormalizedUserName == userName 
-                                                && b.Id == balanceId 
+                                               where u.NormalizedUserName == userName
+                                                && b.Id == balanceId
                                                select true;
 
             IQueryable<bool> queryGroupMember = from u in _context.Users
                                                 join gu in _context.GroupUsers on u.Id equals gu.AppUserId
                                                 join g in _context.Groups on gu.Group.Id equals g.Id
                                                 join b in _context.Balances on g.Id equals b.Group.Id
-                                                where u.NormalizedUserName == userName 
+                                                where u.NormalizedUserName == userName
                                                     && b.Id == balanceId
                                                     && gu.Active == true
                                                 select true;
@@ -128,14 +129,15 @@ namespace FinansoData.Repository.Balance
                 return RepositoryResult<bool?>.Failure(null, ErrorType.ServerError);
             }
 
-            _cacheWrapper.Set($"BalanceQueryRepository_HasUserAccessToBalance_{userName}_{balanceId}", result, TimeSpan.FromSeconds(30));
+            _cacheWrapper.Set(cacheKey, result, TimeSpan.FromSeconds(30));
             return RepositoryResult<bool?>.Success(result);
         }
 
 
         public async Task<RepositoryResult<BalanceViewModel>> GetBalance(int balcnceId)
         {
-            if(_cacheWrapper.TryGetValue($"BalanceQueryRepository_GetBalance_{balcnceId}", out BalanceViewModel cachedBalanceVM))
+            string cacheKey = $"BalanceQueryRepository_GetBalance_{balcnceId}";
+            if (_cacheWrapper.TryGetValue(cacheKey, out BalanceViewModel cachedBalanceVM))
             {
                 return RepositoryResult<BalanceViewModel>.Success(cachedBalanceVM);
             }
@@ -161,13 +163,15 @@ namespace FinansoData.Repository.Balance
             }
 
 
-            if(result == null)
+            if (result == null)
             {
                 return RepositoryResult<BalanceViewModel>.Failure(null, ErrorType.NotFound);
             }
 
-            _cacheWrapper.Set($"BalanceQueryRepository_GetBalance_{balcnceId}", result, TimeSpan.FromSeconds(30));
+            _cacheWrapper.Set(cacheKey, result, TimeSpan.FromSeconds(30));
             return RepositoryResult<BalanceViewModel>.Success(result);
         }
+
+        
     }
 }
