@@ -1,6 +1,5 @@
 ﻿using FinansoData.Data;
 using FinansoData.DataViewModel.Group;
-using FinansoData.Models;
 using Microsoft.EntityFrameworkCore;
 
 namespace FinansoData.Repository.Group
@@ -18,6 +17,12 @@ namespace FinansoData.Repository.Group
 
         public async Task<RepositoryResult<double?>> GetGroupBalancesAmount(int groupId)
         {
+            string cacheKey = $"GroupQueryRepository_GetGroupBalancesAmount_{groupId}";
+            if (_cacheWrapper.TryGetValue(cacheKey, out double? cacheData))
+            {
+                return RepositoryResult<double?>.Success(cacheData);
+            }
+
             var query = from b in _context.Balances
                         join c in _context.Currencies on b.Currency.Id equals c.Id
                         where b.Group.Id == groupId
@@ -28,23 +33,26 @@ namespace FinansoData.Repository.Group
                             Sum = g.Sum(x => x.b.Amount * x.c.ExchangeRate)
                         };
 
+            double sum;
             try
             {
                 var result = await query.FirstOrDefaultAsync();
-                double sum = result.Sum;
-                return RepositoryResult<double?>.Success(sum);
+                sum = result.Sum;
             }
             catch
             {
                 return RepositoryResult<double?>.Failure(null, ErrorType.ServerError);
             }
+
+            _cacheWrapper.Set(cacheKey, sum, TimeSpan.FromSeconds(60));
+            return RepositoryResult<double?>.Success(sum);
         }
 
         public async Task<RepositoryResult<Models.Group?>> GetGroupById(int groupId)
         {
             try
             {
-                var group = await _context.Groups.FirstOrDefaultAsync(g => g.Id == groupId);
+                Models.Group? group = await _context.Groups.FirstOrDefaultAsync(g => g.Id == groupId);
                 return RepositoryResult<Models.Group>.Success(group);
             }
             catch
@@ -55,7 +63,7 @@ namespace FinansoData.Repository.Group
 
         public async Task<RepositoryResult<IEnumerable<GetUserGroupsViewModel>?>> GetUserGroups(string appUser)
         {
-            var cacheKey = $"GroupQueryRepository_GetUserGroups_{appUser}";
+            string cacheKey = $"GroupQueryRepository_GetUserGroups_{appUser}";
             if (_cacheWrapper.TryGetValue(cacheKey, out IEnumerable<GetUserGroupsViewModel>? cacheData))
             {
                 return RepositoryResult<IEnumerable<GetUserGroupsViewModel>?>.Success(cacheData);
@@ -65,14 +73,14 @@ namespace FinansoData.Repository.Group
             IQueryable<GetUserGroupsViewModel> ownerQuery = from g in _context.Groups
                                                             join u in _context.AppUsers on g.OwnerAppUser.Id equals u.Id into gu
                                                             from u in gu.DefaultIfEmpty()
-                                                            where u.UserName == appUser 
+                                                            where u.UserName == appUser
                                                             select new GetUserGroupsViewModel
                                                             {
                                                                 Id = g.Id,
                                                                 Name = g.Name,
                                                                 IsOwner = true,
                                                                 MembersCount = (from sqgu in _context.GroupUsers
-                                                                                where sqgu.Group.Id == g.Id 
+                                                                                where sqgu.Group.Id == g.Id
                                                                                 && sqgu.Active == true
                                                                                 select sqgu.Id).Count() + 1
                                                             };
@@ -107,7 +115,7 @@ namespace FinansoData.Repository.Group
             return RepositoryResult<IEnumerable<GetUserGroupsViewModel>?>.Success(data);
         }
 
-        
+
 
         public async Task<RepositoryResult<bool>> IsGroupExists(int groupId)
         {
