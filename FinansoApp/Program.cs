@@ -6,6 +6,7 @@ using FinansoData.Repository.Balance;
 using FinansoData.Repository.Currency;
 using FinansoData.Repository.Group;
 using FinansoData.Repository.Settings;
+using FinansoData.Repository.Transaction;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -23,6 +24,7 @@ builder.Services.AddScoped<IGroupUsersManagementRepository, GroupUsersManagement
 builder.Services.AddScoped<IUserQuery, UserQuery>();
 builder.Services.AddScoped<ICurrencyQueryRepository, CurrencyQueryRepository>();
 builder.Services.AddScoped<IBalanceSumAmount, BalanceSumAmount>();
+builder.Services.AddScoped<ITransactionManageRepository, TransactionManageRepository>();
 
 builder.Services.AddScoped<IBalanceManagmentRepository, BalanceManagementRepository>();
 builder.Services.AddScoped<IBalanceQueryRepository, BalanceQueryRepository>();
