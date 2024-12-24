@@ -2,10 +2,12 @@
 using FinansoApp.ViewModels;
 using FinansoApp.ViewModels.Group;
 using FinansoData.DataViewModel.Group;
+using FinansoData.DataViewModel.Transaction;
 using FinansoData.Models;
 using FinansoData.Repository.Account;
 using FinansoData.Repository.Group;
 using FinansoData.Repository.Settings;
+using FinansoData.Repository.Transaction;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
@@ -20,6 +22,8 @@ namespace FinansoApp.Controllers
         private readonly IGroupUsersManagementRepository _groupUsersManagementRepository;
         private readonly IUserQuery _userQuery;
         private readonly ISettingsQueryRepository _settingsQueryRepository;
+        private readonly ITransactionManageRepository _transactionManageRepository;
+
 
         public GroupController(
             IMapper mapper,
@@ -28,7 +32,8 @@ namespace FinansoApp.Controllers
             IGroupUsersQueryRepository groupUsersQuery,
             IGroupUsersManagementRepository groupUsersManagementRepository,
             IUserQuery userQuery,
-            ISettingsQueryRepository settingsQueryRepository)
+            ISettingsQueryRepository settingsQueryRepository,
+            ITransactionManageRepository transactionManageRepository)
         {
             _mapper = mapper;
             _groupQueryRepository = groupQueryRepository;
@@ -37,6 +42,7 @@ namespace FinansoApp.Controllers
             _groupUsersManagementRepository = groupUsersManagementRepository;
             _userQuery = userQuery;
             _settingsQueryRepository = settingsQueryRepository;
+            _transactionManageRepository = transactionManageRepository;
         }
 
         /// <summary>
@@ -89,7 +95,6 @@ namespace FinansoApp.Controllers
         {
             FinansoData.RepositoryResult<bool?> createGroup = await _groupManagementRepository.Add(groupCreateViewModel.Name, User.Identity.Name);
 
-
             if (createGroup.IsSuccess == false
                 && createGroup.ErrorType == FinansoData.ErrorType.MaxGroupsLimitReached)
             {
@@ -126,7 +131,7 @@ namespace FinansoApp.Controllers
             // get data
             FinansoData.RepositoryResult<IEnumerable<GetGroupMembersViewModel>> data = await _groupUsersQuery.GetGroupMembersAsync(id);
 
-            if(data.IsSuccess == false)
+            if (data.IsSuccess == false)
             {
                 return BadRequest();
             }
@@ -496,5 +501,32 @@ namespace FinansoApp.Controllers
 
             return RedirectToAction("Invitations", "Group");
         }
+
+        [Authorize]
+        [HttpGet("Group/Transactions/{groupId}")]
+        public async Task<IActionResult> Transactions(int groupId)
+        {
+            // Check if user has access to selected group
+            // check logged in user access
+            FinansoData.RepositoryResult<GetUserMembershipInGroupViewModel> groupMemberInfo = await _groupUsersQuery.GetUserMembershipInGroupAsync(groupId, User.Identity.Name);
+            if (!groupMemberInfo.IsSuccess)
+            {
+                return BadRequest();
+            }
+
+            if (!groupMemberInfo.Value.IsMember)
+            {
+                return Unauthorized();
+            }
+
+            FinansoData.RepositoryResult<IEnumerable<TransactionViewModel>?> transactions = await _transactionManageRepository.GetAllTransactionsForGroup(groupId);
+            if (!transactions.IsSuccess)
+            {
+                return BadRequest();
+            }
+
+            return View(transactions);
+        }
+
     }
 }

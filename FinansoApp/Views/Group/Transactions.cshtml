@@ -1,0 +1,25 @@
+﻿@using FinansoData.DataViewModel.Group
+@using FinansoApp.ViewModels.Group
+@using FinansoData.DataViewModel.Transaction
+
+
+@model FinansoData.RepositoryResult<IEnumerable<FinansoData.DataViewModel.Transaction.TransactionViewModel>?>
+
+
+@foreach (var i in Model.Value)
+            {
+    @i.Id
+    <br />
+    @i.Amount
+
+    <br />
+    @i.TransactionDate
+    <br />
+    @i.Description
+    <br />
+    @i.Group.Id
+    <br />
+    <br />
+    
+    
+}
