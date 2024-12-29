@@ -23,7 +23,7 @@ namespace FinansoData.Repository.Currency
                 return RepositoryResult<IEnumerable<CurrencyViewModel>>.Success(cacheAllCurrencies);
             }
 
-            IQueryable<CurrencyViewModel> query = from currency in _context.Currencies
+            IQueryable<CurrencyViewModel> query = from currency in _context.Currencies.AsNoTracking()
                                                   select new CurrencyViewModel
                                                   {
                                                       Id = currency.Id,
@@ -59,7 +59,7 @@ namespace FinansoData.Repository.Currency
             Models.Currency? currency;
             try
             {
-                currency = await query.SingleOrDefaultAsync();
+                currency = await query.AsNoTracking().SingleOrDefaultAsync();
             }
             catch
             {
@@ -82,7 +82,7 @@ namespace FinansoData.Repository.Currency
                 return RepositoryResult<CurrencyViewModel?>.Success(cacheCurrency);
             }
 
-            IQueryable<CurrencyViewModel> query = from c in _context.Currencies
+            IQueryable<CurrencyViewModel> query = from c in _context.Currencies.AsNoTracking()
                                                   where c.Id == id
                                                   select new CurrencyViewModel
                                                   {

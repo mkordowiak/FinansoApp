@@ -23,8 +23,8 @@ namespace FinansoData.Repository.Balance
                 return RepositoryResult<double?>.Success(cacheSum);
             }
 
-            var query = from b in _context.Balances
-                        join c in _context.Currencies on b.Currency.Id equals c.Id
+            var query = from b in _context.Balances.AsNoTracking()
+                        join c in _context.Currencies.AsNoTracking() on b.Currency.Id equals c.Id
                         where b.Group.Id == groupId
                         group new { b, c } by b.GroupId into g
                         select new
@@ -56,10 +56,10 @@ namespace FinansoData.Repository.Balance
                 return RepositoryResult<double?>.Success(cachedSum);
             }
 
-            var queryGroupsOwnedByUser = from g in _context.Groups
-                                         join u in _context.AppUsers on g.OwnerAppUser.Id equals u.Id
-                                         join b in _context.Balances on g.Id equals b.GroupId
-                                         join c in _context.Currencies on b.CurrencyId equals c.Id
+            var queryGroupsOwnedByUser = from g in _context.Groups.AsNoTracking()
+                                         join u in _context.AppUsers.AsNoTracking() on g.OwnerAppUser.Id equals u.Id
+                                         join b in _context.Balances.AsNoTracking() on g.Id equals b.GroupId
+                                         join c in _context.Currencies.AsNoTracking() on b.CurrencyId equals c.Id
                                          where u.NormalizedUserName == userName
                                          select new
                                          {
@@ -69,11 +69,11 @@ namespace FinansoData.Repository.Balance
                                              AmountNorm = b.Amount * c.ExchangeRate
                                          };
 
-            var queryGroupsMember = from u in _context.AppUsers
-                                    join gu in _context.GroupUsers on u.Id equals gu.AppUserId
-                                    join g in _context.Groups on gu.GroupId equals g.Id
-                                    join b in _context.Balances on g.Id equals b.GroupId
-                                    join c in _context.Currencies on b.CurrencyId equals c.Id
+            var queryGroupsMember = from u in _context.AppUsers.AsNoTracking()
+                                    join gu in _context.GroupUsers.AsNoTracking() on u.Id equals gu.AppUserId
+                                    join g in _context.Groups.AsNoTracking() on gu.GroupId equals g.Id
+                                    join b in _context.Balances.AsNoTracking() on g.Id equals b.GroupId
+                                    join c in _context.Currencies.AsNoTracking() on b.CurrencyId equals c.Id
                                     where u.NormalizedUserName == userName
                                     select new
                                     {

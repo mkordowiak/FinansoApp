@@ -19,7 +19,7 @@ namespace FinansoData.Repository.Group
         {
             try
             {
-                Models.Group? group = await _context.Groups.FirstOrDefaultAsync(g => g.Id == groupId);
+                Models.Group? group = await _context.Groups.AsNoTracking().FirstOrDefaultAsync(g => g.Id == groupId);
                 return RepositoryResult<Models.Group>.Success(group);
             }
             catch
@@ -37,8 +37,8 @@ namespace FinansoData.Repository.Group
             }
 
             // Query to get all groups where user is owner
-            IQueryable<GetUserGroupsViewModel> ownerQuery = from g in _context.Groups
-                                                            join u in _context.AppUsers on g.OwnerAppUser.Id equals u.Id into gu
+            IQueryable<GetUserGroupsViewModel> ownerQuery = from g in _context.Groups.AsNoTracking()
+                                                            join u in _context.AppUsers.AsNoTracking() on g.OwnerAppUser.Id equals u.Id into gu
                                                             from u in gu.DefaultIfEmpty()
                                                             where u.UserName == appUser
                                                             select new GetUserGroupsViewModel
@@ -53,9 +53,9 @@ namespace FinansoData.Repository.Group
                                                             };
 
             // Query to get all groups where user is member
-            IQueryable<GetUserGroupsViewModel> memberQuery = from g in _context.Groups
-                                                             join gu in _context.GroupUsers on g.Id equals gu.Group.Id
-                                                             join u in _context.AppUsers on gu.AppUser.Id equals u.Id
+            IQueryable<GetUserGroupsViewModel> memberQuery = from g in _context.Groups.AsNoTracking()
+                                                             join gu in _context.GroupUsers.AsNoTracking() on g.Id equals gu.Group.Id
+                                                             join u in _context.AppUsers.AsNoTracking() on gu.AppUser.Id equals u.Id
                                                              where u.UserName == appUser && gu.Active == true
                                                              select new GetUserGroupsViewModel
                                                              {
@@ -93,7 +93,7 @@ namespace FinansoData.Repository.Group
             bool queryResult = false;
             try
             {
-                queryResult = await query.AnyAsync();
+                queryResult = await query.AsNoTracking().AnyAsync();
             }
             catch
             {

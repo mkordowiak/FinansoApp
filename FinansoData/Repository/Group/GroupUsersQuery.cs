@@ -2,7 +2,6 @@
 using FinansoData.DataViewModel.Group;
 using FinansoData.Models;
 using Microsoft.EntityFrameworkCore;
-using System.Collections.Generic;
 
 namespace FinansoData.Repository.Group
 {
@@ -19,14 +18,14 @@ namespace FinansoData.Repository.Group
 
         public async Task<RepositoryResult<IEnumerable<GetGroupInvitationsViewModel>>> GetGroupInvitations(string appUser)
         {
-            if(_cacheWrapper.TryGetValue($"GetGroupInvitations_{appUser}", out IEnumerable<GetGroupInvitationsViewModel>? cacheInvitations))
+            if (_cacheWrapper.TryGetValue($"GetGroupInvitations_{appUser}", out IEnumerable<GetGroupInvitationsViewModel>? cacheInvitations))
             {
                 return RepositoryResult<IEnumerable<GetGroupInvitationsViewModel>>.Success(cacheInvitations);
             }
 
-            IQueryable<GetGroupInvitationsViewModel> query = from gu in _context.GroupUsers
-                                                             join g in _context.Groups on gu.Group.Id equals g.Id
-                                                             join u in _context.AppUsers on gu.AppUser.Id equals u.Id
+            IQueryable<GetGroupInvitationsViewModel> query = from gu in _context.GroupUsers.AsNoTracking()
+                                                             join g in _context.Groups.AsNoTracking() on gu.Group.Id equals g.Id
+                                                             join u in _context.AppUsers.AsNoTracking() on gu.AppUser.Id equals u.Id
                                                              where gu.Active == false
                                                              && u.NormalizedEmail == appUser
                                                              select new GetGroupInvitationsViewModel
@@ -53,8 +52,8 @@ namespace FinansoData.Repository.Group
 
         public async Task<RepositoryResult<IEnumerable<GetGroupMembersViewModel>>> GetGroupMembersAsync(int id, bool IncludeInvitations = true)
         {
-            IQueryable<GetGroupMembersViewModel> ownerQuery = from g in _context.Groups
-                                                              join u in _context.AppUsers on g.OwnerAppUser.Id equals u.Id
+            IQueryable<GetGroupMembersViewModel> ownerQuery = from g in _context.Groups.AsNoTracking()
+                                                              join u in _context.AppUsers.AsNoTracking() on g.OwnerAppUser.Id equals u.Id
                                                               where g.Id == id
                                                               select new GetGroupMembersViewModel
                                                               {
@@ -65,9 +64,9 @@ namespace FinansoData.Repository.Group
                                                                   InvitationAccepted = true
                                                               };
 
-            IQueryable<GetGroupMembersViewModel> memberQuery = from g in _context.Groups
-                                                               join gu in _context.GroupUsers on g.Id equals gu.Group.Id
-                                                               join u in _context.AppUsers on gu.AppUser.Id equals u.Id
+            IQueryable<GetGroupMembersViewModel> memberQuery = from g in _context.Groups.AsNoTracking()
+                                                               join gu in _context.GroupUsers.AsNoTracking() on g.Id equals gu.Group.Id
+                                                               join u in _context.AppUsers.AsNoTracking() on gu.AppUser.Id equals u.Id
                                                                where g.Id == id
                                                                && (IncludeInvitations || gu.Active)
                                                                select new GetGroupMembersViewModel
@@ -106,7 +105,7 @@ namespace FinansoData.Repository.Group
             int count;
             try
             {
-                count = await query.CountAsync();
+                count = await query.AsNoTracking().CountAsync();
             }
             catch
             {
@@ -131,7 +130,7 @@ namespace FinansoData.Repository.Group
 
             try
             {
-                int count = await query.CountAsync();
+                int count = await query.AsNoTracking().CountAsync();
                 return RepositoryResult<int>.Success(count);
             }
             catch
@@ -142,9 +141,9 @@ namespace FinansoData.Repository.Group
 
         public async Task<RepositoryResult<DeleteGroupUserViewModel>> GetUserDeleteInfo(int groupUserId)
         {
-            IQueryable<DeleteGroupUserViewModel> query = from g in _context.Groups
-                                                         join gu in _context.GroupUsers on g.Id equals gu.Group.Id
-                                                         join u in _context.AppUsers on gu.AppUser.Id equals u.Id
+            IQueryable<DeleteGroupUserViewModel> query = from g in _context.Groups.AsNoTracking()
+                                                         join gu in _context.GroupUsers.AsNoTracking() on g.Id equals gu.Group.Id
+                                                         join u in _context.AppUsers.AsNoTracking() on gu.AppUser.Id equals u.Id
                                                          where gu.Id == groupUserId
                                                          select new DeleteGroupUserViewModel
                                                          {
@@ -182,7 +181,7 @@ namespace FinansoData.Repository.Group
 
             try
             {
-                isUserAdmin = await isUserAdminQuery.FirstOrDefaultAsync();
+                isUserAdmin = await isUserAdminQuery.AsNoTracking().FirstOrDefaultAsync();
             }
             catch (Exception ex)
             {
@@ -206,7 +205,16 @@ namespace FinansoData.Repository.Group
                                                                                                   && gu.AppUser.UserName == appUser
                                                       select gu;
 
-            GroupUser? isUserMember = await isUserMemberQuery.FirstOrDefaultAsync();
+            GroupUser? isUserMember;
+            try
+            {
+                 isUserMember = await isUserMemberQuery.AsNoTracking().FirstOrDefaultAsync();
+            }
+            catch
+            {
+                return RepositoryResult<GetUserMembershipInGroupViewModel>.Failure(null, ErrorType.ServerError);
+            }
+            
 
             if (isUserMember is not null)
             {
@@ -232,7 +240,7 @@ namespace FinansoData.Repository.Group
             bool queryResult = false;
             try
             {
-                queryResult = await query.AnyAsync();
+                queryResult = await query.AsNoTracking().AnyAsync();
             }
             catch
             {
@@ -258,7 +266,7 @@ namespace FinansoData.Repository.Group
 
             try
             {
-                bool result = await query.AnyAsync();
+                bool result = await query.AsNoTracking().AnyAsync();
 
                 return RepositoryResult<bool>.Success(result);
             }
