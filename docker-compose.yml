@@ -1,0 +1,26 @@
+version: '3.8'
+services:
+  app:
+    build:
+      context: .
+      dockerfile: ./FinansoApp/Dockerfile
+    ports:
+      - "5000:80" # Aplikacja będzie dostępna na porcie 5000
+    environment:
+      - ConnectionStrings__DefaultConnection=Server=sqlserver;Database=FinansoDb;User Id=sa;Password=YourStrongPassword123!
+    depends_on:
+      - sqlserver
+
+  sqlserver:
+    image: mcr.microsoft.com/mssql/server:2022-latest
+    container_name: sqlserver
+    environment:
+      - ACCEPT_EULA=Y
+      - SA_PASSWORD=YourStrongPassword123!
+    ports:
+      - "1433:1433"
+    volumes:
+      - sql-data:/var/opt/mssql
+
+volumes:
+  sql-data:

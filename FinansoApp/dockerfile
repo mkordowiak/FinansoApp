@@ -1,0 +1,21 @@
+# Etap budowania aplikacji
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
+WORKDIR /src
+
+# Kopiuj pliki projektu
+COPY ./FinansoApp/FinansoApp.csproj ./FinansoApp/
+COPY ./FinansoData/FinansoData.csproj ./FinansoData/
+
+# Przywróć zależności
+RUN dotnet restore ./FinansoApp/FinansoApp.csproj
+
+# Skopiuj wszystkie pliki i zbuduj aplikację
+COPY . .
+WORKDIR /src/FinansoApp
+RUN dotnet publish -c Release -o /app
+
+# Etap uruchamiania aplikacji
+FROM mcr.microsoft.com/dotnet/aspnet:8.0
+WORKDIR /app
+COPY --from=build /app .
+ENTRYPOINT ["dotnet", "FinansoApp.dll"]

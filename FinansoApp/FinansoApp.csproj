@@ -17,4 +17,8 @@
   <ItemGroup>
     <ProjectReference Include="..\FinansoData\FinansoData.csproj" />
   </ItemGroup>
+	<ItemGroup>
+		<Content Include="..\init-db.sh" CopyToOutputDirectory="PreserveNewest" />
+	</ItemGroup>
+
 </Project>
