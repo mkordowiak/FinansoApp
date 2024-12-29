@@ -28,7 +28,7 @@ namespace FinansoData.Repository.Account
 
             try
             {
-                user = await _context.AppUsers.SingleOrDefaultAsync(x => x.NormalizedUserName.Equals(normalizedUsername));
+                user = await _context.AppUsers.AsNoTracking().SingleOrDefaultAsync(x => x.NormalizedUserName.Equals(normalizedUsername));
             }
             catch
             {
@@ -45,7 +45,7 @@ namespace FinansoData.Repository.Account
 
             try
             {
-                user = await _context.AppUsers.SingleOrDefaultAsync(x => x.NormalizedEmail.Equals(normalizedEmail));
+                user = await _context.AppUsers.AsNoTracking().SingleOrDefaultAsync(x => x.NormalizedEmail.Equals(normalizedEmail));
             }
             catch
             {
@@ -62,7 +62,7 @@ namespace FinansoData.Repository.Account
 
             try
             {
-                user = await _context.AppUsers.SingleOrDefaultAsync(x => x.NormalizedUserName.Equals(normalizedUsername));
+                user = await _context.AppUsers.AsNoTracking().SingleOrDefaultAsync(x => x.NormalizedUserName.Equals(normalizedUsername));
             }
             catch
             {
@@ -86,7 +86,7 @@ namespace FinansoData.Repository.Account
 
             try
             {
-                user = await _context.AppUsers
+                user = await _context.AppUsers.AsNoTracking()
                 .SingleOrDefaultAsync(x => x.NormalizedEmail == emailNormalized);
             }
             catch
@@ -116,7 +116,7 @@ namespace FinansoData.Repository.Account
             {
                 
                 //user = await _userManager.FindByEmailAsync(normalizedEmail);
-                user = await _context.AppUsers.SingleOrDefaultAsync(x => x.NormalizedUserName.Equals(normalizedEmail));
+                user = await _context.AppUsers.AsNoTracking().SingleOrDefaultAsync(x => x.NormalizedUserName.Equals(normalizedEmail));
             }
             catch
             {

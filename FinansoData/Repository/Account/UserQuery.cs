@@ -23,7 +23,7 @@ namespace FinansoData.Repository.Account
 
             try
             {
-                result = await _context.Users.Where(x => x.NormalizedEmail == normalizedEmail).SingleOrDefaultAsync();
+                result = await _context.Users.Where(x => x.NormalizedEmail == normalizedEmail).AsNoTracking().SingleOrDefaultAsync();
             }
             catch
             {

@@ -24,8 +24,8 @@ namespace FinansoData.Repository.Balance
             }
 
 
-            IQueryable<BalanceViewModel> query = from g in _context.Groups
-                                                 join b in _context.Balances on g.Id equals b.Group.Id
+            IQueryable<BalanceViewModel> query = from g in _context.Groups.AsNoTracking()
+                                                 join b in _context.Balances.AsNoTracking() on g.Id equals b.Group.Id
                                                  where g.Id == groupId
                                                  select new BalanceViewModel
                                                  {
@@ -56,10 +56,10 @@ namespace FinansoData.Repository.Balance
             {
                 return RepositoryResult<IEnumerable<BalanceViewModel>>.Success(cachedBalanceVM);
             }
-            IQueryable<BalanceViewModel> queryGroupMember = from u in _context.Users
-                                                            join gu in _context.GroupUsers on u.Id equals gu.AppUserId
-                                                            join g in _context.Groups on gu.Group.Id equals g.Id
-                                                            join b in _context.Balances on g.Id equals b.Group.Id
+            IQueryable<BalanceViewModel> queryGroupMember = from u in _context.Users.AsNoTracking()
+                                                            join gu in _context.GroupUsers.AsNoTracking() on u.Id equals gu.AppUserId
+                                                            join g in _context.Groups.AsNoTracking() on gu.Group.Id equals g.Id
+                                                            join b in _context.Balances.AsNoTracking() on g.Id equals b.Group.Id
                                                             where u.UserName == userName
                                                             select new BalanceViewModel
                                                             {
@@ -70,9 +70,9 @@ namespace FinansoData.Repository.Balance
                                                                 Group = b.Group
                                                             };
 
-            IQueryable<BalanceViewModel> queryGroupOwner = from u in _context.Users
-                                                           join g in _context.Groups on u.Id equals g.OwnerAppUser.Id
-                                                           join b in _context.Balances on g.Id equals b.Group.Id
+            IQueryable<BalanceViewModel> queryGroupOwner = from u in _context.Users.AsNoTracking()
+                                                           join g in _context.Groups.AsNoTracking() on u.Id equals g.OwnerAppUser.Id
+                                                           join b in _context.Balances.AsNoTracking() on g.Id equals b.Group.Id
                                                            where u.UserName == userName
                                                            select new BalanceViewModel
                                                            {
@@ -104,17 +104,17 @@ namespace FinansoData.Repository.Balance
                 return RepositoryResult<bool?>.Success(cachedResult);
             }
 
-            IQueryable<bool> queryGroupOwner = from u in _context.Users
-                                               join g in _context.Groups on u.Id equals g.OwnerAppUser.Id
-                                               join b in _context.Balances on g.Id equals b.Group.Id
+            IQueryable<bool> queryGroupOwner = from u in _context.Users.AsNoTracking()
+                                               join g in _context.Groups.AsNoTracking() on u.Id equals g.OwnerAppUser.Id
+                                               join b in _context.Balances.AsNoTracking() on g.Id equals b.Group.Id
                                                where u.NormalizedUserName == userName
                                                 && b.Id == balanceId
                                                select true;
 
-            IQueryable<bool> queryGroupMember = from u in _context.Users
-                                                join gu in _context.GroupUsers on u.Id equals gu.AppUserId
-                                                join g in _context.Groups on gu.Group.Id equals g.Id
-                                                join b in _context.Balances on g.Id equals b.Group.Id
+            IQueryable<bool> queryGroupMember = from u in _context.Users.AsNoTracking()
+                                                join gu in _context.GroupUsers.AsNoTracking() on u.Id equals gu.AppUserId
+                                                join g in _context.Groups.AsNoTracking() on gu.Group.Id equals g.Id
+                                                join b in _context.Balances.AsNoTracking() on g.Id equals b.Group.Id
                                                 where u.NormalizedUserName == userName
                                                     && b.Id == balanceId
                                                     && gu.Active == true
@@ -142,7 +142,7 @@ namespace FinansoData.Repository.Balance
                 return RepositoryResult<BalanceViewModel>.Success(cachedBalanceVM);
             }
 
-            IQueryable<BalanceViewModel> query = from b in _context.Balances
+            IQueryable<BalanceViewModel> query = from b in _context.Balances.AsNoTracking()
                                                  where b.Id == balcnceId
                                                  select new BalanceViewModel
                                                  {
