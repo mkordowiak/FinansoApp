@@ -4,6 +4,7 @@
 @model FinansoApp.ViewModels.Balance.IndexViewModel
 
 @{
+    // round sum of all balances
     double roundedSumOfBalances;
     if(Model.SumAmount == null) 
     {
@@ -54,7 +55,16 @@
                             @i.Name
                         </td>
                         <td>
-                            @i.Amount
+                            @{ 
+                                if(i.Currency.Code == "BTC")
+                                {
+                                    <p>@i.Amount</p>
+                                }
+                                else
+                                {
+                                    <p>@Math.Round(i.Amount, 2)</p>
+                                }
+                            }
                         </td>
                         <td>
                             @i.Currency.Name

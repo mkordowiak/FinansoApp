@@ -36,9 +36,9 @@ namespace FinansoData.Tests.Repository.Balance
 
             _currencies = new List<Models.Currency>
             {
-                new Models.Currency {Id = 1, Name = "USD", Code = "USD", ExchangeRate = 3.88, UpdatedAt = DateTime.Now},
-                new Models.Currency {Id = 2, Name = "EUR", Code = "EUR", ExchangeRate = 4.65, UpdatedAt = DateTime.Now},
-                new Models.Currency {Id = 3, Name = "PLN", Code = "PLN", ExchangeRate = 1, UpdatedAt = DateTime.Now}
+                new Models.Currency {Id = 1, Name = "USD", Code = "USD", ExchangeRate = 3.88m, UpdatedAt = DateTime.Now},
+                new Models.Currency {Id = 2, Name = "EUR", Code = "EUR", ExchangeRate = 4.65m, UpdatedAt = DateTime.Now},
+                new Models.Currency {Id = 3, Name = "PLN", Code = "PLN", ExchangeRate = 1m, UpdatedAt = DateTime.Now}
             };
 
             _groups = new List<Models.Group>
@@ -56,11 +56,11 @@ namespace FinansoData.Tests.Repository.Balance
 
             _balances = new List<Models.Balance>
             {
-                new Models.Balance {Id = 1, Name = "B0", Amount = 101.66, Currency = _currencies[0], Group = _groups[0], CreatedAt = DateTime.Now},
-                new Models.Balance {Id = 2, Name = "B1", Amount = 57.13, Currency = _currencies[1], Group = _groups[0], CreatedAt = DateTime.Now},
-                new Models.Balance {Id = 3, Name = "B2", Amount = 1000, Currency = _currencies[2], Group = _groups[0], CreatedAt = DateTime.Now},
-                new Models.Balance {Id = 4, Name = "B3", Amount = 15, Currency = _currencies[1], Group = _groups[1], CreatedAt = DateTime.Now},
-                new Models.Balance {Id = 5, Name = "B4", Amount = 37000, Currency = _currencies[2], Group = _groups[1], CreatedAt = DateTime.Now},
+                new Models.Balance {Id = 1, Name = "B0", Amount = 101.66m, Currency = _currencies[0], Group = _groups[0], CreatedAt = DateTime.Now},
+                new Models.Balance {Id = 2, Name = "B1", Amount = 57.13m, Currency = _currencies[1], Group = _groups[0], CreatedAt = DateTime.Now},
+                new Models.Balance {Id = 3, Name = "B2", Amount = 1000m, Currency = _currencies[2], Group = _groups[0], CreatedAt = DateTime.Now},
+                new Models.Balance {Id = 4, Name = "B3", Amount = 15m, Currency = _currencies[1], Group = _groups[1], CreatedAt = DateTime.Now},
+                new Models.Balance {Id = 5, Name = "B4", Amount = 37000m, Currency = _currencies[2], Group = _groups[1], CreatedAt = DateTime.Now},
             };
 
 
@@ -87,8 +87,8 @@ namespace FinansoData.Tests.Repository.Balance
             _cacheWrapperMock.Setup(x => x.TryGetValue(It.IsAny<string>(), out It.Ref<double?>.IsAny))
                 .Returns(false);
 
-            RepositoryResult<double?> repositoryResult1;
-            RepositoryResult<double?> repositoryResult2;
+            RepositoryResult<decimal?> repositoryResult1;
+            RepositoryResult<decimal?> repositoryResult2;
 
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
@@ -104,19 +104,19 @@ namespace FinansoData.Tests.Repository.Balance
             repositoryResult2.IsSuccess.Should().BeTrue();
             repositoryResult1.Value.Should().NotBeNull();
             repositoryResult2.Value.Should().NotBeNull();
-            repositoryResult1.Value.Should().Be(1660.0953);
-            repositoryResult2.Value.Should().Be(37069.75);
+            repositoryResult1.Value.Should().Be(1660.0953m);
+            repositoryResult2.Value.Should().Be(37069.75m);
         }
 
         [Fact]
         public async Task GetGroupBalancesAmount_ShouldReturnSumOfBalancesAmountForGroupFromCache()
         {
             // Arrange
-            double? cacheSum = 999.99;
+            decimal? cacheSum = 999.99m;
             _cacheWrapperMock.Setup(x => x.TryGetValue(It.IsAny<string>(), out cacheSum))
                 .Returns(true);
 
-            RepositoryResult<double?> repositoryResult1;
+            RepositoryResult<decimal?> repositoryResult1;
 
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
@@ -139,7 +139,7 @@ namespace FinansoData.Tests.Repository.Balance
             _cacheWrapperMock.Setup(x => x.TryGetValue(It.IsAny<string>(), out It.Ref<double?>.IsAny))
                 .Returns(false);
 
-            RepositoryResult<double?> repositoryResult1;
+            RepositoryResult<decimal?> repositoryResult1;
 
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
@@ -151,7 +151,7 @@ namespace FinansoData.Tests.Repository.Balance
 
             // Assert 
             repositoryResult1.IsSuccess.Should().BeTrue();
-            _cacheWrapperMock.Verify(x => x.Set(It.IsAny<string>(), It.IsAny<double?>(), It.IsAny<TimeSpan>()), Times.Once);
+            _cacheWrapperMock.Verify(x => x.Set(It.IsAny<string>(), It.IsAny<decimal?>(), It.IsAny<TimeSpan>()), Times.Once);
         }
 
         #endregion GetGroupBalancesAmount
@@ -164,9 +164,9 @@ namespace FinansoData.Tests.Repository.Balance
             // Arrange
             _cacheWrapperMock.Setup(x => x.TryGetValue(It.IsAny<string>(), out It.Ref<double?>.IsAny))
                 .Returns(false);
-            RepositoryResult<double?> repositoryResult1;
-            RepositoryResult<double?> repositoryResult2;
-            RepositoryResult<double?> repositoryResult3;
+            RepositoryResult<decimal?> repositoryResult1;
+            RepositoryResult<decimal?> repositoryResult2;
+            RepositoryResult<decimal?> repositoryResult3;
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
                 BalanceSumAmount balanceSumAmount = new BalanceSumAmount(context, _cacheWrapperMock.Object);
@@ -185,9 +185,9 @@ namespace FinansoData.Tests.Repository.Balance
             repositoryResult2.Value.Should().NotBeNull();
             repositoryResult3.Value.Should().NotBeNull();
 
-            repositoryResult1.Value.Should().Be(1660.0953);
-            repositoryResult2.Value.Should().Be(38729.8453);
-            repositoryResult3.Value.Should().Be(37069.75);
+            repositoryResult1.Value.Should().Be(1660.0953m);
+            repositoryResult2.Value.Should().Be(38729.8453m);
+            repositoryResult3.Value.Should().Be(37069.75m);
         }
 
         [Fact]
@@ -196,7 +196,7 @@ namespace FinansoData.Tests.Repository.Balance
             // Arrange
             _cacheWrapperMock.Setup(x => x.TryGetValue(It.IsAny<string>(), out It.Ref<double?>.IsAny))
                 .Returns(false);
-            RepositoryResult<double?> repositoryResult;
+            RepositoryResult<decimal?> repositoryResult;
 
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
@@ -208,7 +208,7 @@ namespace FinansoData.Tests.Repository.Balance
             // Assert 
             repositoryResult.IsSuccess.Should().BeTrue();
 
-            _cacheWrapperMock.Verify(x => x.Set(It.IsAny<string>(), It.IsAny<double?>(), It.IsAny<TimeSpan>()), Times.Once);
+            _cacheWrapperMock.Verify(x => x.Set(It.IsAny<string>(), It.IsAny<decimal?>(), It.IsAny<TimeSpan>()), Times.Once);
 
         }
 
@@ -216,10 +216,10 @@ namespace FinansoData.Tests.Repository.Balance
         public async Task GetBalancesSumAmountForUser_ShouldReturnSumOfBalancesAmountForUserFromCache()
         {
             // Arrange
-            double? cacheSum = 999.99;
+            decimal? cacheSum = 999.99m;
             _cacheWrapperMock.Setup(x => x.TryGetValue(It.IsAny<string>(), out cacheSum))
                 .Returns(true);
-            RepositoryResult<double?> repositoryResult;
+            RepositoryResult<decimal?> repositoryResult;
 
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {

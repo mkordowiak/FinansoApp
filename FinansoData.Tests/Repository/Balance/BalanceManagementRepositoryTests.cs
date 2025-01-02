@@ -95,7 +95,7 @@ namespace FinansoData.Tests.Repository.Balance
 
             RepositoryResult<bool?> repositoryResult;
             Models.Balance inMemoryBalance;
-            double expecedAmount = 5;
+            decimal expecedAmount = 5;
 
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {

@@ -39,7 +39,7 @@ namespace FinansoApp.Controllers
             }
 
             // Get sum of all balances for user
-            FinansoData.RepositoryResult<double?> sumAmountResult = await _balanceSumAmount.GetBalancesSumAmountForUser(User.Identity.Name);
+            FinansoData.RepositoryResult<decimal?> sumAmountResult = await _balanceSumAmount.GetBalancesSumAmountForUser(User.Identity.Name);
             if (!sumAmountResult.IsSuccess)
             {
                 BadRequest();
@@ -173,7 +173,8 @@ namespace FinansoApp.Controllers
                 BalanceName = balance.Value.Name,
                 GroupName = balance.Value.Group.Name,
                 BalanceId = id,
-                Amount = balance.Value.Amount
+                Amount = balance.Value.Amount,
+                IsCrypto = balance.Value.Currency.Code == "BTC" || balance.Value.Currency.Code == "ETH" ? true : false
             };
             return View(setBalanceAmountViewModel);
         }

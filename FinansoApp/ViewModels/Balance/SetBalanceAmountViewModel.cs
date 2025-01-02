@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 using System.Runtime.InteropServices;
 
 namespace FinansoApp.ViewModels.Balance
@@ -12,8 +13,10 @@ namespace FinansoApp.ViewModels.Balance
         public string? GroupName { get; set; }
 
         [Required]
-        [Range(0, double.MaxValue)]
-        public double Amount { get; set; }
+        [Precision(18, 8)]
+        public decimal Amount { get; set; }
+
+        public bool IsCrypto { get; set; }
 
         public SetBalanceAmountViewModelErrorInfo Error { get; set; } = new SetBalanceAmountViewModelErrorInfo();
 

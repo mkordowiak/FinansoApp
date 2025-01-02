@@ -1,4 +1,5 @@
-﻿using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.EntityFrameworkCore;
+using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Text.RegularExpressions;
 
@@ -23,7 +24,8 @@ namespace FinansoData.Models
         /// Amount of fund on balance
         /// </summary>
         [Required]
-        public Double Amount { get; set; }
+        [Precision(18, 8)]
+        public Decimal Amount { get; set; }
 
         /// <summary>
         /// Currency foreign key

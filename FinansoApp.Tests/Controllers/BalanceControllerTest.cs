@@ -46,7 +46,7 @@ namespace FinansoApp.Tests.Controllers
             };
 
             _balanceQueryRepositoryMock.Setup(x => x.GetListOfBalancesForUser(It.IsAny<string>())).ReturnsAsync(FinansoData.RepositoryResult<IEnumerable<FinansoData.DataViewModel.Balance.BalanceViewModel>>.Success(balanceViewModels));
-            _balanceSumAmountMock.Setup(x => x.GetBalancesSumAmountForUser(It.IsAny<string>())).ReturnsAsync(FinansoData.RepositoryResult<double?>.Success(3));
+            _balanceSumAmountMock.Setup(x => x.GetBalancesSumAmountForUser(It.IsAny<string>())).ReturnsAsync(FinansoData.RepositoryResult<decimal?>.Success(3));
 
             // Claims Principal Mock
             string appUser = "appuser";
@@ -660,7 +660,7 @@ namespace FinansoApp.Tests.Controllers
             _balanceQueryRepositoryMock.Setup(x => x.HasUserAccessToBalance(It.IsAny<string>(), It.IsAny<int>()))
                 .ReturnsAsync(FinansoData.RepositoryResult<bool?>.Success(true));
 
-            _balanceManagmentRepositoryMock.Setup(x => x.SetBalanceAmount(It.IsAny<int>(), It.IsAny<double>()))
+            _balanceManagmentRepositoryMock.Setup(x => x.SetBalanceAmount(It.IsAny<int>(), It.IsAny<decimal>()))
                 .ReturnsAsync(FinansoData.RepositoryResult<bool?>.Success(true));
 
             SetBalanceAmountViewModel setBalanceAmountViewModel = new SetBalanceAmountViewModel

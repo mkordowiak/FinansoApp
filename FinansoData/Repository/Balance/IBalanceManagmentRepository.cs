@@ -31,6 +31,6 @@ namespace FinansoData.Repository.Balance
         /// <param name="id">balance ID</param>
         /// <param name="amount">Money amount</param>
         /// <returns></returns>
-        Task<RepositoryResult<bool?>> SetBalanceAmount(int id, double amount);
+        Task<RepositoryResult<bool?>> SetBalanceAmount(int id, decimal amount);
     }
 }
