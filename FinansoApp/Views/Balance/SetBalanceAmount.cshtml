@@ -7,6 +7,7 @@
     ViewData["Title"] = "Create group";
 }
 
+
 <div class="row">
     <div class="col-md-6 offset-3">
         <p>
@@ -35,7 +36,17 @@
                     <div asp-validation-summary="All" class="text-danger"></div>
                     <div class="form-group">
                         <label asp-for="Amount" class="control-label"></label>
-                        <input asp-for="Amount" class="form-control">
+                        
+                        @{
+                            if(Model.IsCrypto)
+                            {
+                                <input asp-for="Amount" class="form-control" value="@Model.Amount.ToString("F8")">
+                            }
+                            else 
+                            {
+                                <input asp-for="Amount" class="form-control">
+                            }
+                        }
                         <span asp-validation-for="Amount" class="text-danger"></span>
                     </div>
 

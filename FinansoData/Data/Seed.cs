@@ -66,19 +66,19 @@ namespace FinansoData.Data
                 {
                     context.Currencies.AddRange(
                         new Currency { Code = "PLN", Name = "Polski złoty", ExchangeRate = 1, UpdatedAt = DateTime.Now },
-                        new Currency { Code = "EUR", Name = "Euro", ExchangeRate = 4.5, UpdatedAt = DateTime.Now },
-                        new Currency { Code = "USD", Name = "Dolar amerykański", ExchangeRate = 4.2, UpdatedAt = DateTime.Now },
-                        new Currency { Code = "GBP", Name = "Funt brytyjski", ExchangeRate = 4.8, UpdatedAt = DateTime.Now },
-                        new Currency { Code = "CHF", Name = "Frank szwajcarski", ExchangeRate = 4.1, UpdatedAt = DateTime.Now },
-                        new Currency { Code = "JPY", Name = "Jen japoński", ExchangeRate = 3.9, UpdatedAt = DateTime.Now },
-                        new Currency { Code = "CZK", Name = "Korona czeska", ExchangeRate = 3.7, UpdatedAt = DateTime.Now },
-                        new Currency { Code = "SEK", Name = "Korona szwedzka", ExchangeRate = 3.6, UpdatedAt = DateTime.Now },
-                        new Currency { Code = "NOK", Name = "Korona norweska", ExchangeRate = 3.5, UpdatedAt = DateTime.Now },
-                        new Currency { Code = "DKK", Name = "Korona duńska", ExchangeRate = 3.4, UpdatedAt = DateTime.Now },
-                        new Currency { Code = "CAD", Name = "Dolar kanadyjski", ExchangeRate = 3.3, UpdatedAt = DateTime.Now },
-                        new Currency { Code = "AUD", Name = "Dolar australijski", ExchangeRate = 3.2, UpdatedAt = DateTime.Now },
-                        new Currency { Code = "NZD", Name = "Dolar nowozelandzki", ExchangeRate = 3.1, UpdatedAt = DateTime.Now },
-                        new Currency { Code = "BTC", Name = "Bitcoin", ExchangeRate = 424069, UpdatedAt = DateTime.Now }
+                        new Currency { Code = "EUR", Name = "Euro", ExchangeRate = 4.5m, UpdatedAt = DateTime.Now },
+                        new Currency { Code = "USD", Name = "Dolar amerykański", ExchangeRate = 4.2m, UpdatedAt = DateTime.Now },
+                        new Currency { Code = "GBP", Name = "Funt brytyjski", ExchangeRate = 4.8m, UpdatedAt = DateTime.Now },
+                        new Currency { Code = "CHF", Name = "Frank szwajcarski", ExchangeRate = 4.1m, UpdatedAt = DateTime.Now },
+                        new Currency { Code = "JPY", Name = "Jen japoński", ExchangeRate = 3.9m, UpdatedAt = DateTime.Now },
+                        new Currency { Code = "CZK", Name = "Korona czeska", ExchangeRate = 3.7m, UpdatedAt = DateTime.Now },
+                        new Currency { Code = "SEK", Name = "Korona szwedzka", ExchangeRate = 3.6m, UpdatedAt = DateTime.Now },
+                        new Currency { Code = "NOK", Name = "Korona norweska", ExchangeRate = 3.5m, UpdatedAt = DateTime.Now },
+                        new Currency { Code = "DKK", Name = "Korona duńska", ExchangeRate = 3.4m, UpdatedAt = DateTime.Now },
+                        new Currency { Code = "CAD", Name = "Dolar kanadyjski", ExchangeRate = 3.3m, UpdatedAt = DateTime.Now },
+                        new Currency { Code = "AUD", Name = "Dolar australijski", ExchangeRate = 3.2m, UpdatedAt = DateTime.Now },
+                        new Currency { Code = "NZD", Name = "Dolar nowozelandzki", ExchangeRate = 3.1m, UpdatedAt = DateTime.Now },
+                        new Currency { Code = "BTC", Name = "Bitcoin", ExchangeRate = 424069m, UpdatedAt = DateTime.Now }
                     );
                     context.SaveChanges();
                 }

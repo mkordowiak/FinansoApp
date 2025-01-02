@@ -34,7 +34,7 @@ namespace FinansoData.Models
         /// Currency exchange rate
         /// </summary>
         [Required]
-        public Double ExchangeRate { get; set; } = 1;
+        public decimal ExchangeRate { get; set; } = 1;
 
         /// <summary>
         /// DateTime of ExchangeRate field update

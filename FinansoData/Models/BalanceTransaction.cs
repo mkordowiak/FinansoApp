@@ -16,7 +16,7 @@ namespace FinansoData.Models
         public int Id { get; set; }
 
         [Required]
-        public double Amount { get; set; }
+        public decimal Amount { get; set; }
 
         [Required]
         public DateTime TransactionDate { get; set; }

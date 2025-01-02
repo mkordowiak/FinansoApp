@@ -15,12 +15,12 @@ namespace FinansoData.Repository.Balance
         }
 
 
-        public async Task<RepositoryResult<double?>> GetGroupBalancesAmount(int groupId)
+        public async Task<RepositoryResult<decimal?>> GetGroupBalancesAmount(int groupId)
         {
             string cacheKey = $"BalanceSumAmount_GetGroupBalancesAmount_{groupId}";
-            if (_cacheWrapper.TryGetValue(cacheKey, out double? cacheSum))
+            if (_cacheWrapper.TryGetValue(cacheKey, out decimal? cacheSum))
             {
-                return RepositoryResult<double?>.Success(cacheSum);
+                return RepositoryResult<decimal?>.Success(cacheSum);
             }
 
             var query = from b in _context.Balances.AsNoTracking()
@@ -33,7 +33,7 @@ namespace FinansoData.Repository.Balance
                             Sum = g.Sum(x => x.b.Amount * x.c.ExchangeRate)
                         };
 
-            double sum;
+            decimal sum;
             try
             {
                 var result = await query.FirstOrDefaultAsync();
@@ -41,19 +41,19 @@ namespace FinansoData.Repository.Balance
             }
             catch
             {
-                return RepositoryResult<double?>.Failure(null, ErrorType.ServerError);
+                return RepositoryResult<decimal?>.Failure(null, ErrorType.ServerError);
             }
 
             _cacheWrapper.Set(cacheKey, sum, TimeSpan.FromSeconds(60));
-            return RepositoryResult<double?>.Success(sum);
+            return RepositoryResult<decimal?>.Success(sum);
         }
 
-        public async Task<RepositoryResult<double?>> GetBalancesSumAmountForUser(string userName)
+        public async Task<RepositoryResult<decimal?>> GetBalancesSumAmountForUser(string userName)
         {
             string cacheKey = $"BalanceSumAmount_GetBalancesSumAmountForUser_{userName}";
-            if (_cacheWrapper.TryGetValue(cacheKey, out double? cachedSum))
+            if (_cacheWrapper.TryGetValue(cacheKey, out decimal? cachedSum))
             {
-                return RepositoryResult<double?>.Success(cachedSum);
+                return RepositoryResult<decimal?>.Success(cachedSum);
             }
 
             var queryGroupsOwnedByUser = from g in _context.Groups.AsNoTracking()
@@ -84,7 +84,7 @@ namespace FinansoData.Repository.Balance
                                     };
 
             var unionQuery = queryGroupsMember.Union(queryGroupsOwnedByUser);
-            double sumAmountOfAllBalancesForUser;
+            decimal sumAmountOfAllBalancesForUser;
             try
             {
 
@@ -93,11 +93,11 @@ namespace FinansoData.Repository.Balance
             }
             catch
             {
-                return RepositoryResult<double?>.Failure(null, ErrorType.ServerError);
+                return RepositoryResult<decimal?>.Failure(null, ErrorType.ServerError);
             }
 
             _cacheWrapper.Set(cacheKey, sumAmountOfAllBalancesForUser, TimeSpan.FromSeconds(60));
-            return RepositoryResult<double?>.Success(sumAmountOfAllBalancesForUser);
+            return RepositoryResult<decimal?>.Success(sumAmountOfAllBalancesForUser);
         }
     }
 }

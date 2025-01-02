@@ -41,7 +41,7 @@ namespace FinansoData.Repository.Balance
             throw new NotImplementedException();
         }
 
-        public async Task<RepositoryResult<bool?>> SetBalanceAmount(int id, double amount)
+        public async Task<RepositoryResult<bool?>> SetBalanceAmount(int id, decimal amount)
         {
             Models.Balance? balance;
 

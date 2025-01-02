@@ -7,13 +7,13 @@
         /// </summary>
         /// <param name="userName"></param>
         /// <returns></returns>
-        Task<RepositoryResult<double?>> GetBalancesSumAmountForUser(string userName);
+        Task<RepositoryResult<decimal?>> GetBalancesSumAmountForUser(string userName);
 
         /// <summary>
         /// Get group balances amount
         /// </summary>
         /// <param name="groupId"></param>
         /// <returns></returns>
-        Task<RepositoryResult<double?>> GetGroupBalancesAmount(int groupId);
+        Task<RepositoryResult<decimal?>> GetGroupBalancesAmount(int groupId);
     }
 }
