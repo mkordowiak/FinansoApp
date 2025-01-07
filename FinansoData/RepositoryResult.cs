@@ -37,22 +37,33 @@
         /// </summary>
         public ErrorType ErrorType { get; set; }
 
-        private RepositoryResult(T value, bool isSuccess, string error, ErrorType errorType)
+        public int? TotalResult { get; }
+
+        public bool IsPageResult { get; set; }
+
+        private RepositoryResult(T value, bool isSuccess, string error, ErrorType errorType, int? totalResult)
         {
             Value = value;
             IsSuccess = isSuccess;
             Error = error;
             ErrorType = errorType;
+            TotalResult = totalResult;
+            IsPageResult = totalResult.HasValue;
         }
 
         /// <summary>
-        /// Creates a failed repository result.
+        /// Creates a success repository result.
         /// </summary>
-        public static RepositoryResult<T> Success(T value) => new RepositoryResult<T>(value, true, null, ErrorType.None);
+        public static RepositoryResult<T> Success(T value, int? totalResultCount = null)
+        {
+ 
+            return new RepositoryResult<T>(value, true, null, ErrorType.None, totalResultCount);
+        } 
+            
 
         /// <summary>
         /// Creates a failed repository result with a default error type.
         /// </summary>
-        public static RepositoryResult<T> Failure(string error, ErrorType errorType) => new RepositoryResult<T>(default, false, error, errorType);
+        public static RepositoryResult<T> Failure(string error, ErrorType errorType) => new RepositoryResult<T>(default, false, error, errorType, null);
     }
 }

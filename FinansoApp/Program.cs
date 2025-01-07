@@ -6,6 +6,7 @@ using FinansoData.Repository.Balance;
 using FinansoData.Repository.Currency;
 using FinansoData.Repository.Group;
 using FinansoData.Repository.Settings;
+using FinansoData.Repository.Transaction;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -34,6 +35,9 @@ builder.Services.AddScoped<ISettingsQueryRepository, SettingsQueryRepository>();
 // Repository account
 builder.Services.AddScoped<IAuthentication, Authentication>();
 builder.Services.AddScoped<IUserManagement, UserManagement>();
+
+// Repository transaction
+builder.Services.AddScoped<ITransactionsQueryRepository, TransactionsQueryRepository>();
 
 
 
