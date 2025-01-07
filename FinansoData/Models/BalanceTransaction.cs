@@ -21,9 +21,8 @@ namespace FinansoData.Models
         [Required]
         public DateTime TransactionDate { get; set; }
 
-        [Required]
         [MaxLength(256)]
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
         [Required]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
