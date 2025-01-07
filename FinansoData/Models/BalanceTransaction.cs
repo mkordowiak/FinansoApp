@@ -28,7 +28,6 @@ namespace FinansoData.Models
         [Required]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
 
-        [Required]
         public DateTime? ModifiedAt { get; set; }
 
         [Required]

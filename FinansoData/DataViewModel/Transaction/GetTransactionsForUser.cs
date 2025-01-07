@@ -1,0 +1,22 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+
+namespace FinansoData.DataViewModel.Transaction
+{
+    public class GetTransactionsForUser
+    {
+        public int TransactionId { get; set; }
+        public int GroupId { get; set; }
+        public string GroupName { get; set; }
+        public int BalanceId { get; set; }
+        public string BalanceName { get; set; }
+        public string Description { get; set; }
+        public string TransactionType { get; set; }
+        public string TransactionStatus { get; set; }
+        public DateTime TransactionDate { get; set; }
+        public decimal Amount { get; set; }
+    }
+}
