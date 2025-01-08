@@ -16,6 +16,7 @@ namespace FinansoData.Models
         public int Id { get; set; }
 
         [Required]
+        [Precision(18, 8)]
         public decimal Amount { get; set; }
 
         [Required]
