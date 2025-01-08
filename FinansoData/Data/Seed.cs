@@ -121,7 +121,7 @@ namespace FinansoData.Data
                 if (!context.TransactionStatuses.Any())
                 {
                     context.TransactionStatuses.AddRange(
-                        new TransactionStatus { Name = "Planded" },
+                        new TransactionStatus { Name = "Planned" },
                         new TransactionStatus { Name = "Completed" },
                         new TransactionStatus { Name = "Canceled" }
                     );
