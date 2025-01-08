@@ -11,6 +11,7 @@ namespace FinansoData.Data
 
         }
 
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder
@@ -155,5 +156,16 @@ namespace FinansoData.Data
         public DbSet<TransactionType> TransactionTypes { get; set; }
         public DbSet<TransactionStatus> TransactionStatuses { get; set; }
         public DbSet<Settings> Settings { get; set; }
+
+        /// <summary>
+        /// run sum transactions stored procedure
+        /// </summary>
+        /// <returns></returns>
+        public async Task SumPlannedTransactions()
+        {
+            List<BalanceTransaction> result = await BalanceTransactions.FromSqlRaw("EXEC SumPlannedTransactions;").ToListAsync();
+
+            
+        }
     }
 }
