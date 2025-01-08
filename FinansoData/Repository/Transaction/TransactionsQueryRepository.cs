@@ -78,6 +78,7 @@ namespace FinansoData.Repository.Transaction
                                                        join balance in _applicationDbContext.Balances on transactions.BalanceId equals balance.Id
                                                        join g in _applicationDbContext.Groups on balance.GroupId equals g.Id
                                                        where appUser.NormalizedUserName == userName
+                                                       orderby transactions.TransactionDate descending
                                                        select new GetTransactionsForUser
                                                        {
                                                            TransactionId = transactions.Id,
