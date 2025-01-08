@@ -366,5 +366,5 @@ FodyWeavers.xsd
 FinansoApp/appsettings.json
 *.yaml
 
-# Migrations
-FinansoData/Migrations
+# .NET Response cache
+TemplateEngineHost/
