@@ -26,6 +26,15 @@ namespace FinansoData.Repository.Transaction
         /// <param name="page"></param>
         /// <param name="pageSize"></param>
         /// <returns></returns>
-        Task<RepositoryResult<IEnumerable<GetTransactionsForUser>>> GetTransactionsForUser(string userName, int page, int pageSize = 20);
+        Task<RepositoryResult<IEnumerable<GetTransactionsForUser>>> GetTransactionsCreatedByUser(string userName, int page, int pageSize = 20);
+
+        /// <summary>
+        /// Get all transactions for user
+        /// </summary>
+        /// <param name="userName"></param>
+        /// <param name="page"></param>
+        /// <param name="pageSize"></param>
+        /// <returns></returns>
+        Task<RepositoryResult<IEnumerable<GetTransactionsForUser>>> GetTransactionsForUserUser(string userName, int page, int pageSize = 20);
     }
 }
