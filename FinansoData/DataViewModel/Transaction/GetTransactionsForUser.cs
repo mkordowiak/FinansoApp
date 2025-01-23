@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace FinansoData.DataViewModel.Transaction
+﻿namespace FinansoData.DataViewModel.Transaction
 {
     public class GetTransactionsForUser
     {
@@ -18,5 +12,8 @@ namespace FinansoData.DataViewModel.Transaction
         public string TransactionStatus { get; set; }
         public DateTime TransactionDate { get; set; }
         public decimal Amount { get; set; }
+        public int CurrencyId { get; set; }
+        public string CurrencyName { get; set; }
+        public string CurrencyCode { get; set; }
     }
 }

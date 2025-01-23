@@ -38,6 +38,7 @@ builder.Services.AddScoped<IUserManagement, UserManagement>();
 
 // Repository transaction
 builder.Services.AddScoped<ITransactionsQueryRepository, TransactionsQueryRepository>();
+builder.Services.AddScoped<ITransactionManagementRepository, TransactionManagementRepository>();
 
 
 
@@ -126,6 +127,8 @@ app.UseHttpsRedirection();
 app.UseStaticFiles();
 app.UseAuthentication();
 app.UseRouting();
+
+app.UseResponseCaching();
 
 app.UseAuthorization();
 

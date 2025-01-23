@@ -16,14 +16,14 @@ namespace FinansoData.Models
         public int Id { get; set; }
 
         [Required]
+        [Precision(18, 8)]
         public decimal Amount { get; set; }
 
         [Required]
         public DateTime TransactionDate { get; set; }
 
-        [Required]
         [MaxLength(256)]
-        public string Description { get; set; }
+        public string? Description { get; set; }
 
         [Required]
         public DateTime CreatedAt { get; set; } = DateTime.UtcNow;

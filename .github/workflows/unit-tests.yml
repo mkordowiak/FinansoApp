@@ -29,11 +29,3 @@ jobs:
 
     - name: Test FinansoData
       run: dotnet test ./FinansoData.Tests --logger "trx;LogFileName=FinansoData_test_results.xml" --collect:"XPlat Code Coverage"
-
-    - name: Upload Test Results
-      uses: actions/upload-artifact@v3
-      with:
-        name: Test Results
-        path: |
-          ./FinansoApp.Tests/TestResults/*.xml
-          ./FinansoData.Tests/TestResults/*.xml

@@ -121,7 +121,7 @@ namespace FinansoData.Data
                 if (!context.TransactionStatuses.Any())
                 {
                     context.TransactionStatuses.AddRange(
-                        new TransactionStatus { Name = "Planded" },
+                        new TransactionStatus { Name = "Planned" },
                         new TransactionStatus { Name = "Completed" },
                         new TransactionStatus { Name = "Canceled" }
                     );
@@ -144,7 +144,8 @@ namespace FinansoData.Data
                 if (!context.Settings.Any())
                 {
                     context.Settings.AddRange(
-                        new Settings { Key = "MaxGroupUsersLimit", Value = "10", Type = "int", Description = "Limit of group users" }
+                        new Settings { Key = "MaxGroupUsersLimit", Value = "10", Type = "int", Description = "Limit of group users" },
+                        new Settings { Key = "TransactionListPageSize", Value = "10", Type = "int", Description = "Number of intems displayed on single page when displaying transaction list" }
                     );
                     context.SaveChanges();
                 }
