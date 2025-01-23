@@ -145,7 +145,7 @@ namespace FinansoData.Data
                 {
                     context.Settings.AddRange(
                         new Settings { Key = "MaxGroupUsersLimit", Value = "10", Type = "int", Description = "Limit of group users" },
-                        new Settings { Key = "TrasactionListPageSize", Value = "10", Type = "int", Description = "Number of intems displayed on single page when displaying transaction list" }
+                        new Settings { Key = "TransactionListPageSize", Value = "10", Type = "int", Description = "Number of intems displayed on single page when displaying transaction list" }
                     );
                     context.SaveChanges();
                 }
