@@ -117,49 +117,64 @@ namespace FinansoData.Repository.Transaction
                 return RepositoryResult<IEnumerable<GetTransactionsForUser>>.Success(cacheTransactions, cacheResultCount);
             }
 
-            IQueryable<GetTransactionsForUser> query = from transactions in _applicationDbContext.BalanceTransactions
-                                                       join gr in _applicationDbContext.Groups on transactions.Balance.GroupId equals gr.Id
-                                                       join appUserGroupOwner in _applicationDbContext.AppUsers on gr.OwnerAppUser.Id equals appUserGroupOwner.Id into appUserGroupOwnerLJ
-                                                       from appUserGroupOwner in appUserGroupOwnerLJ.DefaultIfEmpty()
+            IQueryable<GetTransactionsForUser> queryGroupOwner = from transaction in _applicationDbContext.BalanceTransactions
+                                                                 join balance in _applicationDbContext.Balances on transaction.BalanceId equals balance.Id
+                                                                 join g in _applicationDbContext.Groups on balance.GroupId equals g.Id
+                                                                 join appUser in _applicationDbContext.Users on g.OwnerAppUser.Id equals appUser.Id
+                                                                 join transactionStatus in _applicationDbContext.TransactionStatuses on transaction.TransactionStatusId equals transactionStatus.Id
+                                                                 join transactionType in _applicationDbContext.TransactionTypes on transaction.TransactionTypeId equals transactionType.Id
+                                                                 join currency in _applicationDbContext.Currencies on transaction.CurrencyId equals currency.Id
+                                                                 where appUser.NormalizedUserName == userName
+                                                                 select new GetTransactionsForUser
+                                                                 {
+                                                                     TransactionId = transaction.Id,
+                                                                     GroupId = g.Id,
+                                                                     GroupName = g.Name,
+                                                                     BalanceId = balance.Id,
+                                                                     BalanceName = balance.Name,
+                                                                     Description = transaction.Description,
+                                                                     Amount = transaction.Amount,
+                                                                     CurrencyId = currency.Id,
+                                                                     CurrencyName = currency.Name,
+                                                                     CurrencyCode = currency.Code,
+                                                                     TransactionDate = transaction.TransactionDate,
+                                                                     TransactionStatus = transactionStatus.Name,
+                                                                     TransactionType = transactionType.Name
+                                                                 };
 
-                                                       join groupUser in _applicationDbContext.GroupUsers on gr.Id equals groupUser.GroupId into groupUserLJ
-                                                       from groupUser in groupUserLJ.DefaultIfEmpty()
-
-                                                       join appUserGroupUser in _applicationDbContext.AppUsers on groupUser.AppUserId equals appUserGroupUser.Id into appUserGroupUserLJ
-                                                       from appUserGroupUser in appUserGroupUserLJ.DefaultIfEmpty()
-
-                                                       join transactionStatus in _applicationDbContext.TransactionStatuses on transactions.TransactionStatusId equals transactionStatus.Id
-                                                       join transactionType in _applicationDbContext.TransactionTypes on transactions.TransactionTypeId equals transactionType.Id
-                                                       join balance in _applicationDbContext.Balances on transactions.BalanceId equals balance.Id
-
-                                                       join currency in _applicationDbContext.Currencies on transactions.CurrencyId equals currency.Id
-
-                                                       where appUserGroupOwner.NormalizedUserName == userName || appUserGroupUser.NormalizedUserName == userName
-                                                       orderby transactions.TransactionDate descending
-
-                                                       select new GetTransactionsForUser
-                                                       {
-                                                           TransactionId = transactions.Id,
-                                                           GroupId = gr.Id,
-                                                           GroupName = gr.Name,
-                                                           BalanceId = balance.Id,
-                                                           BalanceName = balance.Name,
-                                                           Description = transactions.Description,
-                                                           Amount = transactions.Amount,
-                                                           CurrencyId = currency.Id,
-                                                           CurrencyName = currency.Name,
-                                                           CurrencyCode = currency.Code,
-                                                           TransactionDate = transactions.TransactionDate,
-                                                           TransactionStatus = transactionStatus.Name,
-                                                           TransactionType = transactionType.Name
-                                                       };
+            IQueryable<GetTransactionsForUser> queryGroupMember = from transaction in _applicationDbContext.BalanceTransactions
+                                                                  join balance in _applicationDbContext.Balances on transaction.BalanceId equals balance.Id
+                                                                  join g in _applicationDbContext.Groups on balance.GroupId equals g.Id
+                                                                  join groupUser in _applicationDbContext.GroupUsers on g.Id equals groupUser.GroupId
+                                                                  join appUser in _applicationDbContext.Users on groupUser.AppUserId equals appUser.Id
+                                                                  join transactionStatus in _applicationDbContext.TransactionStatuses on transaction.TransactionStatusId equals transactionStatus.Id
+                                                                  join transactionType in _applicationDbContext.TransactionTypes on transaction.TransactionTypeId equals transactionType.Id
+                                                                  join currency in _applicationDbContext.Currencies on transaction.CurrencyId equals currency.Id
+                                                                  where appUser.NormalizedUserName == userName
+                                                                  select new GetTransactionsForUser
+                                                                  {
+                                                                      TransactionId = transaction.Id,
+                                                                      GroupId = g.Id,
+                                                                      GroupName = g.Name,
+                                                                      BalanceId = balance.Id,
+                                                                      BalanceName = balance.Name,
+                                                                      Description = transaction.Description,
+                                                                      Amount = transaction.Amount,
+                                                                      CurrencyId = currency.Id,
+                                                                      CurrencyName = currency.Name,
+                                                                      CurrencyCode = currency.Code,
+                                                                      TransactionDate = transaction.TransactionDate,
+                                                                      TransactionStatus = transactionStatus.Name,
+                                                                      TransactionType = transactionType.Name
+                                                                  };
 
             List<GetTransactionsForUser> result;
             int resultCount;
             try
             {
-                result = await query.Skip((page - 1) * pageSize).Take(pageSize).AsNoTracking().ToListAsync();
-                resultCount = await query.CountAsync();
+                IQueryable<GetTransactionsForUser> query = queryGroupOwner.Union(queryGroupMember).OrderByDescending(x => x.TransactionDate).AsNoTracking().Skip((page - 1) * pageSize).Take(pageSize);
+                result = await query.ToListAsync();
+                resultCount = await query.CountAsync();  //throw new Exception("To zapytanie jest niepoprawne, zliczy tylko wyciagniete rekordy");
             }
             catch
             {

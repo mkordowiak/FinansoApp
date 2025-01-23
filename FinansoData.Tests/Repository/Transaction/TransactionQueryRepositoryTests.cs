@@ -18,7 +18,8 @@ namespace FinansoData.Tests.Repository.Transaction
         private List<FinansoData.Models.TransactionType> _transactionTypes;
         private List<FinansoData.Models.BalanceTransaction> _balanceTransactions;
         private List<FinansoData.Models.Balance> _balances;
-        private FinansoData.Models.AppUser _appUserGroupMember;
+        private FinansoData.Models.AppUser _appUserGroupMember1;
+        private FinansoData.Models.AppUser _appUserGroupMember2;
         private FinansoData.Models.AppUser _appUserGroupOwner;
         private List<FinansoData.Models.Group> _groups;
         private List<FinansoData.Models.GroupUser> _groupUsers;
@@ -52,7 +53,8 @@ namespace FinansoData.Tests.Repository.Transaction
             };
 
             _appUserGroupOwner = new AppUser { Id = "1", UserName = "1", NormalizedUserName = "NormalizedUser1", NormalizedEmail = "NormalizedEmail1", FirstName = "1", LastName = "1" };
-            _appUserGroupMember = new AppUser { Id = "2", UserName = "2", NormalizedUserName = "NormalizedUser2", NormalizedEmail = "NormalizedEmail2", FirstName = "2", LastName = "2" };
+            _appUserGroupMember1 = new AppUser { Id = "2", UserName = "2", NormalizedUserName = "NormalizedUser2", NormalizedEmail = "NormalizedEmail2", FirstName = "2", LastName = "2" };
+            _appUserGroupMember2 = new AppUser { Id = "3", UserName = "3", NormalizedUserName = "NormalizedUser3", NormalizedEmail = "NormalizedEmail3", FirstName = "3", LastName = "3" };
 
 
 
@@ -63,7 +65,8 @@ namespace FinansoData.Tests.Repository.Transaction
 
             _groupUsers = new List<Models.GroupUser>
             {
-                new Models.GroupUser { Id = 1, AppUser = _appUserGroupMember, Group = _groups[0] }
+                new Models.GroupUser { Id = 1, AppUser = _appUserGroupMember1, Group = _groups[0] },
+                new Models.GroupUser { Id = 2, AppUser = _appUserGroupMember2, Group = _groups[0] }
             };
 
             _balances = new List<Models.Balance>
@@ -74,8 +77,8 @@ namespace FinansoData.Tests.Repository.Transaction
 
             _balanceTransactions = new List<FinansoData.Models.BalanceTransaction>
             {
-                new FinansoData.Models.BalanceTransaction { Id = 1, Amount = 100, AppUser = _appUserGroupMember, Balance = _balances[0], CurrencyId = 1, Description = "Test 1", TransactionDate = DateTime.Now, TransactionStatusId = 1, TransactionTypeId = 1 },
-                new FinansoData.Models.BalanceTransaction { Id = 2, Amount = 200, AppUser = _appUserGroupMember, Balance = _balances[0], CurrencyId = 1, Description = "Test 2", TransactionDate = DateTime.Now, TransactionStatusId = 1, TransactionTypeId = 1 },
+                new FinansoData.Models.BalanceTransaction { Id = 1, Amount = 100, AppUser = _appUserGroupMember1, Balance = _balances[0], CurrencyId = 1, Description = "Test 1", TransactionDate = DateTime.Now, TransactionStatusId = 1, TransactionTypeId = 1 },
+                new FinansoData.Models.BalanceTransaction { Id = 2, Amount = 200, AppUser = _appUserGroupMember1, Balance = _balances[0], CurrencyId = 1, Description = "Test 2", TransactionDate = DateTime.Now, TransactionStatusId = 1, TransactionTypeId = 1 },
                 new FinansoData.Models.BalanceTransaction { Id = 3, Amount = 300, AppUser = _appUserGroupOwner, Balance = _balances[0], CurrencyId = 1, Description = "Test 3", TransactionDate = DateTime.Now, TransactionStatusId = 1, TransactionTypeId = 1 },
                 new FinansoData.Models.BalanceTransaction { Id = 4, Amount = 400, AppUser = _appUserGroupOwner, Balance = _balances[1], CurrencyId = 2, Description = "Test 4", TransactionDate = DateTime.Now, TransactionStatusId = 2, TransactionTypeId = 2 }
             };
@@ -87,7 +90,8 @@ namespace FinansoData.Tests.Repository.Transaction
                 context.Currencies.AddRange(_currencies);
                 context.TransactionStatuses.AddRange(_transactionStatuses);
                 context.TransactionTypes.AddRange(_transactionTypes);
-                context.AppUsers.Add(_appUserGroupMember);
+                context.AppUsers.Add(_appUserGroupMember1);
+                context.AppUsers.Add(_appUserGroupMember2);
                 context.AppUsers.Add(_appUserGroupOwner);
                 context.Groups.AddRange(_groups);
                 context.GroupUsers.AddRange(_groupUsers);
@@ -253,7 +257,7 @@ namespace FinansoData.Tests.Repository.Transaction
                 TransactionsQueryRepository transactionsQueryRepository = new TransactionsQueryRepository(context, _cacheWrapperMock.Object);
                 // Act
                 resultForOwner = await transactionsQueryRepository.GetTransactionsForUserUser(_appUserGroupOwner.NormalizedUserName, 1, 10);
-                resultForMember = await transactionsQueryRepository.GetTransactionsForUserUser(_appUserGroupMember.NormalizedUserName, 1, 10);
+                resultForMember = await transactionsQueryRepository.GetTransactionsForUserUser(_appUserGroupMember1.NormalizedUserName, 1, 10);
                 context.Database.EnsureDeleted();
             }
 
