@@ -28,18 +28,17 @@ namespace FinansoApp.Controllers
 
         [Authorize]
         [HttpGet]
-        [ResponseCache(Duration = 20, Location = ResponseCacheLocation.Any, VaryByHeader = "Cookie", NoStore = false, VaryByQueryKeys = new[] { "page" })]
-        public async Task<IActionResult> Index(int page = 1)
+        [ResponseCache(Duration = 60, Location = ResponseCacheLocation.Any, VaryByHeader = "Cookie", NoStore = false, VaryByQueryKeys = new[] { "pageNumber" })]
+        public async Task<IActionResult> Index(int pageNumber = 1)
         {
-            int pageSize = await _settingsQueryRepository.GetSettingsAsync<int>("TrasactionListPageSize");
+            int pageSize = await _settingsQueryRepository.GetSettingsAsync<int>("TransactionListPageSize");
 
-
-            FinansoData.RepositoryResult<IEnumerable<FinansoData.DataViewModel.Transaction.GetTransactionsForUser>> data = await _transactionQueryRepository.GetTransactionsForUser(User.Identity.Name, page, pageSize);
+            FinansoData.RepositoryResult<IEnumerable<FinansoData.DataViewModel.Transaction.GetTransactionsForUser>> data = await _transactionQueryRepository.GetTransactionsForUserUser(User.Identity.Name, pageNumber, pageSize);
             int pagesCount = (int)Math.Ceiling((double)data.TotalResult / pageSize);
 
-            TransactionListViewModel transactionListViewModel  = _mapper.Map<TransactionListViewModel>(data);
+            TransactionListViewModel transactionListViewModel = _mapper.Map<TransactionListViewModel>(data);
 
-            transactionListViewModel.CurrentPage = page;
+            transactionListViewModel.CurrentPage = pageNumber;
             transactionListViewModel.PagesCount = pagesCount;
 
             return View(transactionListViewModel);
