@@ -1,13 +1,12 @@
 ﻿using AutoMapper;
 using FinansoData.DataViewModel.Transaction;
-using FinansoData;
+using FinansoData.Repository.Balance;
 using FinansoData.Repository.Settings;
 using FinansoData.Repository.Transaction;
-using Moq;
-using System.Collections.Generic;
-using System.Security.Claims;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Moq;
+using System.Security.Claims;
 
 namespace FinansoApp.Tests.Controllers
 {
@@ -15,6 +14,8 @@ namespace FinansoApp.Tests.Controllers
     {
         private Mock<ITransactionsQueryRepository> _transactionQueryRepositoryMock;
         private Mock<ITransactionManagementRepository> _transactionManagementRepositoryMock;
+        private Mock<ITransactionMetaQueryRepository> _transactionMetaQueryRepositoryMock;
+        private Mock<IBalanceQueryRepository> _balanceQueryRepositoryMock;
         private Mock<IMapper> _mapperMock;
         private Mock<ISettingsQueryRepository> _settingsQueryRepositoryMock;
 
@@ -22,6 +23,8 @@ namespace FinansoApp.Tests.Controllers
         {
             _transactionManagementRepositoryMock = new Mock<ITransactionManagementRepository>();
             _transactionQueryRepositoryMock = new Mock<ITransactionsQueryRepository>();
+            _transactionMetaQueryRepositoryMock = new Mock<ITransactionMetaQueryRepository>();
+            _balanceQueryRepositoryMock = new Mock<IBalanceQueryRepository>();
             _mapperMock = new Mock<IMapper>();
             _settingsQueryRepositoryMock = new Mock<ISettingsQueryRepository>();
         }
@@ -40,7 +43,7 @@ namespace FinansoApp.Tests.Controllers
             Mock<HttpContext> context = new Mock<HttpContext>();
             context.SetupGet(ctx => ctx.User).Returns(mockPrincipal.Object);
 
-            IEnumerable < GetTransactionsForUser > listOfTransactions = new List<GetTransactionsForUser>
+            IEnumerable<GetTransactionsForUser> listOfTransactions = new List<GetTransactionsForUser>
             {
                 new GetTransactionsForUser { TransactionId = 1, Amount = 100, GroupId = 1, GroupName = "Group Name", BalanceId = 1, BalanceName = "Balance name", TransactionType = "Income", TransactionStatus = "Planned", TransactionDate = DateTime.Now, CurrencyId = 1, CurrencyCode = "USD", CurrencyName = "Dolar", Description = String.Empty }
             };
@@ -59,34 +62,60 @@ namespace FinansoApp.Tests.Controllers
             // Mocking mapper
             _mapperMock.Setup(x => x.Map<FinansoApp.ViewModels.Transaction.TransactionListViewModel>(It.IsAny<object>()))
                 .Returns(new FinansoApp.ViewModels.Transaction.TransactionListViewModel
-            {
-                CurrentPage = 1,
-                PagesCount = 1,
-                Transactions = new List<ViewModels.Transaction.TransactionViewModel>
+                {
+                    CurrentPage = 1,
+                    PagesCount = 1,
+                    Transactions = new List<ViewModels.Transaction.TransactionViewModel>
                 {
                     new ViewModels.Transaction.TransactionViewModel { Amount = 100, GroupName = "Group Name", BalanceName = "Balance name", TransactionType = "Income", TransactionStatus = "Planned", TransactionDate = DateTime.Now, CurrencyId = 1, CurrencyCode = "USD", CurrencyName = "Dolar", Description = String.Empty }
                 }
-            });
+                });
 
 
             // Create controller
-            FinansoApp.Controllers.TransactionController controller = new FinansoApp.Controllers.TransactionController(_transactionQueryRepositoryMock.Object, _transactionManagementRepositoryMock.Object, _mapperMock.Object, _settingsQueryRepositoryMock.Object)
+            FinansoApp.Controllers.TransactionController controller = new FinansoApp.Controllers.TransactionController(_transactionQueryRepositoryMock.Object, _transactionManagementRepositoryMock.Object, _transactionMetaQueryRepositoryMock.Object, _balanceQueryRepositoryMock.Object, _mapperMock.Object, _settingsQueryRepositoryMock.Object)
             {
                 ControllerContext = new ControllerContext
                 {
                     HttpContext = context.Object
                 }
             };
-            
+
             // Act
             Microsoft.AspNetCore.Mvc.IActionResult result = await controller.Index(1);
 
             // Assert
-            var viewResult = Assert.IsType<ViewResult>(result);
+            ViewResult viewResult = Assert.IsType<ViewResult>(result);
             ViewModels.Transaction.TransactionListViewModel model = Assert.IsAssignableFrom<FinansoApp.ViewModels.Transaction.TransactionListViewModel>(viewResult.ViewData.Model);
             Assert.Equal(1, model.CurrentPage);
             Assert.Equal(1, model.PagesCount);
             Assert.Single(model.Transactions);
         }
+
+        #region HTTPGET AddTransaction 
+        [Fact]
+        public async Task AddTransaction_ReturnsAViewResult_WithAddTransactionViewModel()
+        {
+            // Arrange
+
+
+            // Assert
+            Assert.True(false);
+        }
+
+        #endregion
+
+        #region HTTPPOST AddTransaction
+
+        [Fact]
+        public async Task AddTransaction_ReturnsRedirectToActionResult_WhenModelStateIsValid()
+        {
+            // Arrange
+            // Assert
+            Assert.True(false);
+        }
+
+
+        #endregion
     }
 }

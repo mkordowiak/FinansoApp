@@ -39,7 +39,7 @@ builder.Services.AddScoped<IUserManagement, UserManagement>();
 // Repository transaction
 builder.Services.AddScoped<ITransactionsQueryRepository, TransactionsQueryRepository>();
 builder.Services.AddScoped<ITransactionManagementRepository, TransactionManagementRepository>();
-
+builder.Services.AddScoped<ITransactionMetaQueryRepository, TransactionMetaQueryRepository>();
 
 
 // Add services to the container.
