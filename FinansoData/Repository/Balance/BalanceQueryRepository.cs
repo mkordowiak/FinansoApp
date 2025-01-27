@@ -206,7 +206,7 @@ namespace FinansoData.Repository.Balance
                 return RepositoryResult<IEnumerable<Tuple<int, string>>>.Failure(null, ErrorType.ServerError);
             }
 
-            _cacheWrapper.Set(cacheKey, result, TimeSpan.FromSeconds(3));
+            _cacheWrapper.Set(cacheKey, result, TimeSpan.FromSeconds(30));
             return RepositoryResult<IEnumerable<Tuple<int, string>>>.Success(result);
         }
     }
