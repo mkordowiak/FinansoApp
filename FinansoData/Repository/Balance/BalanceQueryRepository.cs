@@ -94,7 +94,7 @@ namespace FinansoData.Repository.Balance
                 return RepositoryResult<IEnumerable<BalanceViewModel>>.Failure(null, ErrorType.ServerError);
             }
 
-            _cacheWrapper.Set(cacheKey, result, TimeSpan.FromSeconds(3));
+            _cacheWrapper.Set(cacheKey, result, TimeSpan.FromSeconds(30));
             return RepositoryResult<IEnumerable<BalanceViewModel>>.Success(result);
         }
 
