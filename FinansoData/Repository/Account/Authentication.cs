@@ -24,7 +24,7 @@ namespace FinansoData.Repository.Account
         public async Task<RepositoryResult<AppUser?>> GetUserAsync(string username)
         {
             string normalizedUsername = _lookupNormalizer.NormalizeName(username);
-            AppUser user;
+            AppUser? user;
 
             try
             {
@@ -41,7 +41,7 @@ namespace FinansoData.Repository.Account
         public async Task<RepositoryResult<AppUser?>> GetUserByEmailAsync(string email)
         {
             string normalizedEmail = _lookupNormalizer.NormalizeEmail(email);
-            AppUser user;
+            AppUser? user;
 
             try
             {
@@ -58,7 +58,7 @@ namespace FinansoData.Repository.Account
         public async Task<RepositoryResult<bool>> IsUserExistsAsync(string username)
         {
             string normalizedUsername = _lookupNormalizer.NormalizeName(username);
-            AppUser user;
+            AppUser? user;
 
             try
             {
@@ -82,7 +82,7 @@ namespace FinansoData.Repository.Account
         public async Task<RepositoryResult<bool>> IsUserExistsByEmailAsync(string email)
         {
             string emailNormalized = _userManager.NormalizeEmail(email);
-            AppUser user;
+            AppUser? user;
 
             try
             {

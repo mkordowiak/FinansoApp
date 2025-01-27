@@ -183,7 +183,7 @@ namespace FinansoData.Repository.Group
             {
                 isUserAdmin = await isUserAdminQuery.AsNoTracking().FirstOrDefaultAsync();
             }
-            catch (Exception ex)
+            catch
             {
                 return RepositoryResult<GetUserMembershipInGroupViewModel>.Failure(null, ErrorType.ServerError);
             }

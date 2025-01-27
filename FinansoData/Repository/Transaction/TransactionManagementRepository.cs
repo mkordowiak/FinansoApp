@@ -35,7 +35,7 @@ namespace FinansoData.Repository.Transaction
 
                 userId = await _applicationDbContext.Users.Where(u => u.UserName == UserName).Select(u => u.Id).SingleOrDefaultAsync();
             }
-            catch (Exception e)
+            catch
             {
                 return RepositoryResult<bool>.Failure("Error while getting data from db", ErrorType.ServerError);
             }
@@ -59,7 +59,7 @@ namespace FinansoData.Repository.Transaction
                 _applicationDbContext.BalanceTransactions.Add(balanceTransaction);
                 await _applicationDbContext.SaveChangesAsync();
             }
-            catch (Exception e)
+            catch
             {
                 return RepositoryResult<bool>.Failure("Error while adding transaction", ErrorType.ServerError);
             }
