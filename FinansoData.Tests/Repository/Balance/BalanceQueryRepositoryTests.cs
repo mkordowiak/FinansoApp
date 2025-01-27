@@ -194,8 +194,15 @@ namespace FinansoData.Tests.Repository.Balance
             // Arrange
             RepositoryResult<IEnumerable<Tuple<int, string>>> result;
 
-            _cacheWrapperMock.Setup(x => x.TryGetValue(It.IsAny<string>(), out It.Ref<List<BalanceViewModel>>.IsAny))
-                .Returns(false);
+
+            IEnumerable<Tuple<int, string>> expected = new List<Tuple<int, string>>
+            {
+                new Tuple<int, string>(999, "Bank 1")
+            };
+
+
+            _cacheWrapperMock.Setup(x => x.TryGetValue(It.IsAny<string>(), out expected))
+                .Returns(true);
 
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
@@ -212,6 +219,7 @@ namespace FinansoData.Tests.Repository.Balance
             result.Should().NotBeNull();
             result.IsSuccess.Should().BeTrue();
             result.Value.Should().NotBeNull();
+            result.Value.Should().BeEquivalentTo(expected);
         }
 
 
