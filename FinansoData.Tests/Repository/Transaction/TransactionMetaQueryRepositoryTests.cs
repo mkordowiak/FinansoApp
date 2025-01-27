@@ -63,7 +63,9 @@ namespace FinansoData.Tests.Repository.Transaction
                 TransactionMetaQueryRepository transactionMetaQueryRepository = new TransactionMetaQueryRepository(context, _cacheWrapperMock.Object);
                 // Act
                 result = await transactionMetaQueryRepository.GetShortListOfAllTransactionStatuses();
-                
+
+                // Ensure db is 
+                context.Database.EnsureDeleted();
             }
             // Assert
             Assert.True(result.IsSuccess);
@@ -89,6 +91,8 @@ namespace FinansoData.Tests.Repository.Transaction
                 // Act
                 result = await transactionMetaQueryRepository.GetShortListOfAllTransactionStatuses();
 
+                // Ensure db is 
+                context.Database.EnsureDeleted();
             }
 
             // Assert
@@ -115,6 +119,8 @@ namespace FinansoData.Tests.Repository.Transaction
                 // Act
                 result = await transactionMetaQueryRepository.GetShortListOfAllTransactionTypes();
 
+                // Ensure db is 
+                context.Database.EnsureDeleted();
             }
             // Assert
             Assert.True(result.IsSuccess);
@@ -140,6 +146,8 @@ namespace FinansoData.Tests.Repository.Transaction
                 // Act
                 result = await transactionMetaQueryRepository.GetShortListOfAllTransactionTypes();
 
+                // Ensure db is 
+                context.Database.EnsureDeleted();
             }
 
             // Assert
