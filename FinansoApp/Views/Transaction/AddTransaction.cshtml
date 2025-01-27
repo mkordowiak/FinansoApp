@@ -1,0 +1,104 @@
+﻿@*
+    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
+*@
+
+@model FinansoApp.ViewModels.Transaction.AddTransactionViewModel
+
+@{
+    ViewData["Title"] = "Add Transaction";
+    if (Model.TransactionDate == null || Model.TransactionDate == DateTime.MinValue)
+    {
+        Model.TransactionDate = DateTime.Now;
+    }
+}
+
+
+@if (Model.Error.IsError())
+{
+    <div class="row">
+        @if (Model.Error.InternalError)
+        {
+            <div class="col-md-12 alert alert-danger">
+                <span>
+                    <b>Sorry!</b> An error occurred while adding the transaction, please try again later
+                </span>
+            </div>
+        }
+
+        @if (Model.Error.GetDataInternalError)
+        {
+            <div class="col-md-12 alert alert-danger">
+                <span>
+                    <b>Sorry!</b> An error occurred while getting data from database, please try again later
+                </span>
+            </div>
+        }
+
+        @if (Model.Error.WrongData)
+        {
+            <div class="col-md-12 alert alert-danger">
+                <span>
+                    <b>Sorry!</b> Wrong data
+                </span>
+            </div>
+        }
+    </div>
+}
+
+@if (!ViewData.ModelState.IsValid)
+{
+    <div class="alert alert-danger">
+        @Html.ValidationSummary(false, "Please fix the following errors:")
+    </div>
+}
+
+
+
+<form method="post">
+    @Html.AntiForgeryToken()
+
+    <a type="button" asp-action="Index" asp-controller="Transaction" class="btn btn-primary">Back</a>
+
+    <div class="form-group">
+        <label class="control-label" asp-for="BalanceId"></label>
+        <select class="form-control" asp-for="BalanceId" asp-items="Model.Balances">
+        </select>
+        <span asp-validation-for="BalanceId" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label class="control-label" asp-for="TransactionTypeId"></label>
+        <select class="form-control" asp-for="TransactionTypeId" asp-items="Model.TransactionTypes">
+        </select>
+        <span asp-validation-for="TransactionTypeId" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label class="control-label" asp-for="TransactionStatusId"></label>
+        <select class="form-control" asp-for="TransactionStatusId" asp-items="Model.TransactionStatuses">
+        </select>
+        <span asp-validation-for="TransactionStatusId" class="text-danger"></span>
+    </div>
+
+
+    <div class="form-group">
+        <label class="control-label" asp-for="Description"></label>
+        <input type="text" class="form-control" asp-for="Description">
+        <span asp-validation-for="Description" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label class="control-label" asp-for="Amount"></label>
+        <input type="number" class="form-control" asp-for="Amount">
+        <span asp-validation-for="Amount" class="text-danger"></span>
+    </div>
+
+    <div class="form-group">
+        <label class="control-label" asp-for="TransactionDate"></label>
+        <input type="date" class="form-control" asp-for="TransactionDate">
+        <span asp-validation-for="TransactionDate" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-primary">Add</button>
+
+</form>

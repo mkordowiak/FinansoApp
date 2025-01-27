@@ -49,6 +49,8 @@ namespace FinansoData.Repository.Balance
             return RepositoryResult<IEnumerable<BalanceViewModel>>.Success(result);
         }
 
+
+
         public async Task<RepositoryResult<IEnumerable<BalanceViewModel>?>> GetListOfBalancesForUser(string userName)
         {
             string cacheKey = $"BalanceQueryRepository_GetListOfBalancesForUser_{userName}";
@@ -92,7 +94,7 @@ namespace FinansoData.Repository.Balance
                 return RepositoryResult<IEnumerable<BalanceViewModel>>.Failure(null, ErrorType.ServerError);
             }
 
-            _cacheWrapper.Set(cacheKey, result, TimeSpan.FromSeconds(3));
+            _cacheWrapper.Set(cacheKey, result, TimeSpan.FromSeconds(30));
             return RepositoryResult<IEnumerable<BalanceViewModel>>.Success(result);
         }
 
@@ -152,7 +154,7 @@ namespace FinansoData.Repository.Balance
                                                      Currency = b.Currency,
                                                      Group = b.Group
                                                  };
-            BalanceViewModel result;
+            BalanceViewModel? result;
             try
             {
                 result = await query.SingleOrDefaultAsync();
@@ -172,6 +174,40 @@ namespace FinansoData.Repository.Balance
             return RepositoryResult<BalanceViewModel>.Success(result);
         }
 
-        
+
+        public async Task<RepositoryResult<IEnumerable<Tuple<int, string>>>> GetShortListOfBalanceForUser(string userName)
+        {
+            string cacheKey = $"BalanceQueryRepository_GetShortListOfBalanceForUser_{userName}";
+            if (_cacheWrapper.TryGetValue(cacheKey, out List<Tuple<int, string>> cachedBalanceVM))
+            {
+                return RepositoryResult<IEnumerable<Tuple<int, string>>>.Success(cachedBalanceVM);
+            }
+            IQueryable<Models.Balance> queryGroupMember = from u in _context.Users.AsNoTracking()
+                                                          join gu in _context.GroupUsers.AsNoTracking() on u.Id equals gu.AppUserId
+                                                          join g in _context.Groups.AsNoTracking() on gu.Group.Id equals g.Id
+                                                          join b in _context.Balances.AsNoTracking() on g.Id equals b.Group.Id
+                                                          where u.UserName == userName
+                                                          select b;
+
+            IQueryable<Models.Balance> queryGroupOwner = from u in _context.Users.AsNoTracking()
+                                                         join g in _context.Groups.AsNoTracking() on u.Id equals g.OwnerAppUser.Id
+                                                         join b in _context.Balances.AsNoTracking() on g.Id equals b.Group.Id
+                                                         where u.UserName == userName
+                                                         select b;
+            List<Tuple<int, string>> result;
+            try
+            {
+                result = await queryGroupMember.Union(queryGroupOwner)
+                                       .Select(b => new Tuple<int, string>(b.Id, b.Name))
+                                       .ToListAsync();
+            }
+            catch
+            {
+                return RepositoryResult<IEnumerable<Tuple<int, string>>>.Failure(null, ErrorType.ServerError);
+            }
+
+            _cacheWrapper.Set(cacheKey, result, TimeSpan.FromSeconds(30));
+            return RepositoryResult<IEnumerable<Tuple<int, string>>>.Success(result);
+        }
     }
 }

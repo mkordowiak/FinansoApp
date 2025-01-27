@@ -1,9 +1,11 @@
 ﻿using AutoMapper;
 using FinansoApp.ViewModels.Transaction;
+using FinansoData.Repository.Balance;
 using FinansoData.Repository.Settings;
 using FinansoData.Repository.Transaction;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace FinansoApp.Controllers
 {
@@ -11,20 +13,66 @@ namespace FinansoApp.Controllers
     {
         private readonly ITransactionsQueryRepository _transactionQueryRepository;
         private readonly ITransactionManagementRepository _transactionManagementRepository;
+        private readonly ITransactionMetaQueryRepository _transactionMetaQueryRepository;
+        private readonly IBalanceQueryRepository _balanceQueryRepository;
         private readonly IMapper _mapper;
         private readonly ISettingsQueryRepository _settingsQueryRepository;
 
         public TransactionController(
             ITransactionsQueryRepository transactionQueryRepository,
             ITransactionManagementRepository transactionManagementRepository,
+            ITransactionMetaQueryRepository transactionMetaQueryRepository,
+            IBalanceQueryRepository balanceQueryRepository,
             IMapper mapper,
             ISettingsQueryRepository settingsQueryRepository)
         {
             _transactionQueryRepository = transactionQueryRepository;
             _transactionManagementRepository = transactionManagementRepository;
+            _transactionMetaQueryRepository = transactionMetaQueryRepository;
+            _balanceQueryRepository = balanceQueryRepository;
             _mapper = mapper;
             _settingsQueryRepository = settingsQueryRepository;
         }
+
+        #region private methods
+
+        private async Task<AddTransactionViewModel> GetDataForAddTransaction(int? balanceId, string userName)
+        {
+            AddTransactionViewModel addTransactionViewModel = new AddTransactionViewModel();
+
+            FinansoData.RepositoryResult<IEnumerable<Tuple<int, string>>> transactionStatuses = await _transactionMetaQueryRepository.GetShortListOfAllTransactionStatuses();
+            FinansoData.RepositoryResult<IEnumerable<Tuple<int, string>>> transactionTypes = await _transactionMetaQueryRepository.GetShortListOfAllTransactionTypes();
+
+            FinansoData.RepositoryResult<IEnumerable<Tuple<int, string>>> balances = await _balanceQueryRepository.GetShortListOfBalanceForUser(userName);
+
+            if (transactionStatuses.IsSuccess == false
+                || transactionTypes.IsSuccess == false
+                || balances.IsSuccess == false)
+            {
+                addTransactionViewModel.Error.GetDataInternalError = true;
+                return addTransactionViewModel;
+            }
+
+            // Map tuple from repo to SelectListItem
+            addTransactionViewModel.TransactionStatuses = _mapper.Map<IEnumerable<Tuple<int, string>>, IEnumerable<SelectListItem>>(transactionStatuses.Value);
+            addTransactionViewModel.TransactionTypes = _mapper.Map<IEnumerable<Tuple<int, string>>, IEnumerable<SelectListItem>>(transactionTypes.Value);
+            addTransactionViewModel.Balances = _mapper.Map<IEnumerable<Tuple<int, string>>, IEnumerable<SelectListItem>>(balances.Value);
+
+            if (balanceId.HasValue) addTransactionViewModel.BalanceId = (int)balanceId;
+            return addTransactionViewModel;
+        }
+
+        private async Task<AddTransactionViewModel> GetDataForAddTransaction(int? balanceId, string userName, AddTransactionViewModel transactionViewModel)
+        {
+            AddTransactionViewModel addTransactionViewModel = await GetDataForAddTransaction(transactionViewModel.BalanceId, User.Identity.Name);
+            transactionViewModel.TransactionStatuses = addTransactionViewModel.TransactionStatuses;
+            transactionViewModel.TransactionTypes = addTransactionViewModel.TransactionTypes;
+            transactionViewModel.Balances = addTransactionViewModel.Balances;
+
+            return transactionViewModel;
+        }
+
+        #endregion
 
         [Authorize]
         [HttpGet]
@@ -42,6 +90,59 @@ namespace FinansoApp.Controllers
             transactionListViewModel.PagesCount = pagesCount;
 
             return View(transactionListViewModel);
+        }
+
+
+
+        [Authorize]
+        [HttpGet]
+        public async Task<IActionResult> AddTransaction(int? balanceId)
+        {
+            AddTransactionViewModel addTransactionViewModel = await GetDataForAddTransaction(balanceId, User.Identity.Name);
+            return View(addTransactionViewModel);
+        }
+
+
+
+        [Authorize]
+        [HttpPost]
+        public async Task<IActionResult> AddTransaction(AddTransactionViewModel transactionViewModel)
+        {
+            // Check if user has access to balance
+            FinansoData.RepositoryResult<bool?> userAccess = await _balanceQueryRepository.HasUserAccessToBalance(User.Identity.Name, transactionViewModel.BalanceId);
+            if (userAccess.Value != true)
+            {
+                return Unauthorized();
+            }
+
+            // Check if model is valid
+            if (!ModelState.IsValid)
+            {
+                transactionViewModel = await GetDataForAddTransaction(transactionViewModel.BalanceId, User.Identity.Name, transactionViewModel);
+                transactionViewModel.Error.WrongData = true;
+                return View(transactionViewModel);
+            }
+
+            // Add transaction
+            FinansoData.RepositoryResult<bool> result =
+                await _transactionManagementRepository.AddTransaction(
+                    transactionViewModel.Amount,
+                    transactionViewModel.Description,
+                    transactionViewModel.BalanceId,
+                    transactionViewModel.TransactionDate,
+                    User.Identity.Name,
+                    transactionViewModel.TransactionTypeId,
+                    transactionViewModel.TransactionStatusId);
+
+
+            if (result.IsSuccess == false ||
+                result.ErrorType == FinansoData.ErrorType.ServerError)
+            {
+                transactionViewModel = await GetDataForAddTransaction(transactionViewModel.BalanceId, User.Identity.Name, transactionViewModel);
+                return View(transactionViewModel);
+            }
+
+            return RedirectToAction("Index");
         }
     }
 }

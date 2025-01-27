@@ -64,6 +64,6 @@
         /// <summary>
         /// Creates a failed repository result with a default error type.
         /// </summary>
-        public static RepositoryResult<T> Failure(string error, ErrorType errorType) => new RepositoryResult<T>(default, false, error, errorType, null);
+        public static RepositoryResult<T> Failure(string? error, ErrorType errorType) => new RepositoryResult<T>(default, false, error, errorType, null);
     }
 }

@@ -51,7 +51,7 @@ namespace FinansoData.Repository
 
         public async Task<bool> IsUserExistsAsync(string username)
         {
-            AppUser user = await _context.AppUsers.FirstOrDefaultAsync(x => x.UserName.Equals(username));
+            AppUser? user = await _context.AppUsers.FirstOrDefaultAsync(x => x.UserName.Equals(username));
 
             if (user == null)
             {
@@ -241,7 +241,7 @@ namespace FinansoData.Repository
 
         public async Task<bool?> AdminSetNewPassword(string username, string newPassword)
         {
-            AppUser user;
+            AppUser? user;
             try
             {
                 user = await this.GetUserAsync(username);

@@ -1,10 +1,4 @@
-﻿using FinansoData.DataViewModel;
-using FinansoData.DataViewModel.Transaction;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using FinansoData.DataViewModel.Transaction;
 
 namespace FinansoData.Repository.Transaction
 {
@@ -36,5 +30,6 @@ namespace FinansoData.Repository.Transaction
         /// <param name="pageSize"></param>
         /// <returns></returns>
         Task<RepositoryResult<IEnumerable<GetTransactionsForUser>>> GetTransactionsForUserUser(string userName, int page, int pageSize = 20);
+
     }
 }
