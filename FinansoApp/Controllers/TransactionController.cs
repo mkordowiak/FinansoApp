@@ -43,7 +43,7 @@ namespace FinansoApp.Controllers
             FinansoData.RepositoryResult<IEnumerable<Tuple<int, string>>> transactionStatuses = await _transactionMetaQueryRepository.GetShortListOfAllTransactionStatuses();
             FinansoData.RepositoryResult<IEnumerable<Tuple<int, string>>> transactionTypes = await _transactionMetaQueryRepository.GetShortListOfAllTransactionTypes();
 
-            FinansoData.RepositoryResult<IEnumerable<Tuple<int, string>>> balances = await _balanceQueryRepository.GetShortListOfBalanceForUser(User.Identity.Name);
+            FinansoData.RepositoryResult<IEnumerable<Tuple<int, string>>> balances = await _balanceQueryRepository.GetShortListOfBalanceForUser(userName);
 
             if (transactionStatuses.IsSuccess == false
                 || transactionTypes.IsSuccess == false
@@ -110,7 +110,7 @@ namespace FinansoApp.Controllers
         {
             // Check if user has access to balance
             FinansoData.RepositoryResult<bool?> userAccess = await _balanceQueryRepository.HasUserAccessToBalance(User.Identity.Name, transactionViewModel.BalanceId);
-            if (userAccess.Value == false)
+            if (userAccess.Value != true)
             {
                 return Unauthorized();
             }
