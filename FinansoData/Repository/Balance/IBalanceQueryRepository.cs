@@ -12,6 +12,15 @@ namespace FinansoData.Repository.Balance
         Task<RepositoryResult<IEnumerable<BalanceViewModel>?>> GetListOfBalancesForUser(string userName);
 
         /// <summary>
+        /// Get short list of balances for user
+        /// </summary>
+        /// <param name="userName"></param>
+        /// <returns>Tuple
+        ///     - Id
+        ///     - Name</returns>
+        Task<RepositoryResult<IEnumerable<Tuple<int, string>>>> GetShortListOfBalanceForUser(string userName);
+
+        /// <summary>
         /// Get list of balances for group
         /// </summary>
         /// <param name="groupId"></param>

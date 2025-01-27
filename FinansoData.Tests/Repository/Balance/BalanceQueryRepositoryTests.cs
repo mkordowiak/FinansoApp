@@ -161,6 +161,86 @@ namespace FinansoData.Tests.Repository.Balance
 
         #endregion
 
+        #region GetShortListOfBalanceForUser
+
+        [Fact]
+        public async Task GetShortListOfBalanceForUser_WhenUserExists_ReturnsListOfBalancesFromDB()
+        {
+            // Arrange
+            RepositoryResult<IEnumerable<Tuple<int, string>>> result;
+
+            _cacheWrapperMock.Setup(x => x.TryGetValue(It.IsAny<string>(), out It.Ref<List<BalanceViewModel>>.IsAny))
+                .Returns(false);
+
+            using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
+            {
+                IBalanceQueryRepository balanceQueryRepository = new BalanceQueryRepository(context, _cacheWrapperMock.Object);
+
+                // Act
+                result = await balanceQueryRepository.GetShortListOfBalanceForUser("1");
+
+                context.Database.EnsureDeleted();
+            }
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Value.Should().NotBeNull();
+        }
+
+        [Fact]
+        public async Task GetShortListOfBalanceForUser_WhenUserExists_ReturnsListOfBalancesFromCache()
+        {
+            // Arrange
+            RepositoryResult<IEnumerable<Tuple<int, string>>> result;
+
+            _cacheWrapperMock.Setup(x => x.TryGetValue(It.IsAny<string>(), out It.Ref<List<BalanceViewModel>>.IsAny))
+                .Returns(false);
+
+            using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
+            {
+                IBalanceQueryRepository balanceQueryRepository = new BalanceQueryRepository(context, _cacheWrapperMock.Object);
+
+                // Act
+                result = await balanceQueryRepository.GetShortListOfBalanceForUser("1");
+
+                context.Database.EnsureDeleted();
+            }
+
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Value.Should().NotBeNull();
+        }
+
+
+        [Fact]
+        public async Task GetShortListOfBalanceForUser_WhenUserDoesNotExist_ReturnsNull()
+        {
+            // Arrange
+            string userName = "nonExistingUser";
+            RepositoryResult<IEnumerable<Tuple<int, string>>> result;
+
+            using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
+            {
+                IBalanceQueryRepository balanceQueryRepository = new BalanceQueryRepository(context, _cacheWrapperMock.Object);
+
+                // Act
+                result = await balanceQueryRepository.GetShortListOfBalanceForUser(userName);
+
+                context.Database.EnsureDeleted();
+
+            }
+
+            // Assert
+            result.Should().NotBeNull();
+            result.IsSuccess.Should().BeTrue();
+            result.Value.Should().BeEmpty();
+        }
+
+
+        #endregion
 
         #region GetListOfBalancesForGroup
 
@@ -390,12 +470,12 @@ namespace FinansoData.Tests.Repository.Balance
         [Fact]
         public async Task GetBalance_WhenBalanceExists_ShouldReturnBalanceFromDB()
         {
-           // Arrange
-           _cacheWrapperMock.Setup(x => x.TryGetValue(It.IsAny<string>(), out It.Ref<BalanceViewModel>.IsAny))
-               .Returns(false);
+            // Arrange
+            _cacheWrapperMock.Setup(x => x.TryGetValue(It.IsAny<string>(), out It.Ref<BalanceViewModel>.IsAny))
+                .Returns(false);
 
             RepositoryResult<BalanceViewModel> repositoryResult;
-            using (ApplicationDbContext applicationDbContext =  new ApplicationDbContext(_dbContextOptions))
+            using (ApplicationDbContext applicationDbContext = new ApplicationDbContext(_dbContextOptions))
             {
                 IBalanceQueryRepository balanceQueryRepository = new BalanceQueryRepository(applicationDbContext, _cacheWrapperMock.Object);
                 // Act
