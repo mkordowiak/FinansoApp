@@ -154,7 +154,7 @@ namespace FinansoData.Repository.Balance
                                                      Currency = b.Currency,
                                                      Group = b.Group
                                                  };
-            BalanceViewModel result;
+            BalanceViewModel? result;
             try
             {
                 result = await query.SingleOrDefaultAsync();
