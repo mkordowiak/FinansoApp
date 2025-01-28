@@ -8,16 +8,7 @@ namespace FinansoData.Data
 {
     public class Seed : ISeed
     {
-        private readonly IAccountRepository _accountRepository;
-        //ICurrencyRepository _currencyRepository;
-
-
-        public Seed(IAccountRepository accountRepository)
-        {
-            _accountRepository = accountRepository;
-            //_currencyRepository = currencyRepository;
-        }
-
+      
         /// <summary>
         /// Static method to run ONLY when project is initialized
         /// Seed user roles
