@@ -1,5 +1,6 @@
 ﻿using FinansoData.Data;
 using FinansoData.DataViewModel.Transaction;
+using FinansoData.Helpers;
 using Microsoft.EntityFrameworkCore;
 
 namespace FinansoData.Repository.Transaction
@@ -8,17 +9,20 @@ namespace FinansoData.Repository.Transaction
     {
         private readonly ApplicationDbContext _applicationDbContext;
         private readonly ICacheWrapper _cacheWrapper;
+        private readonly string _cacheClassName;
 
         public TransactionsQueryRepository(ApplicationDbContext applicationDbContext, ICacheWrapper cacheWrapper)
         {
             _applicationDbContext = applicationDbContext;
             _cacheWrapper = cacheWrapper;
+            _cacheClassName = this.GetType().Name;
         }
 
         public async Task<RepositoryResult<IEnumerable<GetTransactionsForBalance>>> GetTransactionsForBalance(int balanceId, int page, int pageSize)
         {
-            string cacheDataKey = $"GetTransactionsForBalance_{balanceId}_{page}_{pageSize}";
-            string cacheCountKey = $"GetTransactionsCountForBalance_{balanceId}_{page}_{pageSize}";
+            string methodName = MethodName.GetMethodName();
+            string cacheDataKey = $"{_cacheClassName}_{methodName}_{balanceId}_{page}_{pageSize}";
+            string cacheCountKey = $"{_cacheClassName}_{methodName}_count_{balanceId}_{page}_{pageSize}";
 
             if (_cacheWrapper.TryGetValue(cacheDataKey, out IEnumerable<GetTransactionsForBalance>? cacheTransactions)
                 && _cacheWrapper.TryGetValue(cacheCountKey, out int cacheResultCount))
@@ -60,8 +64,9 @@ namespace FinansoData.Repository.Transaction
 
         public async Task<RepositoryResult<IEnumerable<GetTransactionsForUser>>> GetTransactionsCreatedByUser(string userName, int page, int pageSize = 20)
         {
-            string cacheDataKey = $"GetTransactionsCreatedByUser_{userName}_{page}_{pageSize}";
-            string cacheCountKey = $"GetTransactionsCreatedByUser_Count_{userName}_{page}_{pageSize}";
+            string methodName = MethodName.GetMethodName();
+            string cacheDataKey = $"{_cacheClassName}_{methodName}_{userName}_{page}_{pageSize}";
+            string cacheCountKey = $"{_cacheClassName}_{methodName}_Count_{userName}_{page}_{pageSize}";
             if (_cacheWrapper.TryGetValue(cacheDataKey, out IEnumerable<GetTransactionsForUser>? cacheTransactions)
                 && _cacheWrapper.TryGetValue(cacheCountKey, out int cacheResultCount))
             {
@@ -109,8 +114,9 @@ namespace FinansoData.Repository.Transaction
 
         public async Task<RepositoryResult<IEnumerable<GetTransactionsForUser>>> GetTransactionsForUserUser(string userName, int page, int pageSize = 20)
         {
-            string cacheDataKey = $"GetTransactionsForUserUser_{userName}_{page}_{pageSize}";
-            string cacheCountKey = $"GetTransactionsForUserUser_Count_{userName}_{page}_{pageSize}";
+            string methodName = MethodName.GetMethodName();
+            string cacheDataKey = $"{_cacheClassName}_{methodName}_{userName}_{page}_{pageSize}";
+            string cacheCountKey = $"{_cacheClassName}_{methodName}_Count_{userName}_{page}_{pageSize}";
             if (_cacheWrapper.TryGetValue(cacheDataKey, out IEnumerable<GetTransactionsForUser>? cacheTransactions)
                 && _cacheWrapper.TryGetValue(cacheCountKey, out int cacheResultCount))
             {

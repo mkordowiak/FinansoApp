@@ -1,4 +1,5 @@
 ﻿using FinansoData.Data;
+using FinansoData.Helpers;
 using Microsoft.EntityFrameworkCore;
 
 namespace FinansoData.Repository.Settings
@@ -8,17 +9,20 @@ namespace FinansoData.Repository.Settings
         private readonly ApplicationDbContext _context;
         private readonly ICacheWrapper _cacheWrapper;
         private readonly TimeSpan _cacheDuration = TimeSpan.FromMinutes(120);
+        private readonly string _cacheClassName;
 
         public SettingsQueryRepository(ApplicationDbContext applicationDbContext, ICacheWrapper cacheWrapper)
         {
             _context = applicationDbContext;
             _cacheWrapper = cacheWrapper;
+            _cacheClassName = this.GetType().Name;
         }
 
         public async Task<T> GetSettingsAsync<T>(string key)
         {
-            // Check if there is a cache with the key
-            if (_cacheWrapper.TryGetValue($"Setting_{key}", out Models.Settings? cacheSetting))
+            string methodName = MethodName.GetMethodName();
+            string cacheDataKey = $"{_cacheClassName}_{methodName}_{key}";
+            if (_cacheWrapper.TryGetValue(cacheDataKey, out Models.Settings? cacheSetting))
             {
                 return (T)Convert.ChangeType(cacheSetting.Value, typeof(T));
             }
@@ -28,13 +32,13 @@ namespace FinansoData.Repository.Settings
             try
             {
                 // If there is no cache, check the database
-                 dbSettingEntity = await _context.Settings.FirstOrDefaultAsync(s => s.Key == key);
+                dbSettingEntity = await _context.Settings.FirstOrDefaultAsync(s => s.Key == key);
             }
             catch
             {
                 throw new Exception("Error while getting cacheSetting from database");
             }
-            
+
 
 
             if (dbSettingEntity == null)
@@ -54,7 +58,7 @@ namespace FinansoData.Repository.Settings
             }
 
             // Set the cache
-            _cacheWrapper.Set($"Setting_{key}", dbSettingEntity, _cacheDuration);
+            _cacheWrapper.Set(cacheDataKey, dbSettingEntity, _cacheDuration);
 
             // Return the result
             return result;

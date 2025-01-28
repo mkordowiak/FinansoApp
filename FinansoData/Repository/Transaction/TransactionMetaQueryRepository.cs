@@ -1,4 +1,5 @@
 ﻿using FinansoData.Data;
+using FinansoData.Helpers;
 using Microsoft.EntityFrameworkCore;
 
 namespace FinansoData.Repository.Transaction
@@ -7,16 +8,19 @@ namespace FinansoData.Repository.Transaction
     {
         private readonly ApplicationDbContext _applicationDbContext;
         private readonly ICacheWrapper _cacheWrapper;
+        private readonly string _cacheClassName;
 
         public TransactionMetaQueryRepository(ApplicationDbContext applicationDbContext, ICacheWrapper cacheWrapper)
         {
             _applicationDbContext = applicationDbContext;
             _cacheWrapper = cacheWrapper;
+            _cacheClassName = this.GetType().Name;
         }
 
         public async Task<RepositoryResult<IEnumerable<Tuple<int, string>>>> GetShortListOfAllTransactionStatuses()
         {
-            string cacheDataKey = $"TransactionMetaQueryRepository_GetShortListOfAllTransactionStatuses";
+            string methodName = MethodName.GetMethodName();
+            string cacheDataKey = $"{_cacheClassName}_{methodName}";
             if (_cacheWrapper.TryGetValue(cacheDataKey, out IEnumerable<Tuple<int, string>>? cacheTransactionTypes))
             {
                 return RepositoryResult<IEnumerable<Tuple<int, string>>>.Success(cacheTransactionTypes);
@@ -41,7 +45,8 @@ namespace FinansoData.Repository.Transaction
 
         public async Task<RepositoryResult<IEnumerable<Tuple<int, string>>>> GetShortListOfAllTransactionTypes()
         {
-            string cacheDataKey = $"TransactionMetaQueryRepository_GetShortListOfAllTransactionTypes";
+            string methodName = MethodName.GetMethodName();
+            string cacheDataKey = $"{_cacheClassName}_{methodName}";
             if (_cacheWrapper.TryGetValue(cacheDataKey, out IEnumerable<Tuple<int, string>>? cacheTransactionTypes))
             {
                 return RepositoryResult<IEnumerable<Tuple<int, string>>>.Success(cacheTransactionTypes);

@@ -1,5 +1,6 @@
 ﻿using FinansoData.Data;
 using FinansoData.DataViewModel.Group;
+using FinansoData.Helpers;
 using FinansoData.Models;
 using Microsoft.EntityFrameworkCore;
 
@@ -9,18 +10,24 @@ namespace FinansoData.Repository.Group
     {
         private readonly ApplicationDbContext _context;
         private readonly ICacheWrapper _cacheWrapper;
+        private readonly string _cacheClassName;
 
         public GroupUsersQuery(ApplicationDbContext context, ICacheWrapper cacheWrapper)
         {
             _context = context;
             _cacheWrapper = cacheWrapper;
+
+            _cacheClassName = this.GetType().Name;
         }
+
 
         public async Task<RepositoryResult<IEnumerable<GetGroupInvitationsViewModel>>> GetGroupInvitations(string appUser)
         {
-            if (_cacheWrapper.TryGetValue($"GetGroupInvitations_{appUser}", out IEnumerable<GetGroupInvitationsViewModel>? cacheInvitations))
+            string methodName = MethodName.GetMethodName();
+            string cacheDataKey = $"{_cacheClassName}_{methodName}_{appUser}";
+            if (_cacheWrapper.TryGetValue(cacheDataKey, out IEnumerable<GetGroupInvitationsViewModel>? cacheData))
             {
-                return RepositoryResult<IEnumerable<GetGroupInvitationsViewModel>>.Success(cacheInvitations);
+                return RepositoryResult<IEnumerable<GetGroupInvitationsViewModel>>.Success(cacheData);
             }
 
             IQueryable<GetGroupInvitationsViewModel> query = from gu in _context.GroupUsers.AsNoTracking()
@@ -46,12 +53,20 @@ namespace FinansoData.Repository.Group
                 return RepositoryResult<IEnumerable<GetGroupInvitationsViewModel>>.Failure(null, ErrorType.ServerError);
             }
 
-            _cacheWrapper.Set($"GetGroupInvitations_{appUser}", result, TimeSpan.FromSeconds(30));
+            _cacheWrapper.Set(cacheDataKey, result, TimeSpan.FromSeconds(30));
             return RepositoryResult<IEnumerable<GetGroupInvitationsViewModel>>.Success(result);
         }
 
         public async Task<RepositoryResult<IEnumerable<GetGroupMembersViewModel>>> GetGroupMembersAsync(int id, bool IncludeInvitations = true)
         {
+            string methodName = MethodName.GetMethodName();
+            string cacheDataKey = $"{_cacheClassName}_{methodName}_{id}_{IncludeInvitations}";
+            if (_cacheWrapper.TryGetValue(cacheDataKey, out IEnumerable<GetGroupMembersViewModel> cacheData))
+            {
+                return RepositoryResult<IEnumerable<GetGroupMembersViewModel>>.Success(cacheData);
+            }
+
+
             IQueryable<GetGroupMembersViewModel> ownerQuery = from g in _context.Groups.AsNoTracking()
                                                               join u in _context.AppUsers.AsNoTracking() on g.OwnerAppUser.Id equals u.Id
                                                               where g.Id == id
@@ -78,24 +93,27 @@ namespace FinansoData.Repository.Group
                                                                    InvitationAccepted = gu.Active
                                                                };
 
-
+            List<GetGroupMembersViewModel> data;
             try
             {
-                List<GetGroupMembersViewModel> data = await ownerQuery.Union(memberQuery).OrderBy(x => x.FirstName).ToListAsync();
-
-                return RepositoryResult<IEnumerable<GetGroupMembersViewModel>>.Success(data);
+                data = await ownerQuery.Union(memberQuery).OrderBy(x => x.FirstName).ToListAsync();
             }
             catch (Exception)
             {
                 return RepositoryResult<IEnumerable<GetGroupMembersViewModel>>.Failure(null, ErrorType.ServerError);
             }
+
+            _cacheWrapper.Set(cacheDataKey, data, TimeSpan.FromSeconds(30));
+            return RepositoryResult<IEnumerable<GetGroupMembersViewModel>>.Success(data);
         }
 
         public async Task<RepositoryResult<int>> GetGroupUsersCount(int groupId, bool includingGroupOwner = true)
         {
-            if (_cacheWrapper.TryGetValue($"GroupUsersCount_{groupId}", out int cacheCount))
+            string methodName = MethodName.GetMethodName();
+            string cacheDataKey = $"{_cacheClassName}_{methodName}_{groupId}_{includingGroupOwner}";
+            if (_cacheWrapper.TryGetValue(cacheDataKey, out int cacheData))
             {
-                return RepositoryResult<int>.Success(cacheCount);
+                return RepositoryResult<int>.Success(cacheData);
             }
 
             IQueryable<GroupUser> query = from gu in _context.GroupUsers
@@ -117,30 +135,48 @@ namespace FinansoData.Repository.Group
                 count++;
             }
 
-            _cacheWrapper.Set($"GroupUsersCount_{groupId}", count, TimeSpan.FromSeconds(30));
-            return RepositoryResult<int>.Success(query.Count());
+            _cacheWrapper.Set(cacheDataKey, count, TimeSpan.FromSeconds(30));
+            return RepositoryResult<int>.Success(count);
         }
 
         public async Task<RepositoryResult<int>> GetInvitationCountForGroup(string appUser)
         {
+            string methodName = MethodName.GetMethodName();
+            string cacheDataKey = $"{_cacheClassName}_{methodName}_{appUser}";
+            if (_cacheWrapper.TryGetValue(cacheDataKey, out int? cacheData))
+            {
+                return RepositoryResult<int>.Success((int)cacheData);
+            }
+
             IQueryable<GroupUser> query = from gu in _context.GroupUsers
                                           join g in _context.Groups on gu.Group.Id equals g.Id
                                           where gu.AppUser.UserName == appUser && gu.Active == false
                                           select gu;
 
+            int invitationCount;
             try
             {
-                int count = await query.AsNoTracking().CountAsync();
-                return RepositoryResult<int>.Success(count);
+                invitationCount = await query.AsNoTracking().CountAsync();
             }
             catch
             {
                 return RepositoryResult<int>.Failure(null, ErrorType.ServerError);
             }
+
+            _cacheWrapper.Set(cacheDataKey, invitationCount, TimeSpan.FromSeconds(30));
+            return RepositoryResult<int>.Success(invitationCount);
         }
 
         public async Task<RepositoryResult<DeleteGroupUserViewModel>> GetUserDeleteInfo(int groupUserId)
         {
+            string methodName = MethodName.GetMethodName();
+            string cacheDataKey = $"{_cacheClassName}_{methodName}_{groupUserId}";
+            if (_cacheWrapper.TryGetValue(cacheDataKey, out DeleteGroupUserViewModel cacheData))
+            {
+                return RepositoryResult<DeleteGroupUserViewModel>.Success(cacheData);
+            }
+
+
             IQueryable<DeleteGroupUserViewModel> query = from g in _context.Groups.AsNoTracking()
                                                          join gu in _context.GroupUsers.AsNoTracking() on g.Id equals gu.Group.Id
                                                          join u in _context.AppUsers.AsNoTracking() on gu.AppUser.Id equals u.Id
@@ -153,21 +189,29 @@ namespace FinansoData.Repository.Group
                                                              UserFirstName = u.FirstName,
                                                              UserLastName = u.LastName
                                                          };
-
+            DeleteGroupUserViewModel? data;
             try
             {
-                DeleteGroupUserViewModel? data = await query.FirstOrDefaultAsync();
-                return RepositoryResult<DeleteGroupUserViewModel>.Success(data);
+                data = await query.FirstOrDefaultAsync();
             }
             catch
             {
                 return RepositoryResult<DeleteGroupUserViewModel>.Failure(null, ErrorType.ServerError);
-
             }
+
+            _cacheWrapper.Set(cacheDataKey, data, TimeSpan.FromSeconds(60));
+            return RepositoryResult<DeleteGroupUserViewModel>.Success(data);
         }
 
         public async Task<RepositoryResult<GetUserMembershipInGroupViewModel>> GetUserMembershipInGroupAsync(int groupId, string appUser)
         {
+            string methodName = MethodName.GetMethodName();
+            string cacheDataKey = $"{_cacheClassName}_{methodName}_{groupId}_{appUser}";
+            if (_cacheWrapper.TryGetValue(cacheDataKey, out GetUserMembershipInGroupViewModel cacheData))
+            {
+                return RepositoryResult<GetUserMembershipInGroupViewModel>.Success(cacheData);
+            }
+
             GetUserMembershipInGroupViewModel output = new GetUserMembershipInGroupViewModel();
 
             IQueryable<Models.Group> isUserAdminQuery = from g in _context.Groups
@@ -208,13 +252,13 @@ namespace FinansoData.Repository.Group
             GroupUser? isUserMember;
             try
             {
-                 isUserMember = await isUserMemberQuery.AsNoTracking().FirstOrDefaultAsync();
+                isUserMember = await isUserMemberQuery.AsNoTracking().FirstOrDefaultAsync();
             }
             catch
             {
                 return RepositoryResult<GetUserMembershipInGroupViewModel>.Failure(null, ErrorType.ServerError);
             }
-            
+
 
             if (isUserMember is not null)
             {
@@ -225,11 +269,22 @@ namespace FinansoData.Repository.Group
 
             output.IsMember = false;
             output.IsOwner = false;
+
+
+            _cacheWrapper.Set(cacheDataKey, output, TimeSpan.FromSeconds(15));
             return RepositoryResult<GetUserMembershipInGroupViewModel>.Success(output);
         }
 
         public async Task<RepositoryResult<bool>> IsUserGroupOwner(int groupId, string appUser)
         {
+            string methodName = MethodName.GetMethodName();
+            string cacheDataKey = $"{_cacheClassName}_{methodName}_{groupId}_{appUser}";
+            if (_cacheWrapper.TryGetValue(cacheDataKey, out bool cacheData))
+            {
+                return RepositoryResult<bool>.Success(cacheData);
+            }
+
+
             IQueryable<Models.Group> query = from g in _context.Groups
                                              join a in _context.AppUsers on g.OwnerAppUser.Id equals a.Id
                                              where
@@ -248,13 +303,18 @@ namespace FinansoData.Repository.Group
             }
 
 
+            _cacheWrapper.Set(cacheDataKey, queryResult, TimeSpan.FromMinutes(5));
             return RepositoryResult<bool>.Success(queryResult);
-
-
         }
 
         public async Task<RepositoryResult<bool>> IsUserInvited(int groupUserId, string appUser)
         {
+            string methodName = MethodName.GetMethodName();
+            string cacheDataKey = $"{_cacheClassName}_{methodName}_{groupUserId}_{appUser}";
+            if (_cacheWrapper.TryGetValue(cacheDataKey, out bool cacheData))
+            {
+                return RepositoryResult<bool>.Success(cacheData);
+            }
             IQueryable<GroupUser> query = from gu in _context.GroupUsers
                                           join u in _context.AppUsers on gu.AppUser.Id equals u.Id
                                           where
@@ -263,17 +323,18 @@ namespace FinansoData.Repository.Group
                                            && gu.Active == false
                                           select gu;
 
-
+            bool result;
             try
             {
-                bool result = await query.AsNoTracking().AnyAsync();
-
-                return RepositoryResult<bool>.Success(result);
+                result = await query.AsNoTracking().AnyAsync();
             }
             catch
             {
                 return RepositoryResult<bool>.Failure(null, ErrorType.ServerError);
             }
+
+            _cacheWrapper.Set(cacheDataKey, result, TimeSpan.FromSeconds(30));
+            return RepositoryResult<bool>.Success(result);
         }
 
     }

@@ -1,5 +1,6 @@
 ﻿using FinansoData.Data;
 using FinansoData.DataViewModel.Currency;
+using FinansoData.Helpers;
 using Microsoft.EntityFrameworkCore;
 
 namespace FinansoData.Repository.Currency
@@ -9,16 +10,20 @@ namespace FinansoData.Repository.Currency
         private readonly ApplicationDbContext _context;
         private readonly ICacheWrapper _cacheWrapper;
         private readonly TimeSpan _cacheDuration = TimeSpan.FromMinutes(60);
+        private readonly string _cacheClassName;
 
         public CurrencyQueryRepository(ApplicationDbContext context, FinansoData.Repository.ICacheWrapper cacheWrapper)
         {
             _context = context;
             _cacheWrapper = cacheWrapper;
+            _cacheClassName = this.GetType().Name;
         }
 
         public async Task<RepositoryResult<IEnumerable<CurrencyViewModel>>> GetAllCurrencies()
         {
-            if (_cacheWrapper.TryGetValue("AllCurrencies", out IEnumerable<CurrencyViewModel>? cacheAllCurrencies))
+            string methodName = MethodName.GetMethodName();
+            string cacheDataKey = $"{_cacheClassName}_{methodName}";
+            if (_cacheWrapper.TryGetValue(cacheDataKey, out IEnumerable<CurrencyViewModel>? cacheAllCurrencies))
             {
                 return RepositoryResult<IEnumerable<CurrencyViewModel>>.Success(cacheAllCurrencies);
             }
@@ -41,13 +46,15 @@ namespace FinansoData.Repository.Currency
                 return RepositoryResult<IEnumerable<CurrencyViewModel>>.Failure(null, ErrorType.ServerError);
             }
 
-            _cacheWrapper.Set("AllCurrencies", currencies, _cacheDuration);
+            _cacheWrapper.Set(cacheDataKey, currencies, _cacheDuration);
             return RepositoryResult<IEnumerable<CurrencyViewModel>>.Success(currencies);
         }
 
         public async Task<RepositoryResult<Models.Currency?>> GetCurrencyModelById(int id)
         {
-            if (_cacheWrapper.TryGetValue($"CurrencyModel_{id}", out Models.Currency? cacheCurrency))
+            string methodName = MethodName.GetMethodName();
+            string cacheDataKey = $"{_cacheClassName}_{methodName}_{id}";
+            if (_cacheWrapper.TryGetValue(cacheDataKey, out Models.Currency? cacheCurrency))
             {
                 return RepositoryResult<Models.Currency?>.Success(cacheCurrency);
             }
@@ -71,13 +78,15 @@ namespace FinansoData.Repository.Currency
                 return RepositoryResult<Models.Currency>.Success(null);
             }
 
-            _cacheWrapper.Set($"CurrencyModel_{id}", currency, _cacheDuration);
+            _cacheWrapper.Set(cacheDataKey, currency, _cacheDuration);
             return RepositoryResult<Models.Currency?>.Success(currency);
         }
 
         public async Task<RepositoryResult<CurrencyViewModel?>> GetCurrencyById(int id)
         {
-            if(_cacheWrapper.TryGetValue($"CurrencyViewModel_{id}", out CurrencyViewModel? cacheCurrency))
+            string methodName = MethodName.GetMethodName();
+            string cacheDataKey = $"{_cacheClassName}_{methodName}_{id}";
+            if (_cacheWrapper.TryGetValue(cacheDataKey, out CurrencyViewModel? cacheCurrency))
             {
                 return RepositoryResult<CurrencyViewModel?>.Success(cacheCurrency);
             }
@@ -105,7 +114,7 @@ namespace FinansoData.Repository.Currency
                 return RepositoryResult<CurrencyViewModel>.Success(null);
             }
 
-            _cacheWrapper.Set($"CurrencyViewModel_{id}", currency, _cacheDuration);
+            _cacheWrapper.Set(cacheDataKey, currency, _cacheDuration);
             return RepositoryResult<CurrencyViewModel?>.Success(currency);
         }
     }
