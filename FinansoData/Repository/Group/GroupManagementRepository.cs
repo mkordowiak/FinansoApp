@@ -20,7 +20,8 @@ namespace FinansoData.Repository.Group
             AppUser? user;
             try
             {
-                user = await _context.AppUsers.FirstOrDefaultAsync(x => x.UserName.Equals(appUser));
+                user = await _context.AppUsers
+                    .FirstOrDefaultAsync(x => string.Equals(x.NormalizedUserName, appUser));
             }
             catch (Exception)
             {

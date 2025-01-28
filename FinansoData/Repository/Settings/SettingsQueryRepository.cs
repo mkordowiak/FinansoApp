@@ -22,7 +22,7 @@ namespace FinansoData.Repository.Settings
         {
             string methodName = MethodName.GetMethodName();
             string cacheDataKey = $"{_cacheClassName}_{methodName}_{key}";
-            if (_cacheWrapper.TryGetValue(cacheDataKey, out Models.Settings? cacheSetting))
+            if (_cacheWrapper.TryGetValue(cacheDataKey, out Models.Settings cacheSetting))
             {
                 return (T)Convert.ChangeType(cacheSetting.Value, typeof(T));
             }

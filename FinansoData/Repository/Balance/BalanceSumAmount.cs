@@ -37,6 +37,12 @@ namespace FinansoData.Repository.Balance
             try
             {
                 var result = await query.FirstOrDefaultAsync();
+
+                if (result == null)
+                {
+                    return RepositoryResult<decimal?>.Failure(null, ErrorType.NotFound);
+                }
+
                 sum = result.Sum;
             }
             catch

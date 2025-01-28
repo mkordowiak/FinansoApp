@@ -24,7 +24,7 @@ namespace FinansoData.Repository.Group
             string cacheKey = $"{_cacheClassName}_{methodName}_{groupId}";
             if (_cacheWrapper.TryGetValue(cacheKey, out Models.Group? cacheData))
             {
-                return RepositoryResult<Models.Group>.Success(cacheData);
+                return RepositoryResult<Models.Group?>.Success(cacheData);
             }
 
 
@@ -38,8 +38,13 @@ namespace FinansoData.Repository.Group
                 return RepositoryResult<Models.Group>.Failure(null, ErrorType.ServerError);
             }
 
+            if (group == null)
+            {
+                return RepositoryResult<Models.Group?>.Failure(null, ErrorType.NotFound);
+            }
+
             _cacheWrapper.Set(cacheKey, group, TimeSpan.FromSeconds(3));
-            return RepositoryResult<Models.Group>.Success(group);
+            return RepositoryResult<Models.Group?>.Success(group);
         }
 
         public async Task<RepositoryResult<IEnumerable<GetUserGroupsViewModel>?>> GetUserGroups(string appUser)

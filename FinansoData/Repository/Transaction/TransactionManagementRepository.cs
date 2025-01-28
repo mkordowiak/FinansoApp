@@ -30,6 +30,12 @@ namespace FinansoData.Repository.Transaction
             try
             {
                 var data = await query.SingleOrDefaultAsync();
+
+                if(data == null)
+                {
+                    return RepositoryResult<bool>.Failure("No balance found", ErrorType.NotFound);
+                }
+
                 groupId = data.groupId;
                 currencyId = data.currencyId;
 

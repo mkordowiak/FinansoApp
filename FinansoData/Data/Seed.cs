@@ -207,7 +207,8 @@ namespace FinansoData.Data
                 {
                     Task.Run(async () =>
                     {
-                        AppUser? userInDb = await userManager.FindByEmailAsync(user.Email);
+                        string email = user?.Email ?? string.Empty;
+                        AppUser? userInDb = await userManager.FindByEmailAsync(email);
 
                         if (userInDb == null)
                         {
