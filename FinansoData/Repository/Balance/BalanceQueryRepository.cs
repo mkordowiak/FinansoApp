@@ -1,5 +1,6 @@
 ﻿using FinansoData.Data;
 using FinansoData.DataViewModel.Balance;
+using FinansoData.Helpers;
 using Microsoft.EntityFrameworkCore;
 
 namespace FinansoData.Repository.Balance
@@ -8,16 +9,19 @@ namespace FinansoData.Repository.Balance
     {
         private readonly ApplicationDbContext _context;
         private readonly ICacheWrapper _cacheWrapper;
+        private readonly string _cacheClassName;
 
         public BalanceQueryRepository(ApplicationDbContext context, ICacheWrapper cacheWrapper)
         {
             _context = context;
             _cacheWrapper = cacheWrapper;
+            _cacheClassName = this.GetType().Name;
         }
 
         public async Task<RepositoryResult<IEnumerable<BalanceViewModel>?>> GetListOfBalancesForGroup(int groupId)
         {
-            string cacheKey = $"BalanceQueryRepository_GetListOfBalancesForGroup_{groupId}";
+            string methodName = MethodName.GetMethodName();
+            string cacheKey = $"{_cacheClassName}_{methodName}_{groupId}";
             if (_cacheWrapper.TryGetValue(cacheKey, out List<BalanceViewModel> cachedBalanceVM))
             {
                 return RepositoryResult<IEnumerable<BalanceViewModel>>.Success(cachedBalanceVM);
@@ -53,7 +57,8 @@ namespace FinansoData.Repository.Balance
 
         public async Task<RepositoryResult<IEnumerable<BalanceViewModel>?>> GetListOfBalancesForUser(string userName)
         {
-            string cacheKey = $"BalanceQueryRepository_GetListOfBalancesForUser_{userName}";
+            string methodName = MethodName.GetMethodName();
+            string cacheKey = $"{_cacheClassName}_{methodName}_{userName}";
             if (_cacheWrapper.TryGetValue(cacheKey, out List<BalanceViewModel> cachedBalanceVM))
             {
                 return RepositoryResult<IEnumerable<BalanceViewModel>>.Success(cachedBalanceVM);
@@ -100,7 +105,8 @@ namespace FinansoData.Repository.Balance
 
         public async Task<RepositoryResult<bool?>> HasUserAccessToBalance(string userName, int balanceId)
         {
-            string cacheKey = $"BalanceQueryRepository_HasUserAccessToBalance_{userName}_{balanceId}";
+            string methodName = MethodName.GetMethodName();
+            string cacheKey = $"{_cacheClassName}_{methodName}_{userName}_{balanceId}";
             if (_cacheWrapper.TryGetValue(cacheKey, out bool cachedResult))
             {
                 return RepositoryResult<bool?>.Success(cachedResult);
@@ -138,7 +144,8 @@ namespace FinansoData.Repository.Balance
 
         public async Task<RepositoryResult<BalanceViewModel>> GetBalance(int balcnceId)
         {
-            string cacheKey = $"BalanceQueryRepository_GetBalance_{balcnceId}";
+            string methodName = MethodName.GetMethodName();
+            string cacheKey = $"{_cacheClassName}_{methodName}_{balcnceId}";
             if (_cacheWrapper.TryGetValue(cacheKey, out BalanceViewModel cachedBalanceVM))
             {
                 return RepositoryResult<BalanceViewModel>.Success(cachedBalanceVM);
@@ -177,7 +184,8 @@ namespace FinansoData.Repository.Balance
 
         public async Task<RepositoryResult<IEnumerable<Tuple<int, string>>>> GetShortListOfBalanceForUser(string userName)
         {
-            string cacheKey = $"BalanceQueryRepository_GetShortListOfBalanceForUser_{userName}";
+            string methodName = MethodName.GetMethodName();
+            string cacheKey = $"{_cacheClassName}_{methodName}_{userName}";
             if (_cacheWrapper.TryGetValue(cacheKey, out List<Tuple<int, string>> cachedBalanceVM))
             {
                 return RepositoryResult<IEnumerable<Tuple<int, string>>>.Success(cachedBalanceVM);
