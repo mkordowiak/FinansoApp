@@ -27,8 +27,8 @@ namespace FinansoData.Tests.Repository.Group
                 context.Database.EnsureCreated();
 
 
-                _group1Owner = new AppUser { Id = "1", UserName = "john@mail.com", FirstName = "John", LastName = "Doe" };
-                _group1Member = new AppUser { Id = "2", UserName = "mark@mail.com", FirstName = "Mark", LastName = "Knopfler" };
+                _group1Owner = new AppUser { Id = "1", UserName = "john@mail.com", NormalizedUserName = "JOHN@MAIL.COM", FirstName = "John", LastName = "Doe" };
+                _group1Member = new AppUser { Id = "2", UserName = "mark@mail.com", NormalizedUserName = "MARK@MAIL.COM", FirstName = "Mark", LastName = "Knopfler" };
 
                 _group1 = new FinansoData.Models.Group { Id = 1, Name = "Test _group 1", OwnerAppUser = _group1Owner };
                 _group2 = new FinansoData.Models.Group { Id = 2, Name = "Test _group 2", OwnerAppUser = _group1Owner };
@@ -58,7 +58,7 @@ namespace FinansoData.Tests.Repository.Group
                 GroupManagementRepository groupRepository = new GroupManagementRepository(context, groupCrudRepository);
 
                 string newGroupName = "New group";
-                string groupOwnerUserName = _group1Owner.UserName;
+                string groupOwnerUserName = _group1Owner.NormalizedUserName;
 
                 // Act
                 FinansoData.RepositoryResult<bool?> data = await groupRepository.Add(newGroupName, groupOwnerUserName);

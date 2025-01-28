@@ -14,7 +14,6 @@ using Microsoft.EntityFrameworkCore;
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 // Scopes
-builder.Services.AddScoped<IAccountRepository, AccountRepository>();
 builder.Services.AddScoped<ISeed, Seed>();
 builder.Services.AddScoped<IGroupCrudRepository, GroupCrudRepository>();
 builder.Services.AddScoped<IGroupManagementRepository, GroupManagementRepository>();

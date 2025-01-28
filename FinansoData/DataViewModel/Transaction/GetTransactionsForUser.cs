@@ -7,7 +7,7 @@
         public string GroupName { get; set; }
         public int BalanceId { get; set; }
         public string BalanceName { get; set; }
-        public string Description { get; set; }
+        public string? Description { get; set; }
         public string TransactionType { get; set; }
         public string TransactionStatus { get; set; }
         public DateTime TransactionDate { get; set; }

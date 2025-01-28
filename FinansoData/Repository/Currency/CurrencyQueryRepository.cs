@@ -23,7 +23,7 @@ namespace FinansoData.Repository.Currency
         {
             string methodName = MethodName.GetMethodName();
             string cacheDataKey = $"{_cacheClassName}_{methodName}";
-            if (_cacheWrapper.TryGetValue(cacheDataKey, out IEnumerable<CurrencyViewModel>? cacheAllCurrencies))
+            if (_cacheWrapper.TryGetValue(cacheDataKey, out IEnumerable<CurrencyViewModel> cacheAllCurrencies))
             {
                 return RepositoryResult<IEnumerable<CurrencyViewModel>>.Success(cacheAllCurrencies);
             }

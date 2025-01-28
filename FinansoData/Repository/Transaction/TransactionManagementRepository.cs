@@ -26,10 +26,16 @@ namespace FinansoData.Repository.Transaction
 
             int groupId;
             int currencyId;
-            string userId;
+            string? userId;
             try
             {
                 var data = await query.SingleOrDefaultAsync();
+
+                if(data == null)
+                {
+                    return RepositoryResult<bool>.Failure("No balance found", ErrorType.NotFound);
+                }
+
                 groupId = data.groupId;
                 currencyId = data.currencyId;
 
@@ -38,6 +44,11 @@ namespace FinansoData.Repository.Transaction
             catch
             {
                 return RepositoryResult<bool>.Failure("Error while getting data from db", ErrorType.ServerError);
+            }
+
+            if(userId == null)
+            {
+                return RepositoryResult<bool>.Failure("No user found", ErrorType.NoUserFound);
             }
 
 
