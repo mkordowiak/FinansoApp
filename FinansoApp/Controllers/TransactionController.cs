@@ -134,6 +134,12 @@ namespace FinansoApp.Controllers
                     transactionViewModel.TransactionTypeId,
                     transactionViewModel.TransactionStatusId);
 
+            if(result.IsSuccess == false ||
+                result.ErrorType == FinansoData.ErrorType.NoUserFound)
+            {
+                return Unauthorized();
+            }
+
 
             if (result.IsSuccess == false ||
                 result.ErrorType == FinansoData.ErrorType.ServerError)

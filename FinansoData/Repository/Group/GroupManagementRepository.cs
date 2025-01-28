@@ -17,7 +17,7 @@ namespace FinansoData.Repository.Group
 
         public async Task<RepositoryResult<bool?>> Add(string groupName, string appUser)
         {
-            AppUser user;
+            AppUser? user;
             try
             {
                 user = await _context.AppUsers.FirstOrDefaultAsync(x => x.UserName.Equals(appUser));
@@ -50,7 +50,7 @@ namespace FinansoData.Repository.Group
             bool result = _groupCrudRepository.Add(group);
 
             if (result) return RepositoryResult<bool?>.Success(true);
-            else return RepositoryResult<bool?>.Failure(null, ErrorType.ServerError);
+            else return RepositoryResult<bool?>.Failure((string?)null, ErrorType.ServerError);
         }
 
 

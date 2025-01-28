@@ -220,7 +220,7 @@ namespace FinansoData.Repository.Group
                                                             g.Id == groupId
                                                             && u.UserName == appUser
                                                         select g;
-            Models.Group isUserAdmin;
+            Models.Group? isUserAdmin;
 
 
             try

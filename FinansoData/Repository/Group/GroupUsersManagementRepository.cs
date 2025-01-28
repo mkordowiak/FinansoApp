@@ -47,7 +47,7 @@ namespace FinansoData.Repository.Group
 
         public async Task<RepositoryResult<bool>> AddUserToGroup(int groupId, AppUser appUser)
         {
-            Models.Group group;
+            Models.Group? group;
             try
             {
                 group = await _context.Groups.SingleOrDefaultAsync(x => x.Id == groupId);
@@ -90,7 +90,7 @@ namespace FinansoData.Repository.Group
 
         public async Task<RepositoryResult<bool>> RejectGroupInvitation(int groupUserId)
         {
-            GroupUser groupUser;
+            GroupUser? groupUser;
             try
             {
                 groupUser = await _context.GroupUsers.SingleOrDefaultAsync(x => x.Id == groupUserId);
