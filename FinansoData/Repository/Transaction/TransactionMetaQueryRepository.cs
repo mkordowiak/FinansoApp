@@ -68,5 +68,59 @@ namespace FinansoData.Repository.Transaction
             _cacheWrapper.Set(cacheDataKey, result, TimeSpan.FromMinutes(30));
             return RepositoryResult<IEnumerable<Tuple<int, string>>>.Success(result);
         }
+
+        public async Task<RepositoryResult<IEnumerable<Tuple<int, string>>>> GetTransactionIncomeCategories()
+        {
+            string methodName = MethodName.GetMethodName();
+            string cacheDataKey = $"{_cacheClassName}_{methodName}";
+            if (_cacheWrapper.TryGetValue(cacheDataKey, out IEnumerable<Tuple<int, string>> cacheData))
+            {
+                return RepositoryResult<IEnumerable<Tuple<int, string>>>.Success(cacheData);
+            }
+
+            IQueryable<Tuple<int, string>> query = from tc in _applicationDbContext.TransactionCategories
+                                                   where tc.TransactionTypeId.Equals(1)
+                                                   select new Tuple<int, string>(tc.Id, tc.Name);
+
+            List<Tuple<int, string>> result;
+            try
+            {
+                result = await query.AsNoTracking().ToListAsync();
+            }
+            catch
+            {
+                return RepositoryResult<IEnumerable<Tuple<int, string>>>.Failure("Error while getting transaction categories", ErrorType.ServerError);
+            }
+
+            _cacheWrapper.Set(cacheDataKey, result, TimeSpan.FromMinutes(30));
+            return RepositoryResult<IEnumerable<Tuple<int, string>>>.Success(result);
+        }
+
+
+        public async Task<RepositoryResult<IEnumerable<Tuple<int, string>>>> GetTransactionExpenseCategories()
+        {
+            string methodName = MethodName.GetMethodName();
+            string cacheDataKey = $"{_cacheClassName}_{methodName}";
+            if (_cacheWrapper.TryGetValue(cacheDataKey, out IEnumerable<Tuple<int, string>> cacheData))
+            {
+                return RepositoryResult<IEnumerable<Tuple<int, string>>>.Success(cacheData);
+            }
+            IQueryable<Tuple<int, string>> query = from tc in _applicationDbContext.TransactionCategories
+                                                   where tc.TransactionTypeId.Equals(2)
+                                                   select new Tuple<int, string>(tc.Id, tc.Name);
+
+            List<Tuple<int, string>> result;
+            try
+            {
+                result = await query.AsNoTracking().ToListAsync();
+            }
+            catch
+            {
+                return RepositoryResult<IEnumerable<Tuple<int, string>>>.Failure("Error while getting transaction categories", ErrorType.ServerError);
+            }
+
+            _cacheWrapper.Set(cacheDataKey, result, TimeSpan.FromMinutes(30));
+            return RepositoryResult<IEnumerable<Tuple<int, string>>>.Success(result);
+        }
     }
 }

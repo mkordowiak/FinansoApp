@@ -13,7 +13,7 @@ namespace FinansoData.Repository.Transaction
             _applicationDbContext = applicationDbContext;
         }
 
-        public async Task<RepositoryResult<bool>> AddTransaction(decimal Amount, string? Description, int BalanceId, DateTime TransactionDate, string UserName, int TransactionTypeId, int TransactionStatusId)
+        public async Task<RepositoryResult<bool>> AddTransaction(decimal Amount, string? Description, int BalanceId, DateTime TransactionDate, string UserName, int TransactionTypeId, int TransactionStatusId, int TransactionCategoryId)
         {
             // this value is used in db to easly get transactions
             var query = from balance in _applicationDbContext.Balances
@@ -62,7 +62,8 @@ namespace FinansoData.Repository.Transaction
                 TransactionTypeId = TransactionTypeId,
                 TransactionStatusId = TransactionStatusId,
                 GroupId = groupId,
-                CurrencyId = currencyId
+                CurrencyId = currencyId,
+                TransactionCategoryId = TransactionCategoryId
             };
 
             try

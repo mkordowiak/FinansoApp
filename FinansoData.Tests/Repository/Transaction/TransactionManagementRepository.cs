@@ -86,7 +86,7 @@ namespace FinansoData.Tests.Repository.Transaction
                 FinansoData.Repository.Transaction.TransactionManagementRepository repository = new FinansoData.Repository.Transaction.TransactionManagementRepository(context);
 
                 // Act
-                result = await repository.AddTransaction(100m, "desc", 1, DateTime.Now, "1", 1, 1);
+                result = await repository.AddTransaction(100m, "desc", 1, DateTime.Now, "1", 1, 1, 1);
                 inMemoryDbTransaction = context.BalanceTransactions.FirstOrDefault();
                 context.Database.EnsureDeleted();
             }
@@ -107,7 +107,7 @@ namespace FinansoData.Tests.Repository.Transaction
                 FinansoData.Repository.Transaction.TransactionManagementRepository repository = new FinansoData.Repository.Transaction.TransactionManagementRepository(context);
 
                 // Act
-                result = await repository.AddTransaction(100m, "desc", 999, DateTime.Now, "1", 1, 1);
+                result = await repository.AddTransaction(100m, "desc", 999, DateTime.Now, "1", 1, 1, 1);
                 inMemoryDbTransaction = context.BalanceTransactions.FirstOrDefault();
                 context.Database.EnsureDeleted();
             }
@@ -128,7 +128,7 @@ namespace FinansoData.Tests.Repository.Transaction
                 FinansoData.Repository.Transaction.TransactionManagementRepository repository = new FinansoData.Repository.Transaction.TransactionManagementRepository(context);
 
                 // Act
-                result = await repository.AddTransaction(100m, "desc", 1, DateTime.Now, "Wrong username 123", 1, 1);
+                result = await repository.AddTransaction(100m, "desc", 1, DateTime.Now, "Wrong username 123", 1, 1, 1);
                 inMemoryDbTransaction = context.BalanceTransactions.FirstOrDefault();
                 context.Database.EnsureDeleted();
             }
