@@ -53,11 +53,23 @@ namespace FinansoApp.Controllers
                 return addTransactionViewModel;
             }
 
+            FinansoData.RepositoryResult<IEnumerable<Tuple<int, string>>> incomeCategories = await _transactionMetaQueryRepository.GetTransactionIncomeCategories();
+            FinansoData.RepositoryResult<IEnumerable<Tuple<int, string>>> expenseCategories = await _transactionMetaQueryRepository.GetTransactionExpenseCategories();
+
+            if (incomeCategories.IsSuccess == false || expenseCategories.IsSuccess == false)
+            {
+                addTransactionViewModel.Error.GetDataInternalError = true;
+                return addTransactionViewModel;
+            }
+
             // Map tuple from repo to SelectListItem
             addTransactionViewModel.TransactionStatuses = _mapper.Map<IEnumerable<Tuple<int, string>>, IEnumerable<SelectListItem>>(transactionStatuses.Value);
             addTransactionViewModel.TransactionTypes = _mapper.Map<IEnumerable<Tuple<int, string>>, IEnumerable<SelectListItem>>(transactionTypes.Value);
             addTransactionViewModel.Balances = _mapper.Map<IEnumerable<Tuple<int, string>>, IEnumerable<SelectListItem>>(balances.Value);
-
+            addTransactionViewModel.TransactionIncomeCategories = _mapper.Map<IEnumerable<Tuple<int, string>>, IEnumerable<SelectListItem>>(incomeCategories.Value);
+            addTransactionViewModel.TransactionExpenseCategories = _mapper.Map<IEnumerable<Tuple<int, string>>, IEnumerable<SelectListItem>>(expenseCategories.Value);
+            
+            
             if (balanceId.HasValue) addTransactionViewModel.BalanceId = (int)balanceId;
             return addTransactionViewModel;
         }
@@ -98,6 +110,8 @@ namespace FinansoApp.Controllers
         [HttpGet]
         public async Task<IActionResult> AddTransaction(int? balanceId)
         {
+            
+
             AddTransactionViewModel addTransactionViewModel = await GetDataForAddTransaction(balanceId, User.Identity.Name);
             return View(addTransactionViewModel);
         }
@@ -123,6 +137,17 @@ namespace FinansoApp.Controllers
                 return View(transactionViewModel);
             }
 
+            int transactionCategoryId = 0;
+
+            if (transactionViewModel.TransactionTypeId == 1)
+            {
+                transactionCategoryId = transactionViewModel.TransactionIncomeCategory;
+            }
+            else
+            {
+                transactionCategoryId = transactionViewModel.TransactionExpenseCategoryId;
+            }
+
             // Add transaction
             FinansoData.RepositoryResult<bool> result =
                 await _transactionManagementRepository.AddTransaction(
@@ -132,9 +157,10 @@ namespace FinansoApp.Controllers
                     transactionViewModel.TransactionDate,
                     User.Identity.Name,
                     transactionViewModel.TransactionTypeId,
-                    transactionViewModel.TransactionStatusId);
+                    transactionViewModel.TransactionStatusId,
+                    transactionCategoryId);
 
-            if(result.IsSuccess == false ||
+            if (result.IsSuccess == false ||
                 result.ErrorType == FinansoData.ErrorType.NoUserFound)
             {
                 return Unauthorized();

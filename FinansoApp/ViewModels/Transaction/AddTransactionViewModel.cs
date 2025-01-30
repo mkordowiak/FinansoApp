@@ -20,8 +20,6 @@ namespace FinansoApp.ViewModels.Transaction
         /// <summary>
         /// Description of transaction
         /// </summary>
-        [Required(ErrorMessage = "Description is required")]
-        [MinLength(3)]
         [StringLength(100, ErrorMessage = "Description can't be longer than 100 characters")]
         [Display(Name = "Description")]
         public string? Description { get; set; }
@@ -50,6 +48,20 @@ namespace FinansoApp.ViewModels.Transaction
         public int TransactionStatusId { get; set; }
 
         /// <summary>
+        /// Transaction income category id
+        /// </summary>
+        [Display(Name = "Transaction income category")]
+        public int TransactionIncomeCategory { get; set; }
+
+        /// <summary>
+        /// Transaction expense category id
+        /// </summary>
+        [Display(Name = "Transaction expense category")]
+        public int TransactionExpenseCategoryId { get; set; }
+
+
+
+        /// <summary>
         /// Transaction types list for dropdown
         /// </summary>
         public IEnumerable<SelectListItem> TransactionTypes { get; set; } = new List<SelectListItem>();
@@ -63,6 +75,16 @@ namespace FinansoApp.ViewModels.Transaction
         /// Balances list for dropdown
         /// </summary>
         public IEnumerable<SelectListItem> Balances { get; set; } = new List<SelectListItem>();
+
+        /// <summary>
+        /// Transaction expense categories
+        /// </summary>
+        public IEnumerable<SelectListItem> TransactionExpenseCategories { get; set; } = new List<SelectListItem>();
+
+        /// <summary>
+        /// Transaction income categories
+        /// </summary>
+        public IEnumerable<SelectListItem> TransactionIncomeCategories { get; set; } = new List<SelectListItem>();
 
 
         /// <summary>
