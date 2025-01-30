@@ -142,6 +142,10 @@ namespace FinansoApp.Tests.Controllers
 
             _balanceQueryRepositoryMock.Setup(x => x.GetShortListOfBalanceForUser(It.IsAny<string>()))
                 .ReturnsAsync(RepositoryResult<IEnumerable<Tuple<int, string>>>.Success(new List<Tuple<int, string>> { new Tuple<int, string>(1, "Balance name") }));
+            _transactionMetaQueryRepositoryMock.Setup(x => x.GetTransactionIncomeCategories())
+                .ReturnsAsync(RepositoryResult<IEnumerable<Tuple<int, string>>>.Success(new List<Tuple<int, string>> { new Tuple<int, string>(1, "Income category") }));
+            _transactionMetaQueryRepositoryMock.Setup(x => x.GetTransactionExpenseCategories())
+                .ReturnsAsync(RepositoryResult<IEnumerable<Tuple<int, string>>>.Success(new List<Tuple<int, string>> { new Tuple<int, string>(1, "Expense category") }));
 
             #endregion
 
@@ -213,6 +217,7 @@ namespace FinansoApp.Tests.Controllers
                 It.IsAny<int>(),
                 It.IsAny<DateTime>(),
                 It.IsAny<string>(),
+                It.IsAny<int>(),
                 It.IsAny<int>(),
                 It.IsAny<int>()
                 ))
@@ -339,12 +344,18 @@ namespace FinansoApp.Tests.Controllers
             _balanceQueryRepositoryMock.Setup(x => x.GetShortListOfBalanceForUser(It.IsAny<string>()))
                 .ReturnsAsync(RepositoryResult<IEnumerable<Tuple<int, string>>>.Success(new List<Tuple<int, string>> { new Tuple<int, string>(1, "Balance name") }));
 
+            _transactionMetaQueryRepositoryMock.Setup(x => x.GetTransactionIncomeCategories())
+                .ReturnsAsync(RepositoryResult<IEnumerable<Tuple<int, string>>>.Success(new List<Tuple<int, string>> { new Tuple<int, string>(1, "Income category") }));
+            _transactionMetaQueryRepositoryMock.Setup(x => x.GetTransactionExpenseCategories())
+                .ReturnsAsync(RepositoryResult<IEnumerable<Tuple<int, string>>>.Success(new List<Tuple<int, string>> { new Tuple<int, string>(1, "Expense category") }));
+
             _transactionManagementRepositoryMock.Setup(x => x.AddTransaction(
                 It.IsAny<decimal>(),
                 It.IsAny<string>(),
                 It.IsAny<int>(),
                 It.IsAny<DateTime>(),
                 It.IsAny<string>(),
+                It.IsAny<int>(),
                 It.IsAny<int>(),
                 It.IsAny<int>()
                 ))
@@ -371,7 +382,9 @@ namespace FinansoApp.Tests.Controllers
                 Description = "Description",
                 TransactionDate = DateTime.Now,
                 TransactionStatusId = 1,
-                TransactionTypeId = 1
+                TransactionTypeId = 1,
+                TransactionIncomeCategory = 1,
+                TransactionExpenseCategoryId = 1
             };
 
             // Act

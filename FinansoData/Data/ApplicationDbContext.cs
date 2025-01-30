@@ -55,6 +55,12 @@ namespace FinansoData.Data
                 .HasForeignKey(bt => bt.TransactionStatusId)
                 .OnDelete(DeleteBehavior.NoAction);
 
+            modelBuilder
+                .Entity<BalanceTransaction>()
+                .HasOne(t => t.TransactionCategory)
+                .WithMany(tc => tc.BalanceTransactions)
+                .HasForeignKey(bt => bt.TransactionCategoryId)
+                .OnDelete(DeleteBehavior.NoAction);
 
 
 
@@ -155,6 +161,7 @@ namespace FinansoData.Data
         public DbSet<BalanceTransaction> BalanceTransactions { get; set; }
         public DbSet<TransactionType> TransactionTypes { get; set; }
         public DbSet<TransactionStatus> TransactionStatuses { get; set; }
+        public DbSet<TransactionCategory> TransactionCategories { get; set; }
         public DbSet<Settings> Settings { get; set; }
 
         /// <summary>
@@ -163,9 +170,7 @@ namespace FinansoData.Data
         /// <returns></returns>
         public async Task SumPlannedTransactions()
         {
-            List<BalanceTransaction> result = await BalanceTransactions.FromSqlRaw("EXEC SumPlannedTransactions;").ToListAsync();
-
-            
+            List<BalanceTransaction> result = await BalanceTransactions.FromSqlRaw("EXEC SumPlannedTransactions;").ToListAsync(); 
         }
     }
 }

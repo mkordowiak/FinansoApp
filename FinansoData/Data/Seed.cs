@@ -98,6 +98,41 @@ namespace FinansoData.Data
             }
         }
 
+        public static void SeedTransactionCategories(IApplicationBuilder applicationBuilder)
+        {
+            using (IServiceScope serviceScope = applicationBuilder.ApplicationServices.CreateScope())
+            {
+                ApplicationDbContext context = serviceScope.ServiceProvider.GetRequiredService<ApplicationDbContext>();
+                context.Database.EnsureCreated();
+                if (!context.TransactionCategories.Any())
+                {
+                    context.TransactionCategories.AddRange(
+                        new TransactionCategory { TransactionTypeId = 1, Name = "Salary" },
+                        new TransactionCategory { TransactionTypeId = 1, Name = "Additional Income Sources" },
+                        new TransactionCategory { TransactionTypeId = 1, Name = "Investments" },
+                        new TransactionCategory { TransactionTypeId = 1, Name = "Sales" },
+                        new TransactionCategory { TransactionTypeId = 1, Name = "Donations" },
+                        new TransactionCategory { TransactionTypeId = 1, Name = "Benefits and Allowances" },
+                        new TransactionCategory { TransactionTypeId = 1, Name = "Bonuses and Awards" },
+                        new TransactionCategory { TransactionTypeId = 1, Name = "Passive Income" },
+                        new TransactionCategory { TransactionTypeId = 1, Name = "Refunds" },
+                        new TransactionCategory { TransactionTypeId = 1, Name = "Other" },
+                        new TransactionCategory { TransactionTypeId = 2, Name = "Daily Purchases" },
+                        new TransactionCategory { TransactionTypeId = 2, Name = "Bills" },
+                        new TransactionCategory { TransactionTypeId = 2, Name = "Transportation" },
+                        new TransactionCategory { TransactionTypeId = 2, Name = "Entertainment" },
+                        new TransactionCategory { TransactionTypeId = 2, Name = "Insurance" },
+                        new TransactionCategory { TransactionTypeId = 2, Name = "Education" },
+                        new TransactionCategory { TransactionTypeId = 2, Name = "Health" },
+                        new TransactionCategory { TransactionTypeId = 2, Name = "Home and Garden" },
+                        new TransactionCategory { TransactionTypeId = 2, Name = "Taxes" },
+                        new TransactionCategory { TransactionTypeId = 2, Name = "Investments" }
+                    );
+                    context.SaveChanges();
+                }
+            }
+        }
+
         /// <summary>
         /// Static method to run ONLY when project is initialized
         /// Seed transaction statuses
