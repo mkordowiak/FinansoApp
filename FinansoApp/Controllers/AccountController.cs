@@ -33,7 +33,7 @@ namespace FinansoApp.Controllers
 
         public IActionResult Login()
         {
-            // Hold values wher reload
+            // Hold values when reload
             LoginViewModel responseViewModel = new LoginViewModel();
             return View(responseViewModel);
         }
