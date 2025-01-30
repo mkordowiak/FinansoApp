@@ -244,6 +244,26 @@ namespace FinansoData.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "TransactionCategories",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    Name = table.Column<string>(type: "nvarchar(50)", maxLength: 50, nullable: false),
+                    TransactionTypeId = table.Column<int>(type: "int", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_TransactionCategories", x => x.Id);
+                    table.ForeignKey(
+                        name: "FK_TransactionCategories_TransactionTypes_TransactionTypeId",
+                        column: x => x.TransactionTypeId,
+                        principalTable: "TransactionTypes",
+                        principalColumn: "Id",
+                        onDelete: ReferentialAction.Cascade);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "Balances",
                 columns: table => new
                 {
@@ -314,6 +334,7 @@ namespace FinansoData.Migrations
                     BalanceId = table.Column<int>(type: "int", nullable: false),
                     TransactionTypeId = table.Column<int>(type: "int", nullable: false),
                     TransactionStatusId = table.Column<int>(type: "int", nullable: false),
+                    TransactionCategoryId = table.Column<int>(type: "int", nullable: false),
                     CurrencyId = table.Column<int>(type: "int", nullable: false)
                 },
                 constraints: table =>
@@ -338,6 +359,11 @@ namespace FinansoData.Migrations
                         name: "FK_BalanceTransactions_Groups_GroupId",
                         column: x => x.GroupId,
                         principalTable: "Groups",
+                        principalColumn: "Id");
+                    table.ForeignKey(
+                        name: "FK_BalanceTransactions_TransactionCategories_TransactionCategoryId",
+                        column: x => x.TransactionCategoryId,
+                        principalTable: "TransactionCategories",
                         principalColumn: "Id");
                     table.ForeignKey(
                         name: "FK_BalanceTransactions_TransactionStatuses_TransactionStatusId",
@@ -421,6 +447,11 @@ namespace FinansoData.Migrations
                 columns: new[] { "GroupId", "AppUserId" });
 
             migrationBuilder.CreateIndex(
+                name: "IX_BalanceTransactions_TransactionCategoryId",
+                table: "BalanceTransactions",
+                column: "TransactionCategoryId");
+
+            migrationBuilder.CreateIndex(
                 name: "IX_BalanceTransactions_TransactionDate",
                 table: "BalanceTransactions",
                 column: "TransactionDate");
@@ -456,6 +487,11 @@ namespace FinansoData.Migrations
                 name: "IX_GroupUsers_GroupId",
                 table: "GroupUsers",
                 column: "GroupId");
+
+            migrationBuilder.CreateIndex(
+                name: "IX_TransactionCategories_TransactionTypeId",
+                table: "TransactionCategories",
+                column: "TransactionTypeId");
         }
 
         /// <inheritdoc />
@@ -492,16 +528,19 @@ namespace FinansoData.Migrations
                 name: "Balances");
 
             migrationBuilder.DropTable(
-                name: "TransactionStatuses");
+                name: "TransactionCategories");
 
             migrationBuilder.DropTable(
-                name: "TransactionTypes");
+                name: "TransactionStatuses");
 
             migrationBuilder.DropTable(
                 name: "Currencies");
 
             migrationBuilder.DropTable(
                 name: "Groups");
+
+            migrationBuilder.DropTable(
+                name: "TransactionTypes");
 
             migrationBuilder.DropTable(
                 name: "AspNetUsers");

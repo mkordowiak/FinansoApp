@@ -93,6 +93,10 @@ if (args.Length == 1 && args[0].ToLower() == "seeddata")
 
     Console.WriteLine("Transaction types seeded");
 
+    Seed.SeedTransactionCategories(app);
+
+    Console.WriteLine("Transaction categories seeded");
+
     Seed.SeedTransactionStatuses(app);
 
     Console.WriteLine("Transaction statuses seeded");

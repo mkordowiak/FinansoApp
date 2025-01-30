@@ -185,6 +185,9 @@ namespace FinansoData.Migrations
                     b.Property<DateTime?>("ModifiedAt")
                         .HasColumnType("datetime2");
 
+                    b.Property<int>("TransactionCategoryId")
+                        .HasColumnType("int");
+
                     b.Property<DateTime>("TransactionDate")
                         .HasColumnType("datetime2");
 
@@ -201,6 +204,8 @@ namespace FinansoData.Migrations
                     b.HasIndex("BalanceId");
 
                     b.HasIndex("CurrencyId");
+
+                    b.HasIndex("TransactionCategoryId");
 
                     b.HasIndex("TransactionDate");
 
@@ -344,6 +349,29 @@ namespace FinansoData.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Settings");
+                });
+
+            modelBuilder.Entity("FinansoData.Models.TransactionCategory", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("nvarchar(50)");
+
+                    b.Property<int>("TransactionTypeId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("TransactionTypeId");
+
+                    b.ToTable("TransactionCategories");
                 });
 
             modelBuilder.Entity("FinansoData.Models.TransactionStatus", b =>
@@ -560,6 +588,12 @@ namespace FinansoData.Migrations
                         .OnDelete(DeleteBehavior.NoAction)
                         .IsRequired();
 
+                    b.HasOne("FinansoData.Models.TransactionCategory", "TransactionCategory")
+                        .WithMany("BalanceTransactions")
+                        .HasForeignKey("TransactionCategoryId")
+                        .OnDelete(DeleteBehavior.NoAction)
+                        .IsRequired();
+
                     b.HasOne("FinansoData.Models.TransactionStatus", "TransactionStatus")
                         .WithMany("BalanceTransactions")
                         .HasForeignKey("TransactionStatusId")
@@ -579,6 +613,8 @@ namespace FinansoData.Migrations
                     b.Navigation("Currency");
 
                     b.Navigation("Group");
+
+                    b.Navigation("TransactionCategory");
 
                     b.Navigation("TransactionStatus");
 
@@ -613,6 +649,15 @@ namespace FinansoData.Migrations
                     b.Navigation("AppUser");
 
                     b.Navigation("Group");
+                });
+
+            modelBuilder.Entity("FinansoData.Models.TransactionCategory", b =>
+                {
+                    b.HasOne("FinansoData.Models.TransactionType", null)
+                        .WithMany("TransactionsCategories")
+                        .HasForeignKey("TransactionTypeId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
@@ -690,6 +735,11 @@ namespace FinansoData.Migrations
                     b.Navigation("GroupUser");
                 });
 
+            modelBuilder.Entity("FinansoData.Models.TransactionCategory", b =>
+                {
+                    b.Navigation("BalanceTransactions");
+                });
+
             modelBuilder.Entity("FinansoData.Models.TransactionStatus", b =>
                 {
                     b.Navigation("BalanceTransactions");
@@ -698,6 +748,8 @@ namespace FinansoData.Migrations
             modelBuilder.Entity("FinansoData.Models.TransactionType", b =>
                 {
                     b.Navigation("BalanceTransactions");
+
+                    b.Navigation("TransactionsCategories");
                 });
 #pragma warning restore 612, 618
         }

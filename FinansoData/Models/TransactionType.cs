@@ -23,5 +23,6 @@ namespace FinansoData.Models
 
         // Navigation properties
         public virtual ICollection<BalanceTransaction> BalanceTransactions { get; set; }
+        public virtual ICollection<TransactionCategory> TransactionsCategories { get; set; }
     }
 }

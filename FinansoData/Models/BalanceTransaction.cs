@@ -46,6 +46,9 @@ namespace FinansoData.Models
         public int TransactionStatusId { get; set; }
 
         [Required]
+        public int TransactionCategoryId { get; set; }
+
+        [Required]
         public int CurrencyId { get; set; }
 
         // Navigation properties
@@ -54,6 +57,7 @@ namespace FinansoData.Models
         public virtual Balance Balance { get; set; }
         public virtual TransactionType TransactionType { get; set; }
         public virtual TransactionStatus TransactionStatus { get; set; }
+        public virtual TransactionCategory TransactionCategory { get; set; }
         public virtual Currency Currency { get; set; }
 
     }
