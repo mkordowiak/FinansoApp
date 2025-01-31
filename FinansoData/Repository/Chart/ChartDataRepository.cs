@@ -46,6 +46,7 @@ namespace FinansoData.Repository.Chart
                         && transaction.TransactionTypeId == typeId
                         && transaction.TransactionStatusId == 2
                         && transaction.TransactionDate >= DateTime.Now.AddMonths(-months)
+                        && gu.Active == true
                         group transaction by transaction.TransactionCategory.Name into g
                         select new
                         {
