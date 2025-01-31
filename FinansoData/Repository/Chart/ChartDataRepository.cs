@@ -42,16 +42,17 @@ namespace FinansoData.Repository.Chart
                         join gr in _applicationDbContext.Groups on balance.GroupId equals gr.Id
                         join gu in _applicationDbContext.GroupUsers on gr.Id equals gu.GroupId
                         join user in _applicationDbContext.Users on gu.AppUserId equals user.Id
+                        join currency in _applicationDbContext.Currencies on balance.CurrencyId equals currency.Id
                         where user.UserName == userName
                         && transaction.TransactionTypeId == typeId
                         && transaction.TransactionStatusId == 2
                         && transaction.TransactionDate >= DateTime.Now.AddMonths(-months)
                         && gu.Active == true
-                        group transaction by transaction.TransactionCategory.Name into g
+                        group new { transaction, currency } by transaction.TransactionCategory.Name into g
                         select new
                         {
                             Category = g.Key,
-                            Amount = g.Sum(x => x.Amount)
+                            Amount = g.Sum(x => x.transaction.Amount * x.currency.ExchangeRate)
                         };
 
             IEnumerable<Tuple<string, decimal>> result;
