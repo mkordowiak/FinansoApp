@@ -1,12 +1,5 @@
-using FinansoData.Data;
 using FinansoData.Models;
 using FinansoData.Repository;
-using FinansoData.Repository.Account;
-using FinansoData.Repository.Balance;
-using FinansoData.Repository.Currency;
-using FinansoData.Repository.Group;
-using FinansoData.Repository.Settings;
-using FinansoData.Repository.Transaction;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -14,31 +7,34 @@ using Microsoft.EntityFrameworkCore;
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
 // Scopes
-builder.Services.AddScoped<ISeed, Seed>();
-builder.Services.AddScoped<IGroupCrudRepository, GroupCrudRepository>();
-builder.Services.AddScoped<IGroupManagementRepository, GroupManagementRepository>();
-builder.Services.AddScoped<IGroupQueryRepository, GroupQueryRepository>();
-builder.Services.AddScoped<IGroupUsersQueryRepository, GroupUsersQuery>();
-builder.Services.AddScoped<IGroupUsersManagementRepository, GroupUsersManagementRepository>();
-builder.Services.AddScoped<IUserQuery, UserQuery>();
-builder.Services.AddScoped<ICurrencyQueryRepository, CurrencyQueryRepository>();
-builder.Services.AddScoped<IBalanceSumAmount, BalanceSumAmount>();
+builder.Services.AddScoped<FinansoData.Data.ISeed, FinansoData.Data.Seed>();
+builder.Services.AddScoped<FinansoData.Repository.Group.IGroupCrudRepository, FinansoData.Repository.Group.GroupCrudRepository>();
+builder.Services.AddScoped<FinansoData.Repository.Group.IGroupManagementRepository, FinansoData.Repository.Group.GroupManagementRepository>();
+builder.Services.AddScoped<FinansoData.Repository.Group.IGroupQueryRepository, FinansoData.Repository.Group.GroupQueryRepository>();
+builder.Services.AddScoped<FinansoData.Repository.Group.IGroupUsersQueryRepository, FinansoData.Repository.Group.GroupUsersQuery>();
+builder.Services.AddScoped<FinansoData.Repository.Group.IGroupUsersManagementRepository, FinansoData.Repository.Group.GroupUsersManagementRepository>();
+builder.Services.AddScoped<FinansoData.Repository.Account.IUserQuery, FinansoData.Repository.Account.UserQuery>();
+builder.Services.AddScoped<FinansoData.Repository.Currency.ICurrencyQueryRepository, FinansoData.Repository.Currency.CurrencyQueryRepository>();
+builder.Services.AddScoped<FinansoData.Repository.Balance.IBalanceSumAmount, FinansoData.Repository.Balance.BalanceSumAmount>();
 
-builder.Services.AddScoped<IBalanceManagmentRepository, BalanceManagementRepository>();
-builder.Services.AddScoped<IBalanceQueryRepository, BalanceQueryRepository>();
+builder.Services.AddScoped<FinansoData.Repository.Balance.IBalanceManagmentRepository, FinansoData.Repository.Balance.BalanceManagementRepository>();
+builder.Services.AddScoped<FinansoData.Repository.Balance.IBalanceQueryRepository, FinansoData.Repository.Balance.BalanceQueryRepository>();
 
 
 builder.Services.AddScoped<ICacheWrapper, CacheWrapper>();
-builder.Services.AddScoped<ISettingsQueryRepository, SettingsQueryRepository>();
+builder.Services.AddScoped<FinansoData.Repository.Settings.ISettingsQueryRepository, FinansoData.Repository.Settings.SettingsQueryRepository>();
 
 // Repository account
-builder.Services.AddScoped<IAuthentication, Authentication>();
-builder.Services.AddScoped<IUserManagement, UserManagement>();
+builder.Services.AddScoped<FinansoData.Repository.Account.IAuthentication, FinansoData.Repository.Account.Authentication>();
+builder.Services.AddScoped<FinansoData.Repository.Account.IUserManagement, FinansoData.Repository.Account.UserManagement>();
 
 // Repository transaction
-builder.Services.AddScoped<ITransactionsQueryRepository, TransactionsQueryRepository>();
-builder.Services.AddScoped<ITransactionManagementRepository, TransactionManagementRepository>();
-builder.Services.AddScoped<ITransactionMetaQueryRepository, TransactionMetaQueryRepository>();
+builder.Services.AddScoped<FinansoData.Repository.Transaction.ITransactionsQueryRepository, FinansoData.Repository.Transaction.TransactionsQueryRepository>();
+builder.Services.AddScoped<FinansoData.Repository.Transaction.ITransactionManagementRepository, FinansoData.Repository.Transaction.TransactionManagementRepository>();
+builder.Services.AddScoped<FinansoData.Repository.Transaction.ITransactionMetaQueryRepository, FinansoData.Repository.Transaction.TransactionMetaQueryRepository>();
+
+// Repository chart
+builder.Services.AddScoped<FinansoData.Repository.Chart.IChartData, FinansoData.Repository.Chart.ChartData>();
 
 
 // Add services to the container.
@@ -46,7 +42,7 @@ builder.Services.AddControllersWithViews();
 
 
 
-builder.Services.AddDbContext<ApplicationDbContext>(options =>
+builder.Services.AddDbContext<FinansoData.Data.ApplicationDbContext>(options =>
 {
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
@@ -66,7 +62,7 @@ builder.Services.Configure<IdentityOptions>(options =>
 
 
 builder.Services.AddIdentity<AppUser, IdentityRole>()
-    .AddEntityFrameworkStores<ApplicationDbContext>();
+    .AddEntityFrameworkStores<FinansoData.Data.ApplicationDbContext>();
 builder.Services.AddMemoryCache();
 builder.Services.AddSession();
 builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
@@ -85,32 +81,32 @@ if (args.Length == 1 && args[0].ToLower() == "seeddata")
 
     Console.WriteLine("Seeding data");
 
-    Seed.SeedSettings(app);
+    FinansoData.Data.Seed.SeedSettings(app);
 
     Console.WriteLine("Settings seeded");
 
-    Seed.SeedTransactionTypes(app);
+    FinansoData.Data.Seed.SeedTransactionTypes(app);
 
     Console.WriteLine("Transaction types seeded");
 
-    Seed.SeedTransactionCategories(app);
+    FinansoData.Data.Seed.SeedTransactionCategories(app);
 
     Console.WriteLine("Transaction categories seeded");
 
-    Seed.SeedTransactionStatuses(app);
+    FinansoData.Data.Seed.SeedTransactionStatuses(app);
 
     Console.WriteLine("Transaction statuses seeded");
 
-    Seed.SeedRoles(app);
+    FinansoData.Data.Seed.SeedRoles(app);
 
     Console.WriteLine("User roles seeded");
 
-    Seed.SeedCurrencies(app);
+    FinansoData.Data.Seed.SeedCurrencies(app);
 
     Console.WriteLine("Currencies seeded");
 
     //Seed.SeedUsers(app, defaultPassword);
-    Seed.SeedUsers(app, defaultPassword);
+    FinansoData.Data.Seed.SeedUsers(app, defaultPassword);
 
     Console.WriteLine("Users seeded");
 
