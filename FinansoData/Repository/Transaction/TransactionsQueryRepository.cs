@@ -174,13 +174,14 @@ namespace FinansoData.Repository.Transaction
                                                                       TransactionType = transactionType.Name
                                                                   };
 
+            IQueryable<GetTransactionsForUser> query = queryGroupOwner.Union(queryGroupMember);
+
             List<GetTransactionsForUser> result;
             int resultCount;
             try
             {
-                IQueryable<GetTransactionsForUser> query = queryGroupOwner.Union(queryGroupMember).OrderByDescending(x => x.TransactionDate).AsNoTracking().Skip((page - 1) * pageSize).Take(pageSize);
-                result = await query.ToListAsync();
-                resultCount = await query.CountAsync();  //throw new Exception("To zapytanie jest niepoprawne, zliczy tylko wyciagniete rekordy");
+                resultCount = await query.CountAsync();
+                result = await query.OrderByDescending(x => x.TransactionDate).AsNoTracking().Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
             }
             catch
             {
