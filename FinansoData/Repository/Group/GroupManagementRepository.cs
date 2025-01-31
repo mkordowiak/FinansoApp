@@ -48,10 +48,36 @@ namespace FinansoData.Repository.Group
                 OwnerAppUser = user
             };
 
-            bool result = _groupCrudRepository.Add(group);
+            try
+            {
+                await _context.Groups.AddAsync(group);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception)
+            {
+                return RepositoryResult<bool?>.Failure(null, ErrorType.ServerError);
+            }
 
-            if (result) return RepositoryResult<bool?>.Success(true);
-            else return RepositoryResult<bool?>.Failure((string?)null, ErrorType.ServerError);
+            GroupUser groupUser = new GroupUser
+            {
+                Group = group,
+                AppUser = user,
+                Active = true,
+                CreatedAt = DateTime.Now
+            };
+
+            try
+            {
+                await _context.GroupUsers.AddAsync(groupUser);
+                await _context.SaveChangesAsync();
+            }
+            catch (Exception)
+            {
+                return RepositoryResult<bool?>.Failure(null, ErrorType.ServerError);
+            }
+
+
+            return RepositoryResult<bool?>.Success(true);
         }
 
 

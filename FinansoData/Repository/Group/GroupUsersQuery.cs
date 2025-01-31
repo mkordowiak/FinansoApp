@@ -57,46 +57,34 @@ namespace FinansoData.Repository.Group
             return RepositoryResult<IEnumerable<GetGroupInvitationsViewModel>>.Success(result);
         }
 
-        public async Task<RepositoryResult<IEnumerable<GetGroupMembersViewModel>>> GetGroupMembersAsync(int id, bool IncludeInvitations = true)
+        public async Task<RepositoryResult<IEnumerable<GetGroupMembersViewModel>>> GetGroupMembersAsync(int groupId, bool IncludeInvitations = true)
         {
             string methodName = MethodName.GetMethodName();
-            string cacheDataKey = $"{_cacheClassName}_{methodName}_{id}_{IncludeInvitations}";
+            string cacheDataKey = $"{_cacheClassName}_{methodName}_{groupId}_{IncludeInvitations}";
             if (_cacheWrapper.TryGetValue(cacheDataKey, out IEnumerable<GetGroupMembersViewModel> cacheData))
             {
                 return RepositoryResult<IEnumerable<GetGroupMembersViewModel>>.Success(cacheData);
             }
 
 
-            IQueryable<GetGroupMembersViewModel> ownerQuery = from g in _context.Groups.AsNoTracking()
-                                                              join u in _context.AppUsers.AsNoTracking() on g.OwnerAppUser.Id equals u.Id
-                                                              where g.Id == id
-                                                              select new GetGroupMembersViewModel
-                                                              {
-                                                                  Id = 0,
-                                                                  FirstName = u.FirstName,
-                                                                  LastName = u.LastName,
-                                                                  IsOwner = true,
-                                                                  InvitationAccepted = true
-                                                              };
-
-            IQueryable<GetGroupMembersViewModel> memberQuery = from g in _context.Groups.AsNoTracking()
-                                                               join gu in _context.GroupUsers.AsNoTracking() on g.Id equals gu.Group.Id
-                                                               join u in _context.AppUsers.AsNoTracking() on gu.AppUser.Id equals u.Id
-                                                               where g.Id == id
-                                                               && (IncludeInvitations || gu.Active)
-                                                               select new GetGroupMembersViewModel
-                                                               {
-                                                                   Id = gu.Id,
-                                                                   FirstName = u.FirstName,
-                                                                   LastName = u.LastName,
-                                                                   IsOwner = false,
-                                                                   InvitationAccepted = gu.Active
-                                                               };
+            IQueryable<GetGroupMembersViewModel> query = from g in _context.Groups.AsNoTracking()
+                                                         join gu in _context.GroupUsers.AsNoTracking() on g.Id equals gu.Group.Id
+                                                         join u in _context.AppUsers.AsNoTracking() on gu.AppUser.Id equals u.Id
+                                                         where g.Id == groupId
+                                                         && (IncludeInvitations || gu.Active)
+                                                         select new GetGroupMembersViewModel
+                                                         {
+                                                             Id = gu.Id,
+                                                             FirstName = u.FirstName,
+                                                             LastName = u.LastName,
+                                                             IsOwner = (g.OwnerAppUser == u),
+                                                             InvitationAccepted = gu.Active
+                                                         };
 
             List<GetGroupMembersViewModel> data;
             try
             {
-                data = await ownerQuery.Union(memberQuery).OrderBy(x => x.FirstName).ToListAsync();
+                data = await query.OrderBy(x => x.FirstName).ToListAsync();
             }
             catch (Exception)
             {

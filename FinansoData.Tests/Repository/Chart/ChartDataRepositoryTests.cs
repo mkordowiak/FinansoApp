@@ -5,11 +5,6 @@ using FinansoData.Repository.Chart;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
 using Moq;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace FinansoData.Tests.Repository.Chart
 {
@@ -18,7 +13,7 @@ namespace FinansoData.Tests.Repository.Chart
         private readonly DbContextOptions<ApplicationDbContext> _dbContextOptions;
         private readonly Mock<ICacheWrapper> _cacheWrapperMock;
         private readonly List<AppUser> _appUsers;
-        //private readonly List<TransactionStatus> _transactionStatuses;
+        private readonly List<Models.Currency> _currencies;
         private readonly List<TransactionType> _transactionTypes;
         private readonly List<Models.Group> _groups;
         private readonly List<Models.GroupUser> _groupUsers;
@@ -53,11 +48,17 @@ namespace FinansoData.Tests.Repository.Chart
                 new Models.GroupUser { Id = 3, AppUser = _appUsers[2], AppUserId = _appUsers[2].Id, Group = _groups[1], GroupId = _groups[0].Id },
             };
 
+            _currencies = new List<Models.Currency>
+            {
+                new Models.Currency { Id = 1, Name = "Currency 1", ExchangeRate = 1, Code = "PLN" },
+                new Models.Currency { Id = 2, Name = "Currency 2", ExchangeRate = 2, Code = "USD" }
+            };
+
             _balances = new List<Models.Balance>
             {
-                new Models.Balance { Id = 1, Name = "Balance 1", Group = _groups[0], GroupId = _groups[0].Id },
-                new Models.Balance { Id = 2, Name = "Balance 2", Group = _groups[0], GroupId = _groups[0].Id },
-                new Models.Balance { Id = 3, Name = "Balance 3", Group = _groups[1], GroupId = _groups[1].Id }
+                new Models.Balance { Id = 1, Name = "Balance 1", Group = _groups[0], GroupId = _groups[0].Id, Currency = _currencies[0] },
+                new Models.Balance { Id = 2, Name = "Balance 2", Group = _groups[0], GroupId = _groups[0].Id, Currency = _currencies[0] },
+                new Models.Balance { Id = 3, Name = "Balance 3", Group = _groups[1], GroupId = _groups[1].Id, Currency = _currencies[1] }
             };
 
             _balanceTransactions = new List<BalanceTransaction>
@@ -87,11 +88,12 @@ namespace FinansoData.Tests.Repository.Chart
                 new Models.TransactionCategory { Id = 4, Name = "Category 4", TransactionTypeId = 2 }
             };
 
-            using (var context = new ApplicationDbContext(_dbContextOptions))
+            using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
                 context.Database.EnsureDeleted();
                 context.Database.EnsureCreated();
                 context.TransactionTypes.AddRange(_transactionTypes);
+                context.Currencies.AddRange(_currencies);
                 context.TransactionCategories.AddRange(_transactionCategories);
                 context.AppUsers.AddRange(_appUsers);
                 context.Groups.AddRange(_groups);
@@ -112,9 +114,9 @@ namespace FinansoData.Tests.Repository.Chart
 
 
             RepositoryResult<IEnumerable<Tuple<string, decimal>>> result;
-            using (var context = new ApplicationDbContext(_dbContextOptions))
+            using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
-                var repository = new ChartDataRepository(context, _cacheWrapperMock.Object);
+                ChartDataRepository repository = new ChartDataRepository(context, _cacheWrapperMock.Object);
                 // Act
                 result = await repository.GetExpensesInCategories(_appUsers[0].UserName, 12);
 
@@ -126,7 +128,7 @@ namespace FinansoData.Tests.Repository.Chart
             result.Value.Should().NotBeNull();
             result.Value.Should().NotBeEmpty();
 
-            List<Tuple<string, decimal>> resultValue = (List < Tuple<string, decimal> > )result.Value;
+            List<Tuple<string, decimal>> resultValue = (List<Tuple<string, decimal>>)result.Value;
 
             resultValue[0].Item2.Should().Be(500);
             resultValue[1].Item2.Should().Be(32);
@@ -136,7 +138,7 @@ namespace FinansoData.Tests.Repository.Chart
         public async Task GetExpensesInCategories_ShouldReturnDataFromCache()
         {
             // Arange
-            IEnumerable<Tuple<string, decimal >>? expected = new List<Tuple<string, decimal>>
+            IEnumerable<Tuple<string, decimal>>? expected = new List<Tuple<string, decimal>>
             {
                 new Tuple<string, decimal>("Category 1", 200),
                 new Tuple<string, decimal>("Category 2", 40)
@@ -148,9 +150,9 @@ namespace FinansoData.Tests.Repository.Chart
 
 
             RepositoryResult<IEnumerable<Tuple<string, decimal>>> result;
-            using (var context = new ApplicationDbContext(_dbContextOptions))
+            using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
-                var repository = new ChartDataRepository(context, _cacheWrapperMock.Object);
+                ChartDataRepository repository = new ChartDataRepository(context, _cacheWrapperMock.Object);
                 // Act
                 result = await repository.GetExpensesInCategories(_appUsers[0].UserName, 12);
 
@@ -181,9 +183,9 @@ namespace FinansoData.Tests.Repository.Chart
 
 
             RepositoryResult<IEnumerable<Tuple<string, decimal>>> result;
-            using (var context = new ApplicationDbContext(_dbContextOptions))
+            using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
-                var repository = new ChartDataRepository(context, _cacheWrapperMock.Object);
+                ChartDataRepository repository = new ChartDataRepository(context, _cacheWrapperMock.Object);
                 // Act
                 result = await repository.GetIncomesInCategories(_appUsers[0].UserName, 12);
 
@@ -217,9 +219,9 @@ namespace FinansoData.Tests.Repository.Chart
 
 
             RepositoryResult<IEnumerable<Tuple<string, decimal>>> result;
-            using (var context = new ApplicationDbContext(_dbContextOptions))
+            using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
-                var repository = new ChartDataRepository(context, _cacheWrapperMock.Object);
+                ChartDataRepository repository = new ChartDataRepository(context, _cacheWrapperMock.Object);
                 // Act
                 result = await repository.GetIncomesInCategories(_appUsers[0].UserName, 12);
 

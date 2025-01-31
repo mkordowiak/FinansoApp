@@ -65,8 +65,9 @@ namespace FinansoData.Tests.Repository.Transaction
 
             _groupUsers = new List<Models.GroupUser>
             {
-                new Models.GroupUser { Id = 1, AppUser = _appUserGroupMember1, Group = _groups[0] },
-                new Models.GroupUser { Id = 2, AppUser = _appUserGroupMember2, Group = _groups[0] }
+                new Models.GroupUser { Id = 1, AppUser = _appUserGroupOwner, Group = _groups[0] },
+                new Models.GroupUser { Id = 2, AppUser = _appUserGroupMember1, Group = _groups[0] },
+                new Models.GroupUser { Id = 3, AppUser = _appUserGroupMember2, Group = _groups[0] }
             };
 
             _balances = new List<Models.Balance>

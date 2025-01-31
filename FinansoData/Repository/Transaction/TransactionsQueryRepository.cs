@@ -123,31 +123,6 @@ namespace FinansoData.Repository.Transaction
                 return RepositoryResult<IEnumerable<GetTransactionsForUser>>.Success(cacheTransactions, cacheResultCount);
             }
 
-            IQueryable<GetTransactionsForUser> queryGroupOwner = from transaction in _applicationDbContext.BalanceTransactions
-                                                                 join balance in _applicationDbContext.Balances on transaction.BalanceId equals balance.Id
-                                                                 join g in _applicationDbContext.Groups on balance.GroupId equals g.Id
-                                                                 join appUser in _applicationDbContext.Users on g.OwnerAppUser.Id equals appUser.Id
-                                                                 join transactionStatus in _applicationDbContext.TransactionStatuses on transaction.TransactionStatusId equals transactionStatus.Id
-                                                                 join transactionType in _applicationDbContext.TransactionTypes on transaction.TransactionTypeId equals transactionType.Id
-                                                                 join currency in _applicationDbContext.Currencies on transaction.CurrencyId equals currency.Id
-                                                                 where appUser.NormalizedUserName == userName
-                                                                 select new GetTransactionsForUser
-                                                                 {
-                                                                     TransactionId = transaction.Id,
-                                                                     GroupId = g.Id,
-                                                                     GroupName = g.Name,
-                                                                     BalanceId = balance.Id,
-                                                                     BalanceName = balance.Name,
-                                                                     Description = transaction.Description,
-                                                                     Amount = transaction.Amount,
-                                                                     CurrencyId = currency.Id,
-                                                                     CurrencyName = currency.Name,
-                                                                     CurrencyCode = currency.Code,
-                                                                     TransactionDate = transaction.TransactionDate,
-                                                                     TransactionStatus = transactionStatus.Name,
-                                                                     TransactionType = transactionType.Name
-                                                                 };
-
             IQueryable<GetTransactionsForUser> queryGroupMember = from transaction in _applicationDbContext.BalanceTransactions
                                                                   join balance in _applicationDbContext.Balances on transaction.BalanceId equals balance.Id
                                                                   join g in _applicationDbContext.Groups on balance.GroupId equals g.Id
@@ -174,14 +149,12 @@ namespace FinansoData.Repository.Transaction
                                                                       TransactionType = transactionType.Name
                                                                   };
 
-            IQueryable<GetTransactionsForUser> query = queryGroupOwner.Union(queryGroupMember);
-
             List<GetTransactionsForUser> result;
             int resultCount;
             try
             {
-                resultCount = await query.CountAsync();
-                result = await query.OrderByDescending(x => x.TransactionDate).AsNoTracking().Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+                resultCount = await queryGroupMember.CountAsync();
+                result = await queryGroupMember.OrderByDescending(x => x.TransactionDate).AsNoTracking().Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
             }
             catch
             {
