@@ -1,12 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace FinansoData.Repository.Chart
+﻿namespace FinansoData.Repository.Chart
 {
-    public interface IChartData
+    public interface IChartDataRepository
     {
         /// <summary>
         /// Get list of grouped expenses
@@ -17,7 +11,7 @@ namespace FinansoData.Repository.Chart
         ///     - Label
         ///     - Value
         /// </tuple></returns>
-        Task<RepositoryResult<IEnumerable<Tuple<string, decimal>>>> GetExpensesInCategories(int balanceId, int months = 12);
+        Task<RepositoryResult<IEnumerable<Tuple<string, decimal>>>> GetExpensesInCategories(string userName, int months = 12);
 
         /// <summary>
         /// Get list of grouped incomes
@@ -28,8 +22,6 @@ namespace FinansoData.Repository.Chart
         ///     - Label
         ///     - Valie
         /// </tuple></returns>
-        Task<RepositoryResult<IEnumerable<Tuple<string, decimal>>>> GetIncomesInCategories(int balanceId, int months = 12);
-
-
+        Task<RepositoryResult<IEnumerable<Tuple<string, decimal>>>> GetIncomesInCategories(string userName, int months = 12);
     }
 }
