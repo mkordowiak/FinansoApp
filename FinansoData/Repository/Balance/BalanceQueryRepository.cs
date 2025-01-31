@@ -63,7 +63,7 @@ namespace FinansoData.Repository.Balance
             {
                 return RepositoryResult<IEnumerable<BalanceViewModel>>.Success(cachedBalanceVM);
             }
-            IQueryable<BalanceViewModel> queryGroupMember = from u in _context.Users.AsNoTracking()
+            IQueryable<BalanceViewModel> query = from u in _context.Users.AsNoTracking()
                                                             join gu in _context.GroupUsers.AsNoTracking() on u.Id equals gu.AppUserId
                                                             join g in _context.Groups.AsNoTracking() on gu.Group.Id equals g.Id
                                                             join b in _context.Balances.AsNoTracking() on g.Id equals b.Group.Id
@@ -76,23 +76,10 @@ namespace FinansoData.Repository.Balance
                                                                 Currency = b.Currency,
                                                                 Group = b.Group
                                                             };
-
-            IQueryable<BalanceViewModel> queryGroupOwner = from u in _context.Users.AsNoTracking()
-                                                           join g in _context.Groups.AsNoTracking() on u.Id equals g.OwnerAppUser.Id
-                                                           join b in _context.Balances.AsNoTracking() on g.Id equals b.Group.Id
-                                                           where u.UserName == userName
-                                                           select new BalanceViewModel
-                                                           {
-                                                               Id = b.Id,
-                                                               Name = b.Name,
-                                                               Amount = b.Amount,
-                                                               Currency = b.Currency,
-                                                               Group = b.Group
-                                                           };
             List<BalanceViewModel> result;
             try
             {
-                result = await queryGroupMember.Union(queryGroupOwner).ToListAsync();
+                result = await query.ToListAsync();
             }
             catch
             {
@@ -112,12 +99,6 @@ namespace FinansoData.Repository.Balance
                 return RepositoryResult<bool?>.Success(cachedResult);
             }
 
-            IQueryable<bool> queryGroupOwner = from u in _context.Users.AsNoTracking()
-                                               join g in _context.Groups.AsNoTracking() on u.Id equals g.OwnerAppUser.Id
-                                               join b in _context.Balances.AsNoTracking() on g.Id equals b.Group.Id
-                                               where u.NormalizedUserName == userName
-                                                && b.Id == balanceId
-                                               select true;
 
             IQueryable<bool> queryGroupMember = from u in _context.Users.AsNoTracking()
                                                 join gu in _context.GroupUsers.AsNoTracking() on u.Id equals gu.AppUserId
@@ -130,7 +111,7 @@ namespace FinansoData.Repository.Balance
             bool result;
             try
             {
-                result = await queryGroupOwner.Union(queryGroupMember).AnyAsync();
+                result = await queryGroupMember.AnyAsync();
             }
             catch
             {
@@ -190,22 +171,16 @@ namespace FinansoData.Repository.Balance
             {
                 return RepositoryResult<IEnumerable<Tuple<int, string>>>.Success(cachedBalanceVM);
             }
-            IQueryable<Models.Balance> queryGroupMember = from u in _context.Users.AsNoTracking()
+            IQueryable<Models.Balance> query = from u in _context.Users.AsNoTracking()
                                                           join gu in _context.GroupUsers.AsNoTracking() on u.Id equals gu.AppUserId
                                                           join g in _context.Groups.AsNoTracking() on gu.Group.Id equals g.Id
                                                           join b in _context.Balances.AsNoTracking() on g.Id equals b.Group.Id
                                                           where u.UserName == userName
                                                           select b;
-
-            IQueryable<Models.Balance> queryGroupOwner = from u in _context.Users.AsNoTracking()
-                                                         join g in _context.Groups.AsNoTracking() on u.Id equals g.OwnerAppUser.Id
-                                                         join b in _context.Balances.AsNoTracking() on g.Id equals b.Group.Id
-                                                         where u.UserName == userName
-                                                         select b;
             List<Tuple<int, string>> result;
             try
             {
-                result = await queryGroupMember.Union(queryGroupOwner)
+                result = await query
                                        .Select(b => new Tuple<int, string>(b.Id, b.Name))
                                        .ToListAsync();
             }
