@@ -112,57 +112,62 @@ namespace FinansoData.Repository.Transaction
             return RepositoryResult<IEnumerable<GetTransactionsForUser>>.Success(result, resultCount);
         }
 
-        public async Task<RepositoryResult<IEnumerable<GetTransactionsForUser>>> GetTransactionsForUserUser(string userName, int page, int pageSize = 20)
+        public async Task<RepositoryResult<IEnumerable<GetTransactionsForUser>>> GetTransactionsForUserUser(string userName, int pageNumber = 0, int pageSize = 20)
         {
             string methodName = MethodName.GetMethodName();
-            string cacheDataKey = $"{_cacheClassName}_{methodName}_{userName}_{page}_{pageSize}";
-            string cacheCountKey = $"{_cacheClassName}_{methodName}_Count_{userName}_{page}_{pageSize}";
+            string cacheDataKey = $"{_cacheClassName}_{methodName}_{userName}_{pageNumber}_{pageSize}";
+            string cacheCountKey = $"{_cacheClassName}_{methodName}_Count_{userName}_{pageNumber}_{pageSize}";
             if (_cacheWrapper.TryGetValue(cacheDataKey, out IEnumerable<GetTransactionsForUser>? cacheTransactions)
                 && _cacheWrapper.TryGetValue(cacheCountKey, out int cacheResultCount))
             {
                 return RepositoryResult<IEnumerable<GetTransactionsForUser>>.Success(cacheTransactions, cacheResultCount);
             }
 
-            IQueryable<GetTransactionsForUser> queryGroupMember = from transaction in _applicationDbContext.BalanceTransactions
-                                                                  join balance in _applicationDbContext.Balances on transaction.BalanceId equals balance.Id
-                                                                  join g in _applicationDbContext.Groups on balance.GroupId equals g.Id
-                                                                  join groupUser in _applicationDbContext.GroupUsers on g.Id equals groupUser.GroupId
-                                                                  join appUser in _applicationDbContext.Users on groupUser.AppUserId equals appUser.Id
-                                                                  join transactionStatus in _applicationDbContext.TransactionStatuses on transaction.TransactionStatusId equals transactionStatus.Id
-                                                                  join transactionType in _applicationDbContext.TransactionTypes on transaction.TransactionTypeId equals transactionType.Id
-                                                                  join currency in _applicationDbContext.Currencies on transaction.CurrencyId equals currency.Id
-                                                                  where appUser.NormalizedUserName == userName
-                                                                  select new GetTransactionsForUser
-                                                                  {
-                                                                      TransactionId = transaction.Id,
-                                                                      GroupId = g.Id,
-                                                                      GroupName = g.Name,
-                                                                      BalanceId = balance.Id,
-                                                                      BalanceName = balance.Name,
-                                                                      Description = transaction.Description,
-                                                                      Amount = transaction.Amount,
-                                                                      CurrencyId = currency.Id,
-                                                                      CurrencyName = currency.Name,
-                                                                      CurrencyCode = currency.Code,
-                                                                      TransactionDate = transaction.TransactionDate,
-                                                                      TransactionStatus = transactionStatus.Name,
-                                                                      TransactionType = transactionType.Name
-                                                                  };
 
-            List<GetTransactionsForUser> result;
+            IQueryable<GetTransactionsForUser> query = from users in _applicationDbContext.Users
+                                                       join groupUsers in _applicationDbContext.GroupUsers on users.Id equals groupUsers.AppUserId
+                                                       join groups in _applicationDbContext.Groups on groupUsers.GroupId equals groups.Id
+                                                       join transaction in _applicationDbContext.BalanceTransactions on groupUsers.GroupId equals transaction.GroupId
+                                                       join balance in _applicationDbContext.Balances on transaction.BalanceId equals balance.Id
+                                                       join transactionStatus in _applicationDbContext.TransactionStatuses on transaction.TransactionStatusId equals transactionStatus.Id
+                                                       join currency in _applicationDbContext.Currencies on transaction.CurrencyId equals currency.Id
+                                                       join transactionType in _applicationDbContext.TransactionTypes on transaction.TransactionTypeId equals transactionType.Id
+                                                       where users.NormalizedUserName == userName
+                                                       select new GetTransactionsForUser
+                                                       {
+                                                           TransactionId = transaction.Id,
+                                                           GroupId = transaction.GroupId,
+                                                           GroupName = groups.Name,
+                                                           BalanceId = transaction.BalanceId,
+                                                           BalanceName = balance.Name,
+                                                           Description = transaction.Description,
+                                                           Amount = transaction.Amount,
+                                                           CurrencyId = currency.Id,
+                                                           CurrencyName = currency.Name,
+                                                           CurrencyCode = currency.Code,
+                                                           TransactionDate = transaction.TransactionDate,
+                                                           TransactionStatus = transactionStatus.Name,
+                                                           TransactionType = transactionType.Name
+                                                       };
+
+            List<GetTransactionsForUser> resultFromDB;
             int resultCount;
             try
             {
-                resultCount = await queryGroupMember.CountAsync();
-                result = await queryGroupMember.OrderByDescending(x => x.TransactionDate).AsNoTracking().Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+                resultCount = await query.CountAsync();
+                resultFromDB = await query.OrderByDescending(x => x.TransactionDate)
+                    .AsNoTracking()
+                    .ToListAsync();
             }
             catch
             {
                 return RepositoryResult<IEnumerable<GetTransactionsForUser>>.Failure("Error while getting transactions", ErrorType.ServerError);
             }
 
-            _cacheWrapper.Set(cacheDataKey, result, TimeSpan.FromSeconds(5));
-            _cacheWrapper.Set(cacheCountKey, resultCount, TimeSpan.FromSeconds(5));
+            List<GetTransactionsForUser> result = resultFromDB.Skip((pageNumber - 1) * pageSize).Take(pageSize).ToList();
+
+            _cacheWrapper.Set(cacheDataKey, result, TimeSpan.FromSeconds(30));
+            _cacheWrapper.Set(cacheCountKey, resultCount, TimeSpan.FromSeconds(30));
 
             return RepositoryResult<IEnumerable<GetTransactionsForUser>>.Success(result, resultCount);
         }
