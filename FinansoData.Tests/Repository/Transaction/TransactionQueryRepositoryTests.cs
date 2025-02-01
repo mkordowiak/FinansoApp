@@ -78,10 +78,10 @@ namespace FinansoData.Tests.Repository.Transaction
 
             _balanceTransactions = new List<FinansoData.Models.BalanceTransaction>
             {
-                new FinansoData.Models.BalanceTransaction { Id = 1, Amount = 100, AppUser = _appUserGroupMember1, Balance = _balances[0], CurrencyId = 1, Description = "Test 1", TransactionDate = DateTime.Now, TransactionStatusId = 1, TransactionTypeId = 1 },
-                new FinansoData.Models.BalanceTransaction { Id = 2, Amount = 200, AppUser = _appUserGroupMember1, Balance = _balances[0], CurrencyId = 1, Description = "Test 2", TransactionDate = DateTime.Now, TransactionStatusId = 1, TransactionTypeId = 1 },
-                new FinansoData.Models.BalanceTransaction { Id = 3, Amount = 300, AppUser = _appUserGroupOwner, Balance = _balances[0], CurrencyId = 1, Description = "Test 3", TransactionDate = DateTime.Now, TransactionStatusId = 1, TransactionTypeId = 1 },
-                new FinansoData.Models.BalanceTransaction { Id = 4, Amount = 400, AppUser = _appUserGroupOwner, Balance = _balances[1], CurrencyId = 2, Description = "Test 4", TransactionDate = DateTime.Now, TransactionStatusId = 2, TransactionTypeId = 2 }
+                new FinansoData.Models.BalanceTransaction { Id = 1, Amount = 100, AppUser = _appUserGroupMember1, Balance = _balances[0], Group = _groups[0], CurrencyId = 1, Description = "Test 1", TransactionDate = DateTime.Now, TransactionStatusId = 1, TransactionTypeId = 1 },
+                new FinansoData.Models.BalanceTransaction { Id = 2, Amount = 200, AppUser = _appUserGroupMember1, Balance = _balances[0], Group = _groups[0], CurrencyId = 1, Description = "Test 2", TransactionDate = DateTime.Now, TransactionStatusId = 1, TransactionTypeId = 1 },
+                new FinansoData.Models.BalanceTransaction { Id = 3, Amount = 300, AppUser = _appUserGroupOwner, Balance = _balances[0], Group = _groups[0], CurrencyId = 1, Description = "Test 3", TransactionDate = DateTime.Now, TransactionStatusId = 1, TransactionTypeId = 1 },
+                new FinansoData.Models.BalanceTransaction { Id = 4, Amount = 400, AppUser = _appUserGroupOwner, Balance = _balances[1], Group = _groups[0], CurrencyId = 2, Description = "Test 4", TransactionDate = DateTime.Now, TransactionStatusId = 2, TransactionTypeId = 2 }
             };
 
 

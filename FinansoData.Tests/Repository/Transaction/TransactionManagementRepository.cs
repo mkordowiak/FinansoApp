@@ -54,8 +54,8 @@ namespace FinansoData.Tests.Repository.Transaction
 
             _balances = new List<Models.Balance>
             {
-                new Models.Balance { Id = 1, Name = "Balance 1", Group = _groups[0] },
-                new Models.Balance { Id = 2, Name = "Balance 2", Group = _groups[0] }
+                new Models.Balance { Id = 1, Name = "Balance 1", Group = _groups[0], Amount = 10 },
+                new Models.Balance { Id = 2, Name = "Balance 2", Group = _groups[0], Amount = 999 }
             };
 
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
@@ -138,6 +138,39 @@ namespace FinansoData.Tests.Repository.Transaction
             inMemoryDbTransaction.Should().BeNull();
         }
 
+
+        [Fact]
+        public async Task AddTransaction_ShouldUpdateBalance()
+        {
+            // Arrange
+            RepositoryResult<bool> result;
+            BalanceTransaction? inMemoryDbTransaction;
+            int balanceId = 1;
+            decimal? balanceBeforeTransaction;
+            decimal? balanceAfterTransaction;
+
+            using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
+            {
+                FinansoData.Repository.Transaction.TransactionManagementRepository repository = new FinansoData.Repository.Transaction.TransactionManagementRepository(context);
+
+                balanceBeforeTransaction = context.Balances.FirstOrDefault(b => b.Id == balanceId).Amount;
+
+                // Act
+                result = await repository.AddTransaction(100m, "desc", balanceId, DateTime.Now, "1", 1, (int)FinansoData.Enum.TransactionStatuses.Completed, 1);
+                inMemoryDbTransaction = context.BalanceTransactions.FirstOrDefault();
+
+                balanceAfterTransaction = context.Balances.FirstOrDefault(b => b.Id == balanceId).Amount;
+
+                context.Database.EnsureDeleted();
+            }
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            inMemoryDbTransaction.Should().NotBeNull();
+
+            // Check if balance is updated
+            balanceBeforeTransaction.Should().NotBe(balanceAfterTransaction);
+        }
         #endregion
     }
 }
