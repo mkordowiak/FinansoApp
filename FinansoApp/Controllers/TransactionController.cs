@@ -88,7 +88,7 @@ namespace FinansoApp.Controllers
 
         [Authorize]
         [HttpGet]
-        [ResponseCache(Duration = 60, Location = ResponseCacheLocation.Any, VaryByHeader = "Cookie", NoStore = false, VaryByQueryKeys = new[] { "pageNumber" })]
+        [ResponseCache(Duration = 30, Location = ResponseCacheLocation.Any, VaryByHeader = "Cookie", NoStore = false, VaryByQueryKeys = new[] { "pageNumber" })]
         public async Task<IActionResult> Index(int pageNumber = 1)
         {
             int pageSize = await _settingsQueryRepository.GetSettingsAsync<int>("TransactionListPageSize");

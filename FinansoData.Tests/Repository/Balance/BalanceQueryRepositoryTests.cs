@@ -59,7 +59,8 @@ namespace FinansoData.Tests.Repository.Balance
             _groupUsers = new List<GroupUser>
             {
                 new GroupUser { Id = 1, Group = _groups[0], AppUser = _appUsers[0], Active = true },
-                new GroupUser { Id = 2, Group = _groups[1], AppUser = _appUsers[1], Active = true }
+                new GroupUser { Id = 2, Group = _groups[1], AppUser = _appUsers[1], Active = true },
+                new GroupUser { Id = 3, Group = _groups[2], AppUser = _appUsers[0], Active = true }
             };
 
 
@@ -380,7 +381,7 @@ namespace FinansoData.Tests.Repository.Balance
         }
 
         [Fact]
-        public async Task HasUserAccessToBalance_WhenUserIsOwner_ShoultReturnTrueFromDb()
+        public async Task HasUserAccessToBalance_WhenUserIsOwner_ShouldReturnTrueFromDb()
         {
             // Arrange
             _cacheWrapperMock.Setup(x => x.TryGetValue(It.IsAny<string>(), out It.Ref<bool>.IsAny))

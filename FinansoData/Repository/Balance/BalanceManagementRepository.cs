@@ -75,6 +75,36 @@ namespace FinansoData.Repository.Balance
             
         }
 
+        public async Task<RepositoryResult<bool>> AddToBalanceAmount(int balanceId, decimal amount)
+        {
+            Models.Balance? balance;
+            try
+            {
+                balance = await _context.Balances.SingleOrDefaultAsync(x => x.Id == balanceId);
+            }
+            catch
+            {
+                return RepositoryResult<bool>.Failure("Can't access database", ErrorType.ServerError);
+            }
+
+            if (balance == null)
+            {
+                return RepositoryResult<bool>.Failure("Can't find balance", ErrorType.NotFound);
+            }
+
+            try
+            {
+                balance.Amount += amount;
+                balance.Modified = DateTime.Now;
+                await _context.SaveChangesAsync();
+                return RepositoryResult<bool>.Success(true);
+            }
+            catch
+            {
+                return RepositoryResult<bool>.Failure("Can't update balance", ErrorType.ServerError);
+            }
+        }
+
         public Task<RepositoryResult<bool>> UpdateBalance(BalanceViewModel balance)
         {
             throw new NotImplementedException();

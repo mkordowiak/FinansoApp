@@ -44,7 +44,10 @@ namespace FinansoData.Tests.Repository.Group
                 _group3 = new FinansoData.Models.Group { Id = 3, Name = "Group 3", OwnerAppUser = _group2Member };
 
                 GroupUser group1UserMember = new GroupUser { Id = 1, Group = _group1, AppUser = _group1Member };
-                GroupUser group2UserMember = new GroupUser { Id = 2, Group = _group2, AppUser = _group2Member };
+                GroupUser group1UserOwner = new GroupUser { Id = 2, Group = _group1, AppUser = _group1Owner };
+                GroupUser group2UserMember = new GroupUser { Id = 3, Group = _group2, AppUser = _group2Member };
+                GroupUser group2UserOwner = new GroupUser { Id = 4, Group = _group2, AppUser = _group1Member };
+                GroupUser group3UserOwner = new GroupUser { Id = 5, Group = _group3, AppUser = _group2Member };
 
 
                 context.AppUsers.Add(_group1Owner);
@@ -58,7 +61,10 @@ namespace FinansoData.Tests.Repository.Group
 
 
                 context.GroupUsers.Add(group1UserMember);
+                context.GroupUsers.Add(group1UserOwner);
                 context.GroupUsers.Add(group2UserMember);
+                context.GroupUsers.Add(group2UserOwner);
+                context.GroupUsers.Add(group3UserOwner);
 
 
                 context.SaveChanges();
@@ -141,7 +147,7 @@ namespace FinansoData.Tests.Repository.Group
             resultGroups[0].IsOwner.Should().BeFalse();
             resultGroups[0].MembersCount.Should().Be(2);
 
-            resultGroups[1].Id.Should().Be(2);
+            resultGroups[1].Id.Should().Be(_group2.Id);
             resultGroups[1].Name.Should().Be(_group2.Name);
             resultGroups[1].IsOwner.Should().Be(true);
             resultGroups[1].MembersCount.Should().Be(2);

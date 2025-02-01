@@ -7,10 +7,10 @@ namespace FinansoData.Repository.Group
         /// <summary>
         /// Get all group members
         /// </summary>
-        /// <param name="id"></param>
+        /// <param name="groupId"></param>
         /// <param name="IncludeInvitations"></param>
         /// <returns></returns>
-        Task<RepositoryResult<IEnumerable<GetGroupMembersViewModel>>> GetGroupMembersAsync(int id, bool IncludeInvitations = true);
+        Task<RepositoryResult<IEnumerable<GetGroupMembersViewModel>>> GetGroupMembersAsync(int groupId, bool IncludeInvitations = true);
 
         /// <summary>
         /// Get user info for delete page

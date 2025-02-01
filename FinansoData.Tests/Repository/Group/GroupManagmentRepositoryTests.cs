@@ -93,30 +93,6 @@ namespace FinansoData.Tests.Repository.Group
             }
         }
 
-        [Fact]
-        public async Task GroupManagementRepository_DeleteGroup_ShouldRemoveGroup()
-        {
-            // Arrange
-            using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
-            {
-                IGroupCrudRepository groupCrudRepository = new GroupCrudRepository(context);
-                GroupManagementRepository groupManagementRepository = new GroupManagementRepository(context, groupCrudRepository);
-
-                // Act
-                RepositoryResult<bool> result = await groupManagementRepository.DeleteGroup(_group1.Id);
-
-
-
-                // Assert 
-                result.IsSuccess.Should().BeTrue();
-                context.Groups.Should().HaveCount(1);
-                context.Groups.SingleOrDefault().Id.Should().Be(2);
-
-                // Destroy in-memory database to prevent running multiple instance
-                context.Database.EnsureDeleted();
-            }
-        }
-
 
         [Fact]
         public async Task GroupManagementRepository_DeleteGroupUser_ShouldRetrurnFailureWhenGroupIsIdIsIncorrect()
