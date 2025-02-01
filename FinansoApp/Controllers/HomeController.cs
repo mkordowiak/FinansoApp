@@ -1,9 +1,6 @@
-﻿using AspNetCoreGeneratedDocument;
-using ChartJSCore.Helpers;
+﻿using ChartJSCore.Helpers;
 using ChartJSCore.Models;
-using ChartJSCore.Plugins.Zoom;
 using FinansoApp.Models;
-using FinansoData.Data;
 using FinansoData.Repository.Chart;
 using Microsoft.AspNetCore.Mvc;
 using System.Diagnostics;
@@ -13,16 +10,16 @@ namespace FinansoApp.Controllers
     public class HomeController : Controller
     {
         private readonly ILogger<HomeController> _logger;
-        private readonly IChartData _chartData;
+        private readonly IChartDataRepository _chartData;
 
-        public HomeController(ILogger<HomeController> logger, IChartData chartData)
+        public HomeController(ILogger<HomeController> logger, IChartDataRepository chartData)
         {
             _logger = logger;
             _chartData = chartData;
         }
 
 
-        private Chart GenerateVerticalBarChart(string dataLabel, List<string> labels, List<double?> numbers)
+        private Chart GenerateVerticalBarChart(string chartTitle, List<string> labels, List<double?> numbers)
         {
             Chart chart = new Chart();
             chart.Type = Enums.ChartType.Bar;
@@ -34,7 +31,6 @@ namespace FinansoApp.Controllers
 
             BarDataset dataset = new BarDataset()
             {
-                Label = dataLabel,
                 Data = numbers,
                 BackgroundColor = new List<ChartColor>
                 {
@@ -56,8 +52,8 @@ namespace FinansoApp.Controllers
                 },
                 BorderWidth = new List<int>() { 1 },
                 BarPercentage = 0.5,
-                BarThickness = 6,
-                MaxBarThickness = 8,
+                BarThickness = 100,
+                MaxBarThickness = 150,
                 MinBarLength = 2
             };
 
@@ -66,13 +62,33 @@ namespace FinansoApp.Controllers
 
             chart.Data = data;
 
-            var options = new Options
+            Options options = new Options
             {
+                Responsive = true,
+                Plugins = new Plugins()
+                {
+                    Colors = new ColorPlugin()
+                    {
+                        Enabled = true
+                    },
+                    Legend = new Legend()
+                    {
+                        Display = false
+                    },
+                    Title = new Title()
+                    {
+                        Display = true,
+                        Text = new List<string>() { chartTitle }
+                    }
+                },
                 Scales = new Dictionary<string, Scale>()
                 {
                     { "y", new CartesianLinearScale()
                         {
-                            BeginAtZero = true
+                            BeginAtZero = true,
+                            Display = true,
+                            //Ticks = new Tick{Padding = 100, Color = new ChartColor { Blue = 0, Green = 0, Red = 255, Alpha = 1 }, BackdropColor = new ChartColor { Blue = 0, Red = 0, Green = 255, Alpha = 1 } }
+
                         }
                     },
                     { "x", new Scale()
@@ -113,8 +129,8 @@ namespace FinansoApp.Controllers
         [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
         public async Task<IActionResult> Index()
         {
-            var incomeData = await _chartData.GetIncomesInCategories(1);
-            var expenseData = await _chartData.GetExpensesInCategories(1);
+            FinansoData.RepositoryResult<IEnumerable<Tuple<string, decimal>>> incomeData = await _chartData.GetIncomesInCategories(User.Identity.Name);
+            FinansoData.RepositoryResult<IEnumerable<Tuple<string, decimal>>> expenseData = await _chartData.GetExpensesInCategories(User.Identity.Name);
 
             if (incomeData.IsSuccess == false
                 && expenseData.IsSuccess == false)
