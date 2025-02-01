@@ -34,7 +34,7 @@ builder.Services.AddScoped<FinansoData.Repository.Transaction.ITransactionManage
 builder.Services.AddScoped<FinansoData.Repository.Transaction.ITransactionMetaQueryRepository, FinansoData.Repository.Transaction.TransactionMetaQueryRepository>();
 
 // Repository chart
-builder.Services.AddScoped<FinansoData.Repository.Chart.IChartData, FinansoData.Repository.Chart.ChartData>();
+builder.Services.AddScoped<FinansoData.Repository.Chart.IChartDataRepository, FinansoData.Repository.Chart.ChartDataRepository>();
 
 
 // Add services to the container.
