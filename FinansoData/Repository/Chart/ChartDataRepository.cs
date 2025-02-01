@@ -19,12 +19,12 @@ namespace FinansoData.Repository.Chart
 
         public Task<RepositoryResult<IEnumerable<Tuple<string, decimal>>>> GetExpensesInCategories(string userName, int months = 12)
         {
-            return GetTransactionsInCategories(2, userName, months);
+            return GetTransactionsInCategories((int)Enum.TransactionTypes.Expense, userName, months);
         }
 
         public Task<RepositoryResult<IEnumerable<Tuple<string, decimal>>>> GetIncomesInCategories(string userName, int months = 12)
         {
-            return GetTransactionsInCategories(1, userName, months);
+            return GetTransactionsInCategories((int)Enum.TransactionTypes.Income, userName, months);
         }
 
         private async Task<RepositoryResult<IEnumerable<Tuple<string, decimal>>>> GetTransactionsInCategories(int typeId, string userName, int months = 12)
