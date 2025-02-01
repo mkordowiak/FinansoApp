@@ -65,7 +65,7 @@ namespace FinansoData.Repository.Chart
                 return RepositoryResult<IEnumerable<Tuple<string, decimal>>>.Failure("Error while getting transactions", ErrorType.ServerError);
             }
 
-            _cacheWrapper.Set(cacheDataKey, result, TimeSpan.FromMinutes(5));
+            _cacheWrapper.Set(cacheDataKey, result, TimeSpan.FromSeconds(10));
             return RepositoryResult<IEnumerable<Tuple<string, decimal>>>.Success(result);
         }
     }

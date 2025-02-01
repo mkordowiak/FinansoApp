@@ -1,13 +1,16 @@
 ﻿using FinansoData.Data;
 using FinansoData.Models;
+using FinansoData.Repository.Balance;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+using Moq;
 
 namespace FinansoData.Tests.Repository.Transaction
 {
     public class TransactionManagementRepository
     {
         private readonly DbContextOptions<ApplicationDbContext> _dbContextOptions;
+        private readonly Mock<IBalanceManagmentRepository> _balanceManagmentRepositoryMock;
         private readonly List<Models.Currency> _currencies;
         private readonly List<TransactionStatus> _transactionStatuses;
         private readonly List<TransactionType> _transactionTypes;
@@ -20,6 +23,8 @@ namespace FinansoData.Tests.Repository.Transaction
             _dbContextOptions = new DbContextOptionsBuilder<ApplicationDbContext>()
                 .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
                 .Options;
+
+            _balanceManagmentRepositoryMock = new Mock<IBalanceManagmentRepository>();
 
             _currencies = new List<FinansoData.Models.Currency>
             {
@@ -83,7 +88,7 @@ namespace FinansoData.Tests.Repository.Transaction
             BalanceTransaction? inMemoryDbTransaction;
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
-                FinansoData.Repository.Transaction.TransactionManagementRepository repository = new FinansoData.Repository.Transaction.TransactionManagementRepository(context);
+                FinansoData.Repository.Transaction.TransactionManagementRepository repository = new FinansoData.Repository.Transaction.TransactionManagementRepository(context, _balanceManagmentRepositoryMock.Object);
 
                 // Act
                 result = await repository.AddTransaction(100m, "desc", 1, DateTime.Now, "1", 1, 1, 1);
@@ -104,7 +109,7 @@ namespace FinansoData.Tests.Repository.Transaction
             BalanceTransaction? inMemoryDbTransaction;
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
-                FinansoData.Repository.Transaction.TransactionManagementRepository repository = new FinansoData.Repository.Transaction.TransactionManagementRepository(context);
+                FinansoData.Repository.Transaction.TransactionManagementRepository repository = new FinansoData.Repository.Transaction.TransactionManagementRepository(context, _balanceManagmentRepositoryMock.Object);
 
                 // Act
                 result = await repository.AddTransaction(100m, "desc", 999, DateTime.Now, "1", 1, 1, 1);
@@ -125,7 +130,7 @@ namespace FinansoData.Tests.Repository.Transaction
             BalanceTransaction? inMemoryDbTransaction;
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
-                FinansoData.Repository.Transaction.TransactionManagementRepository repository = new FinansoData.Repository.Transaction.TransactionManagementRepository(context);
+                FinansoData.Repository.Transaction.TransactionManagementRepository repository = new FinansoData.Repository.Transaction.TransactionManagementRepository(context, _balanceManagmentRepositoryMock.Object);
 
                 // Act
                 result = await repository.AddTransaction(100m, "desc", 1, DateTime.Now, "Wrong username 123", 1, 1, 1);
@@ -140,26 +145,33 @@ namespace FinansoData.Tests.Repository.Transaction
 
 
         [Fact]
-        public async Task AddTransaction_ShouldUpdateBalance()
+        public async Task AddTransaction_ShouldAddToBalance()
         {
             // Arrange
             RepositoryResult<bool> result;
             BalanceTransaction? inMemoryDbTransaction;
             int balanceId = 1;
-            decimal? balanceBeforeTransaction;
-            decimal? balanceAfterTransaction;
+
+            
+            decimal transactionIncomeAmount = 33m;
+            string userName = _appUsers[0].UserName;
+
+
+            _balanceManagmentRepositoryMock.Setup(x => x.AddToBalanceAmount(It.IsAny<int>(), It.IsAny<decimal>()))
+                .ReturnsAsync(RepositoryResult<bool>.Success(false));
+            _balanceManagmentRepositoryMock.Setup(x => x.AddToBalanceAmount(It.Is<int>(id => id == balanceId), It.Is<decimal>(amount => amount == -transactionIncomeAmount)))
+                .ReturnsAsync(RepositoryResult<bool>.Success(true));
+
+            
 
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
-                FinansoData.Repository.Transaction.TransactionManagementRepository repository = new FinansoData.Repository.Transaction.TransactionManagementRepository(context);
-
-                balanceBeforeTransaction = context.Balances.FirstOrDefault(b => b.Id == balanceId).Amount;
+                FinansoData.Repository.Transaction.TransactionManagementRepository repository = new FinansoData.Repository.Transaction.TransactionManagementRepository(context, _balanceManagmentRepositoryMock.Object);
 
                 // Act
-                result = await repository.AddTransaction(100m, "desc", balanceId, DateTime.Now, "1", 1, (int)FinansoData.Enum.TransactionStatuses.Completed, 1);
+                result = await repository.AddTransaction(transactionIncomeAmount, "desc", balanceId, DateTime.Now, userName, (int)FinansoData.Enum.TransactionTypes.Expense, (int)FinansoData.Enum.TransactionStatuses.Completed, 1);
+               
                 inMemoryDbTransaction = context.BalanceTransactions.FirstOrDefault();
-
-                balanceAfterTransaction = context.Balances.FirstOrDefault(b => b.Id == balanceId).Amount;
 
                 context.Database.EnsureDeleted();
             }
@@ -168,8 +180,83 @@ namespace FinansoData.Tests.Repository.Transaction
             result.IsSuccess.Should().BeTrue();
             inMemoryDbTransaction.Should().NotBeNull();
 
-            // Check if balance is updated
-            balanceBeforeTransaction.Should().NotBe(balanceAfterTransaction);
+            _balanceManagmentRepositoryMock.Verify(x => x.AddToBalanceAmount(balanceId, -transactionIncomeAmount), Times.Once);
+        }
+
+        [Fact]
+        public async Task AddTransaction_ShouldSubtractFromBalance()
+        {
+            // Arrange
+            RepositoryResult<bool> result;
+            BalanceTransaction? inMemoryDbTransaction;
+            int balanceId = 1;
+
+
+            decimal transactionExpensemount = 100m;
+            string userName = _appUsers[0].UserName;
+
+
+            _balanceManagmentRepositoryMock.Setup(x => x.AddToBalanceAmount(It.IsAny<int>(), It.IsAny<decimal>()))
+                .ReturnsAsync(RepositoryResult<bool>.Success(false));
+            _balanceManagmentRepositoryMock.Setup(x => x.AddToBalanceAmount(It.Is<int>(id => id == balanceId), It.Is<decimal>(amount => amount == transactionExpensemount)))
+                .ReturnsAsync(RepositoryResult<bool>.Success(true));
+
+
+
+            using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
+            {
+                FinansoData.Repository.Transaction.TransactionManagementRepository repository = new FinansoData.Repository.Transaction.TransactionManagementRepository(context, _balanceManagmentRepositoryMock.Object);
+
+                // Act
+                result = await repository.AddTransaction(transactionExpensemount, "desc", balanceId, DateTime.Now, userName, (int)FinansoData.Enum.TransactionTypes.Income, (int)FinansoData.Enum.TransactionStatuses.Completed, 1);
+
+                inMemoryDbTransaction = context.BalanceTransactions.FirstOrDefault();
+
+                context.Database.EnsureDeleted();
+            }
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            inMemoryDbTransaction.Should().NotBeNull();
+
+            _balanceManagmentRepositoryMock.Verify(x => x.AddToBalanceAmount(balanceId, transactionExpensemount), Times.Once);
+        }
+
+        [Fact]
+        public async Task AddTransaction_ShouldNotAddToBalanceWhenTransactionStatusIsNotCompleted()
+        {
+            // Arrange
+            RepositoryResult<bool> result;
+            BalanceTransaction? inMemoryDbTransaction;
+            int balanceId = 1;
+
+
+            decimal transactionIncomeAmount = 100m;
+            string userName = _appUsers[0].UserName;
+
+
+            _balanceManagmentRepositoryMock.Setup(x => x.AddToBalanceAmount(It.IsAny<int>(), It.IsAny<decimal>()))
+                .ReturnsAsync(RepositoryResult<bool>.Success(false));
+
+
+
+            using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
+            {
+                FinansoData.Repository.Transaction.TransactionManagementRepository repository = new FinansoData.Repository.Transaction.TransactionManagementRepository(context, _balanceManagmentRepositoryMock.Object);
+
+                // Act
+                result = await repository.AddTransaction(transactionIncomeAmount, "desc", balanceId, DateTime.Now, userName, (int)FinansoData.Enum.TransactionTypes.Expense, (int)FinansoData.Enum.TransactionStatuses.Planned, 1);
+
+                inMemoryDbTransaction = context.BalanceTransactions.FirstOrDefault();
+
+                context.Database.EnsureDeleted();
+            }
+
+            // Assert
+            result.IsSuccess.Should().BeTrue();
+            inMemoryDbTransaction.Should().NotBeNull();
+
+            _balanceManagmentRepositoryMock.Verify(x => x.AddToBalanceAmount(It.IsAny<int>(), It.IsAny<decimal>()), Times.Never);
         }
         #endregion
     }
