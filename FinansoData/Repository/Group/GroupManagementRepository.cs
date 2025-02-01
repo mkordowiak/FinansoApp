@@ -85,13 +85,15 @@ namespace FinansoData.Repository.Group
         {
             Models.Group? group = new Models.Group();
             List<GroupUser> groupUsers = new List<GroupUser>();
+            List<BalanceTransaction> transactions;
+            List<Models.Balance> balances;
             try
             {
-                group = await _context.Groups
-                                      .SingleOrDefaultAsync(g => g.Id == groupId);
-                groupUsers = await _context.GroupUsers
-                        .Where(gu => gu.Group.Id == groupId)
-                                        .ToListAsync();
+                group = await _context.Groups.SingleOrDefaultAsync(g => g.Id == groupId);
+                groupUsers = await _context.GroupUsers.Where(gu => gu.Group.Id == groupId).ToListAsync();
+                balances = await _context.Balances.Where(x => x.GroupId == groupId).ToListAsync();
+                transactions = await _context.BalanceTransactions.Where(x => x.GroupId == groupId).ToListAsync();
+
             }
             catch
             {
@@ -103,17 +105,26 @@ namespace FinansoData.Repository.Group
                 return RepositoryResult<bool>.Failure(null, ErrorType.NotFound);
             }
 
-            try
-            {
-                _context.GroupUsers.RemoveRange(groupUsers);
-                _context.Groups.Remove(group);
-                await _context.SaveChangesAsync();
-            }
-            catch
-            {
-                return RepositoryResult<bool>.Failure(null, ErrorType.ServerError);
-            }
 
+            using(var transaction = await _context.Database.BeginTransactionAsync())
+            {
+                try
+                {
+                    _context.BalanceTransactions.RemoveRange(transactions);
+                    _context.GroupUsers.RemoveRange(groupUsers);
+                    _context.Balances.RemoveRange(balances);
+                    _context.Groups.Remove(group);
+
+                    await _context.SaveChangesAsync();
+                    await transaction.CommitAsync();
+                }
+                catch (Exception ex)
+                {
+                    await transaction.RollbackAsync();
+                    return RepositoryResult<bool>.Failure(ex.Message, ErrorType.ServerError);
+                }
+            }
+            
             return RepositoryResult<bool>.Success(true);
         }
     }
