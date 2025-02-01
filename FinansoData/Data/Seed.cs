@@ -119,6 +119,7 @@ namespace FinansoData.Data
                         new TransactionCategory { TransactionTypeId = 1, Name = "Other" },
                         new TransactionCategory { TransactionTypeId = 2, Name = "Daily Purchases" },
                         new TransactionCategory { TransactionTypeId = 2, Name = "Bills" },
+                        new TransactionCategory { TransactionTypeId = 2, Name = "Subscriptions" },
                         new TransactionCategory { TransactionTypeId = 2, Name = "Transportation" },
                         new TransactionCategory { TransactionTypeId = 2, Name = "Entertainment" },
                         new TransactionCategory { TransactionTypeId = 2, Name = "Insurance" },
