@@ -48,7 +48,7 @@ BEGIN
 	WHILE @@FETCH_STATUS = 0
 	BEGIN
 		UPDATE [dbo].[BalanceTransactions]
-		SET [TransactionStatusId] = @transactionCompletedId
+		SET [TransactionStatusId] = @transactionCompletedId, [ModifiedAt] = GETDATE()
 		WHERE [Id] = @transactionId;
 
 		SELECT @balanceAmount = [Amount] FROM [dbo].[Balances] WHERE [Id] = @balanceId;
