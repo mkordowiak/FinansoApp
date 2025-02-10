@@ -1,5 +1,7 @@
+using FinansoData.Data;
 using FinansoData.Models;
 using FinansoData.Repository;
+using Hangfire;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
@@ -23,6 +25,7 @@ builder.Services.AddScoped<FinansoData.Repository.Balance.IBalanceQueryRepositor
 
 builder.Services.AddScoped<ICacheWrapper, CacheWrapper>();
 builder.Services.AddScoped<FinansoData.Repository.Settings.ISettingsQueryRepository, FinansoData.Repository.Settings.SettingsQueryRepository>();
+builder.Services.AddScoped<FinansoData.Data.ITimedActions, FinansoData.Data.TimedActions>();
 
 // Repository account
 builder.Services.AddScoped<FinansoData.Repository.Account.IAuthentication, FinansoData.Repository.Account.Authentication>();
@@ -47,7 +50,7 @@ builder.Services.AddDbContext<FinansoData.Data.ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 
-
+#if DEBUG
 builder.Services.Configure<IdentityOptions>(options =>
 {
     // Password settings.
@@ -55,11 +58,40 @@ builder.Services.Configure<IdentityOptions>(options =>
     options.Password.RequireLowercase = false;
     options.Password.RequireNonAlphanumeric = false;
     options.Password.RequireUppercase = false;
+    options.Password.RequiredLength = 2;
+    options.Password.RequiredUniqueChars = 1;
+});
+#else 
+builder.Services.Configure<IdentityOptions>(options =>
+{
+    // Password settings.
+    options.Password.RequireDigit = true;
+    options.Password.RequireLowercase = true;
+    options.Password.RequireNonAlphanumeric = true;
+    options.Password.RequireUppercase = false;
     options.Password.RequiredLength = 6;
     options.Password.RequiredUniqueChars = 2;
 });
+#endif
 
 
+
+#region hangfire
+builder.Services.AddHangfire(configuration => configuration
+    .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
+    .UseSimpleAssemblyNameTypeSerializer()
+    .UseRecommendedSerializerSettings()
+    .UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection"), new Hangfire.SqlServer.SqlServerStorageOptions
+    {
+        CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
+        SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
+        QueuePollInterval = TimeSpan.Zero,
+        UseRecommendedIsolationLevel = true,
+        DisableGlobalLocks = true
+    }));
+
+builder.Services.AddHangfireServer();
+#endregion
 
 builder.Services.AddIdentity<AppUser, IdentityRole>()
     .AddEntityFrameworkStores<FinansoData.Data.ApplicationDbContext>();
@@ -69,6 +101,16 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     .AddCookie();
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 WebApplication app = builder.Build();
+
+
+#region Hangfire Recurring Job Scheduling (po app.Build())
+IRecurringJobManager recurringJobManager = app.Services.GetRequiredService<IRecurringJobManager>();
+recurringJobManager.AddOrUpdate<FinansoData.Data.TimedActions>(
+    "aaaaa",
+    job => job.UpdateBalanceTransactions(),
+    Cron.Daily(21)
+);
+#endregion
 
 
 
@@ -82,27 +124,21 @@ if (args.Length == 1 && args[0].ToLower() == "seeddata")
     Console.WriteLine("Seeding data");
 
     FinansoData.Data.Seed.SeedSettings(app);
-
     Console.WriteLine("Settings seeded");
 
     FinansoData.Data.Seed.SeedTransactionTypes(app);
-
     Console.WriteLine("Transaction types seeded");
 
     FinansoData.Data.Seed.SeedTransactionCategories(app);
-
     Console.WriteLine("Transaction categories seeded");
 
     FinansoData.Data.Seed.SeedTransactionStatuses(app);
-
     Console.WriteLine("Transaction statuses seeded");
 
     FinansoData.Data.Seed.SeedRoles(app);
-
     Console.WriteLine("User roles seeded");
 
     FinansoData.Data.Seed.SeedCurrencies(app);
-
     Console.WriteLine("Currencies seeded");
 
     //Seed.SeedUsers(app, defaultPassword);
@@ -112,6 +148,21 @@ if (args.Length == 1 && args[0].ToLower() == "seeddata")
 
     return;
 }
+
+
+if (args.Length == 1 && args[0].ToLower() == "migrate")
+{
+    Console.WriteLine("Migrating database");
+    using IServiceScope scope = app.Services.CreateScope();
+    IServiceProvider services = scope.ServiceProvider;
+    ApplicationDbContext context = services.GetRequiredService<FinansoData.Data.ApplicationDbContext>();
+    context.Database.Migrate();
+    Console.WriteLine("Database migrated");
+    return;
+}
+
+
+
 
 
 // Configure the HTTP request pipeline.
