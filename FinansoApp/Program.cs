@@ -47,7 +47,7 @@ builder.Services.AddDbContext<FinansoData.Data.ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 
-
+#if DEBUG
 builder.Services.Configure<IdentityOptions>(options =>
 {
     // Password settings.
@@ -55,10 +55,21 @@ builder.Services.Configure<IdentityOptions>(options =>
     options.Password.RequireLowercase = false;
     options.Password.RequireNonAlphanumeric = false;
     options.Password.RequireUppercase = false;
+    options.Password.RequiredLength = 2;
+    options.Password.RequiredUniqueChars = 1;
+});
+#else 
+builder.Services.Configure<IdentityOptions>(options =>
+{
+    // Password settings.
+    options.Password.RequireDigit = true;
+    options.Password.RequireLowercase = true;
+    options.Password.RequireNonAlphanumeric = true;
+    options.Password.RequireUppercase = false;
     options.Password.RequiredLength = 6;
     options.Password.RequiredUniqueChars = 2;
 });
-
+#endif
 
 
 builder.Services.AddIdentity<AppUser, IdentityRole>()
