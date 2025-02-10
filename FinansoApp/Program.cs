@@ -108,7 +108,7 @@ IRecurringJobManager recurringJobManager = app.Services.GetRequiredService<IRecu
 recurringJobManager.AddOrUpdate<FinansoData.Data.TimedActions>(
     "aaaaa",
     job => job.UpdateBalanceTransactions(),
-    Cron.Daily(21)
+    Cron.Daily()
 );
 #endregion
 
