@@ -10,9 +10,9 @@ namespace FinansoData.Repository.Transaction
     public class TransactionManagementRepository : ITransactionManagementRepository
     {
         private readonly ApplicationDbContext _applicationDbContext;
-        private readonly IBalanceManagmentRepository _balanceManagmentRepository;
+        private readonly IBalanceManagementRepository _balanceManagmentRepository;
 
-        public TransactionManagementRepository(ApplicationDbContext applicationDbContext, IBalanceManagmentRepository balanceManagmentRepository)
+        public TransactionManagementRepository(ApplicationDbContext applicationDbContext, IBalanceManagementRepository balanceManagmentRepository)
         {
             _applicationDbContext = applicationDbContext;
             _balanceManagmentRepository = balanceManagmentRepository;

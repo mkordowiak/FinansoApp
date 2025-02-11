@@ -15,7 +15,7 @@ namespace FinansoApp.Tests.Controllers
 {
     public class BalanceControllerTest
     {
-        private readonly Mock<IBalanceManagmentRepository> _balanceManagmentRepositoryMock;
+        private readonly Mock<IBalanceManagementRepository> _balanceManagmentRepositoryMock;
         private readonly Mock<ICurrencyQueryRepository> _currencyQueryRepositoryMock;
         private readonly Mock<IGroupQueryRepository> _groupQueryRepositoryMock;
         private readonly Mock<IGroupUsersQueryRepository> _groupUsersQueryRepositoryMock;
@@ -24,11 +24,11 @@ namespace FinansoApp.Tests.Controllers
 
         public BalanceControllerTest()
         {
-            _balanceManagmentRepositoryMock = new Mock<IBalanceManagmentRepository>();
+            _balanceManagmentRepositoryMock = new Mock<IBalanceManagementRepository>();
             _currencyQueryRepositoryMock = new Mock<ICurrencyQueryRepository>();
             _groupQueryRepositoryMock = new Mock<IGroupQueryRepository>();
             _groupUsersQueryRepositoryMock = new Mock<IGroupUsersQueryRepository>();
-            _balanceManagmentRepositoryMock = new Mock<IBalanceManagmentRepository>();
+            _balanceManagmentRepositoryMock = new Mock<IBalanceManagementRepository>();
             _balanceQueryRepositoryMock = new Mock<IBalanceQueryRepository>();
             _balanceSumAmountMock = new Mock<IBalanceSumAmount>();
         }

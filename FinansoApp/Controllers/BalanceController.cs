@@ -10,14 +10,16 @@ namespace FinansoApp.Controllers
 {
     public class BalanceController : Controller
     {
-        private readonly IBalanceManagmentRepository _balanceManagmentRepository;
+        private readonly IBalanceManagementRepository _balanceManagmentRepository;
         private readonly ICurrencyQueryRepository _currencyRepository;
         private readonly IGroupQueryRepository _groupQueryRepository;
         private readonly IGroupUsersQueryRepository _groupUsersQueryRepository;
         private readonly IBalanceQueryRepository _balanceQueryRepository;
         private readonly IBalanceSumAmount _balanceSumAmount;
+        
 
-        public BalanceController(IBalanceManagmentRepository balanceManagmentRepository, ICurrencyQueryRepository currency, IGroupQueryRepository group, IGroupUsersQueryRepository groupUsersQueryRepository, IBalanceQueryRepository balanceQueryRepository, IBalanceSumAmount balanceSumAmount)
+        public BalanceController(
+            IBalanceManagementRepository balanceManagmentRepository, ICurrencyQueryRepository currency, IGroupQueryRepository group, IGroupUsersQueryRepository groupUsersQueryRepository, IBalanceQueryRepository balanceQueryRepository, IBalanceSumAmount balanceSumAmount)
         {
             _balanceManagmentRepository = balanceManagmentRepository;
             _currencyRepository = currency;
