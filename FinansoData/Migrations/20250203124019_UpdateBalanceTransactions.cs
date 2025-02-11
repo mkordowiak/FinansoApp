@@ -10,7 +10,7 @@ namespace FinansoData.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.Sql(@"CREATE PROCEDURE [UpdateBalanceTransactions]
+            migrationBuilder.Sql(@"CREATE PROCEDURE [dbo].[UpdateBalanceTransactions] @NumOfRowsToProcedure INT
 AS 
 /*
 -- =============================================
@@ -22,28 +22,29 @@ AS
 BEGIN
 	DECLARE @transactionPlannedId INT;
 	DECLARE @transactionCompletedId INT;
-	DECLARE @incomeStatusId INT;
+	DECLARE @incomeTypeId INT;
 	DECLARE @expenseStatusId INT;
 	DECLARE @transactionId INT;
 	DECLARE @transactionAmount [DECIMAL](18, 8);
 	DECLARE @balanceAmount [DECIMAL](18,8);
 	DECLARE @transactionStatusId INT;
 	DECLARE @balanceId INT;
+	DECLARE @transactionTypeId INT;
 
 	SELECT @transactionPlannedId = [Id] FROM [dbo].[TransactionStatuses] WHERE [Name] = 'Planned';
 	SELECT @transactionCompletedId = [Id] FROM [dbo].[TransactionStatuses] WHERE [Name] = 'Completed';
-	SELECT @incomeStatusId = [Id] FROM [TransactionTypes] WHERE [Name] = 'Income';
+	SELECT @incomeTypeId = [Id] FROM [TransactionTypes] WHERE [Name] = 'Income';
 	SELECT @expenseStatusId = [Id] FROM [TransactionTypes] WHERE [Name] = 'Expense';
 
 	DECLARE TransactionCursor CURSOR LOCAL FAST_FORWARD FOR
-		SELECT TOP 100 [Id], [BalanceId], [Amount], [TransactionStatusId] 
+		SELECT TOP (@NumOfRowsToProcedure) [Id], [BalanceId], [Amount], [TransactionStatusId], [TransactionTypeId] 
 		FROM [dbo].[BalanceTransactions]
 		WHERE [TransactionStatusId] = @transactionPlannedId
 			AND [TransactionDate] < GETDATE();
 
 	OPEN TransactionCursor;
 
-	FETCH NEXT FROM TransactionCursor INTO @transactionId, @balanceId, @transactionAmount, @transactionStatusId;
+	FETCH NEXT FROM TransactionCursor INTO @transactionId, @balanceId, @transactionAmount, @transactionStatusId, @transactionTypeId;
 
 	WHILE @@FETCH_STATUS = 0
 	BEGIN
@@ -53,29 +54,32 @@ BEGIN
 
 		SELECT @balanceAmount = [Amount] FROM [dbo].[Balances] WHERE [Id] = @balanceId;
 
-		IF @transactionStatusId = @incomeStatusId 
+		IF @transactionTypeId = @incomeTypeId 
 		BEGIN
+			PRINT N'Income added to balance';
 			SET @balanceAmount = @balanceAmount + @transactionAmount;
 		END;
 
-		IF @transactionStatusId = @expenseStatusId
+		IF @transactionTypeId = @expenseStatusId
 		BEGIN
+			PRINT N'Expense added to balance';
 			SET @balanceAmount = @balanceAmount - @transactionAmount;
 		END;
 
 		UPDATE [Balances]
 		SET [Amount] = @balanceAmount,
-		[ModifiedAt] = GETDATE()
+		[Modified] = GETDATE()
 		WHERE [Id] = @balanceId;
 
-		FETCH NEXT FROM TransactionCursor INTO @transactionId, @balanceId, @transactionAmount, @transactionStatusId;
+		FETCH NEXT FROM TransactionCursor INTO @transactionId, @balanceId, @transactionAmount, @transactionStatusId, @transactionTypeId;
 
 	END
 
 	CLOSE TransactionCursor;
 	DEALLOCATE TransactionCursor;
 
-END");
+END
+GO");
         }
 
         /// <inheritdoc />
