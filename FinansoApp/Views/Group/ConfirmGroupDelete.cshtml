@@ -6,7 +6,15 @@
 
 <h2>Confirm Delete</h2>
 
-<p>Are you sure you want to delete this group?</p>
+<p>Are you <strong>REALLY</strong> sure you want to delete this group?</p>
+<p>
+    All following informations will be LOST:
+    <ol>
+        <li>Group balances</li>
+        <li>Group transactions</li>
+        <li>Balance history</li>
+    </ol>
+</p>
 
 <form asp-action="DeleteGroupConfirmed" method="post">
     <input type="hidden" name="id" value="@Model" />

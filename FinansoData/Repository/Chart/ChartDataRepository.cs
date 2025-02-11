@@ -1,4 +1,5 @@
 ﻿using FinansoData.Data;
+using FinansoData.DataViewModel.Chart;
 using FinansoData.Helpers;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,6 +16,48 @@ namespace FinansoData.Repository.Chart
             _applicationDbContext = applicationDbContext;
             _cacheWrapper = cacheWrapper;
             _cacheClassName = this.GetType().Name;
+        }
+
+        public async Task<RepositoryResult<IEnumerable<BalanceLogAverage>>> BalanceLogsByMonth(int balanceId)
+        {
+            string methodName = MethodName.GetMethodName();
+            string cacheDataKey = $"{_cacheClassName}_{methodName}_{balanceId}";
+            if (_cacheWrapper.TryGetValue(cacheDataKey, out IEnumerable<BalanceLogAverage>? cacheBalanceLogs))
+            {
+                return RepositoryResult<IEnumerable<BalanceLogAverage>>.Success(cacheBalanceLogs);
+            }
+
+            IQueryable<BalanceLogAverage> query = from log in _applicationDbContext.BalanceLogs
+                                                  where
+                                                      log.BalanceId == balanceId
+                                                      && log.Date >= DateTime.Now.AddYears(-1)
+                                                  group log by new
+                                                  {
+                                                      log.Date.Year,
+                                                      log.Date.Month
+                                                  } into g
+                                                  select new BalanceLogAverage
+                                                  {
+                                                      Year = g.Key.Year,
+                                                      Month = g.Key.Month,
+                                                      Average = g.Average(x => x.Amount)
+                                                  };
+
+            List<BalanceLogAverage> result;
+
+            try
+            {
+                result = await query.OrderBy(query => query.Year).ThenBy(query => query.Month).ToListAsync();
+            }
+            catch (Exception ex)
+            {
+                return RepositoryResult<IEnumerable<BalanceLogAverage>>.Failure(ex.Message, ErrorType.ServerError);
+            }
+
+            return RepositoryResult<IEnumerable<BalanceLogAverage>>.Success(result);
+
+            _cacheWrapper.Set(cacheDataKey, result, TimeSpan.FromMinutes(30));
+            return RepositoryResult<IEnumerable<BalanceLogAverage>>.Success(result);
         }
 
         public Task<RepositoryResult<IEnumerable<Tuple<string, decimal>>>> GetExpensesInCategories(string userName, int months = 12)

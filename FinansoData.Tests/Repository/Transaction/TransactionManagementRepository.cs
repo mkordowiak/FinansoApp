@@ -10,7 +10,7 @@ namespace FinansoData.Tests.Repository.Transaction
     public class TransactionManagementRepository
     {
         private readonly DbContextOptions<ApplicationDbContext> _dbContextOptions;
-        private readonly Mock<IBalanceManagmentRepository> _balanceManagmentRepositoryMock;
+        private readonly Mock<IBalanceManagementRepository> _balanceManagmentRepositoryMock;
         private readonly List<Models.Currency> _currencies;
         private readonly List<TransactionStatus> _transactionStatuses;
         private readonly List<TransactionType> _transactionTypes;
@@ -24,7 +24,7 @@ namespace FinansoData.Tests.Repository.Transaction
                 .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
                 .Options;
 
-            _balanceManagmentRepositoryMock = new Mock<IBalanceManagmentRepository>();
+            _balanceManagmentRepositoryMock = new Mock<IBalanceManagementRepository>();
 
             _currencies = new List<FinansoData.Models.Currency>
             {

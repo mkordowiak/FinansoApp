@@ -87,6 +87,8 @@ namespace FinansoData.Repository.Group
             List<GroupUser> groupUsers = new List<GroupUser>();
             List<BalanceTransaction> transactions;
             List<Models.Balance> balances;
+            List<Models.BalanceLog> balanceLog;
+
             try
             {
                 group = await _context.Groups.SingleOrDefaultAsync(g => g.Id == groupId);
@@ -94,6 +96,9 @@ namespace FinansoData.Repository.Group
                 balances = await _context.Balances.Where(x => x.GroupId == groupId).ToListAsync();
                 transactions = await _context.BalanceTransactions.Where(x => x.GroupId == groupId).ToListAsync();
 
+                // Balance logs
+                List<int> balanceIds = balances.Select(x => x.Id).ToList();
+                balanceLog = await _context.BalanceLogs.Where(x => balanceIds.Contains(x.BalanceId)).ToListAsync();
             }
             catch
             {
@@ -110,6 +115,7 @@ namespace FinansoData.Repository.Group
             {
                 try
                 {
+                    _context.BalanceLogs.RemoveRange(balanceLog);
                     _context.BalanceTransactions.RemoveRange(transactions);
                     _context.GroupUsers.RemoveRange(groupUsers);
                     _context.Balances.RemoveRange(balances);

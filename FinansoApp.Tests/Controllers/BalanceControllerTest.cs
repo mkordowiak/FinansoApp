@@ -1,6 +1,7 @@
 ﻿using FinansoApp.Controllers;
 using FinansoApp.ViewModels.Balance;
 using FinansoData.Repository.Balance;
+using FinansoData.Repository.Chart;
 using FinansoData.Repository.Currency;
 using FinansoData.Repository.Group;
 using FluentAssertions;
@@ -15,22 +16,23 @@ namespace FinansoApp.Tests.Controllers
 {
     public class BalanceControllerTest
     {
-        private readonly Mock<IBalanceManagmentRepository> _balanceManagmentRepositoryMock;
+        private readonly Mock<IBalanceManagementRepository> _balanceManagmentRepositoryMock;
         private readonly Mock<ICurrencyQueryRepository> _currencyQueryRepositoryMock;
         private readonly Mock<IGroupQueryRepository> _groupQueryRepositoryMock;
         private readonly Mock<IGroupUsersQueryRepository> _groupUsersQueryRepositoryMock;
         private readonly Mock<IBalanceQueryRepository> _balanceQueryRepositoryMock;
         private readonly Mock<IBalanceSumAmount> _balanceSumAmountMock;
-
+        private readonly Mock<IChartDataRepository> _chartDataRepositoryMock;
         public BalanceControllerTest()
         {
-            _balanceManagmentRepositoryMock = new Mock<IBalanceManagmentRepository>();
+            _balanceManagmentRepositoryMock = new Mock<IBalanceManagementRepository>();
             _currencyQueryRepositoryMock = new Mock<ICurrencyQueryRepository>();
             _groupQueryRepositoryMock = new Mock<IGroupQueryRepository>();
             _groupUsersQueryRepositoryMock = new Mock<IGroupUsersQueryRepository>();
-            _balanceManagmentRepositoryMock = new Mock<IBalanceManagmentRepository>();
+            _balanceManagmentRepositoryMock = new Mock<IBalanceManagementRepository>();
             _balanceQueryRepositoryMock = new Mock<IBalanceQueryRepository>();
             _balanceSumAmountMock = new Mock<IBalanceSumAmount>();
+            _chartDataRepositoryMock = new Mock<IChartDataRepository>();
         }
 
         #region Index
@@ -58,7 +60,7 @@ namespace FinansoApp.Tests.Controllers
             context.SetupGet(ctx => ctx.User).Returns(mockPrincipal.Object);
 
 
-            BalanceController controller = new BalanceController(_balanceManagmentRepositoryMock.Object, _currencyQueryRepositoryMock.Object, _groupQueryRepositoryMock.Object, _groupUsersQueryRepositoryMock.Object, _balanceQueryRepositoryMock.Object, _balanceSumAmountMock.Object)
+            BalanceController controller = new BalanceController(_balanceManagmentRepositoryMock.Object, _currencyQueryRepositoryMock.Object, _groupQueryRepositoryMock.Object, _groupUsersQueryRepositoryMock.Object, _balanceQueryRepositoryMock.Object, _balanceSumAmountMock.Object, _chartDataRepositoryMock.Object)
             {
                 ControllerContext = new ControllerContext
                 {
@@ -106,7 +108,7 @@ namespace FinansoApp.Tests.Controllers
             context.SetupGet(ctx => ctx.User).Returns(mockPrincipal.Object);
 
 
-            BalanceController controller = new BalanceController(_balanceManagmentRepositoryMock.Object, _currencyQueryRepositoryMock.Object, _groupQueryRepositoryMock.Object, _groupUsersQueryRepositoryMock.Object, _balanceQueryRepositoryMock.Object, _balanceSumAmountMock.Object)
+            BalanceController controller = new BalanceController(_balanceManagmentRepositoryMock.Object, _currencyQueryRepositoryMock.Object, _groupQueryRepositoryMock.Object, _groupUsersQueryRepositoryMock.Object, _balanceQueryRepositoryMock.Object, _balanceSumAmountMock.Object, _chartDataRepositoryMock.Object)
             {
                 ControllerContext = new ControllerContext
                 {
@@ -148,7 +150,7 @@ namespace FinansoApp.Tests.Controllers
             context.SetupGet(ctx => ctx.User).Returns(mockPrincipal.Object);
 
 
-            BalanceController controller = new BalanceController(_balanceManagmentRepositoryMock.Object, _currencyQueryRepositoryMock.Object, _groupQueryRepositoryMock.Object, _groupUsersQueryRepositoryMock.Object, _balanceQueryRepositoryMock.Object, _balanceSumAmountMock.Object)
+            BalanceController controller = new BalanceController(_balanceManagmentRepositoryMock.Object, _currencyQueryRepositoryMock.Object, _groupQueryRepositoryMock.Object, _groupUsersQueryRepositoryMock.Object, _balanceQueryRepositoryMock.Object, _balanceSumAmountMock.Object, _chartDataRepositoryMock.Object)
             {
                 ControllerContext = new ControllerContext
                 {
@@ -212,7 +214,7 @@ namespace FinansoApp.Tests.Controllers
             context.SetupGet(ctx => ctx.User).Returns(mockPrincipal.Object);
 
 
-            BalanceController controller = new BalanceController(_balanceManagmentRepositoryMock.Object, _currencyQueryRepositoryMock.Object, _groupQueryRepositoryMock.Object, _groupUsersQueryRepositoryMock.Object, _balanceQueryRepositoryMock.Object, _balanceSumAmountMock.Object)
+            BalanceController controller = new BalanceController(_balanceManagmentRepositoryMock.Object, _currencyQueryRepositoryMock.Object, _groupQueryRepositoryMock.Object, _groupUsersQueryRepositoryMock.Object, _balanceQueryRepositoryMock.Object, _balanceSumAmountMock.Object, _chartDataRepositoryMock.Object)
             {
                 ControllerContext = new ControllerContext
                 {
@@ -276,7 +278,7 @@ namespace FinansoApp.Tests.Controllers
             context.SetupGet(ctx => ctx.User).Returns(mockPrincipal.Object);
 
 
-            BalanceController controller = new BalanceController(_balanceManagmentRepositoryMock.Object, _currencyQueryRepositoryMock.Object, _groupQueryRepositoryMock.Object, _groupUsersQueryRepositoryMock.Object, _balanceQueryRepositoryMock.Object, _balanceSumAmountMock.Object)
+            BalanceController controller = new BalanceController(_balanceManagmentRepositoryMock.Object, _currencyQueryRepositoryMock.Object, _groupQueryRepositoryMock.Object, _groupUsersQueryRepositoryMock.Object, _balanceQueryRepositoryMock.Object, _balanceSumAmountMock.Object, _chartDataRepositoryMock.Object)
             {
                 ControllerContext = new ControllerContext
                 {
@@ -334,7 +336,7 @@ namespace FinansoApp.Tests.Controllers
             context.SetupGet(ctx => ctx.User).Returns(mockPrincipal.Object);
 
 
-            BalanceController controller = new BalanceController(_balanceManagmentRepositoryMock.Object, _currencyQueryRepositoryMock.Object, _groupQueryRepositoryMock.Object, _groupUsersQueryRepositoryMock.Object, _balanceQueryRepositoryMock.Object, _balanceSumAmountMock.Object)
+            BalanceController controller = new BalanceController(_balanceManagmentRepositoryMock.Object, _currencyQueryRepositoryMock.Object, _groupQueryRepositoryMock.Object, _groupUsersQueryRepositoryMock.Object, _balanceQueryRepositoryMock.Object, _balanceSumAmountMock.Object, _chartDataRepositoryMock.Object)
             {
                 ControllerContext = new ControllerContext
                 {
@@ -392,7 +394,7 @@ namespace FinansoApp.Tests.Controllers
             context.SetupGet(ctx => ctx.User).Returns(mockPrincipal.Object);
 
 
-            BalanceController controller = new BalanceController(_balanceManagmentRepositoryMock.Object, _currencyQueryRepositoryMock.Object, _groupQueryRepositoryMock.Object, _groupUsersQueryRepositoryMock.Object, _balanceQueryRepositoryMock.Object, _balanceSumAmountMock.Object)
+            BalanceController controller = new BalanceController(_balanceManagmentRepositoryMock.Object, _currencyQueryRepositoryMock.Object, _groupQueryRepositoryMock.Object, _groupUsersQueryRepositoryMock.Object, _balanceQueryRepositoryMock.Object, _balanceSumAmountMock.Object, _chartDataRepositoryMock.Object)
             {
                 ControllerContext = new ControllerContext
                 {
@@ -450,7 +452,7 @@ namespace FinansoApp.Tests.Controllers
             context.SetupGet(ctx => ctx.User).Returns(mockPrincipal.Object);
 
 
-            BalanceController controller = new BalanceController(_balanceManagmentRepositoryMock.Object, _currencyQueryRepositoryMock.Object, _groupQueryRepositoryMock.Object, _groupUsersQueryRepositoryMock.Object, _balanceQueryRepositoryMock.Object, _balanceSumAmountMock.Object)
+            BalanceController controller = new BalanceController(_balanceManagmentRepositoryMock.Object, _currencyQueryRepositoryMock.Object, _groupQueryRepositoryMock.Object, _groupUsersQueryRepositoryMock.Object, _balanceQueryRepositoryMock.Object, _balanceSumAmountMock.Object, _chartDataRepositoryMock.Object)
             {
                 ControllerContext = new ControllerContext
                 {
@@ -508,7 +510,7 @@ namespace FinansoApp.Tests.Controllers
             context.SetupGet(ctx => ctx.User).Returns(mockPrincipal.Object);
 
 
-            BalanceController controller = new BalanceController(_balanceManagmentRepositoryMock.Object, _currencyQueryRepositoryMock.Object, _groupQueryRepositoryMock.Object, _groupUsersQueryRepositoryMock.Object, _balanceQueryRepositoryMock.Object, _balanceSumAmountMock.Object)
+            BalanceController controller = new BalanceController(_balanceManagmentRepositoryMock.Object, _currencyQueryRepositoryMock.Object, _groupQueryRepositoryMock.Object, _groupUsersQueryRepositoryMock.Object, _balanceQueryRepositoryMock.Object, _balanceSumAmountMock.Object, _chartDataRepositoryMock.Object)
             {
                 ControllerContext = new ControllerContext
                 {
@@ -547,6 +549,15 @@ namespace FinansoApp.Tests.Controllers
                         Group = new FinansoData.Models.Group { Id = 1, Name = "Test group 1" }
                     }));
 
+            IEnumerable<FinansoData.DataViewModel.Chart.BalanceLogAverage> chartExpectedData = new List<FinansoData.DataViewModel.Chart.BalanceLogAverage>
+            {
+                new FinansoData.DataViewModel.Chart.BalanceLogAverage { Month = 1, Year = 2021, Average = 1 },
+                new FinansoData.DataViewModel.Chart.BalanceLogAverage { Month = 2, Year = 2021, Average = 2 }
+            };
+
+            _chartDataRepositoryMock.Setup(x => x.BalanceLogsByMonth(It.IsAny<int>()))
+                .ReturnsAsync(FinansoData.RepositoryResult<IEnumerable<FinansoData.DataViewModel.Chart.BalanceLogAverage>>
+                .Success(chartExpectedData));
 
 
             // Claims Principal Mock
@@ -559,7 +570,7 @@ namespace FinansoApp.Tests.Controllers
             context.SetupGet(ctx => ctx.User).Returns(mockPrincipal.Object);
 
 
-            BalanceController controller = new BalanceController(_balanceManagmentRepositoryMock.Object, _currencyQueryRepositoryMock.Object, _groupQueryRepositoryMock.Object, _groupUsersQueryRepositoryMock.Object, _balanceQueryRepositoryMock.Object, _balanceSumAmountMock.Object)
+            BalanceController controller = new BalanceController(_balanceManagmentRepositoryMock.Object, _currencyQueryRepositoryMock.Object, _groupQueryRepositoryMock.Object, _groupUsersQueryRepositoryMock.Object, _balanceQueryRepositoryMock.Object, _balanceSumAmountMock.Object, _chartDataRepositoryMock.Object)
             {
                 ControllerContext = new ControllerContext
                 {
@@ -596,7 +607,7 @@ namespace FinansoApp.Tests.Controllers
             context.SetupGet(ctx => ctx.User).Returns(mockPrincipal.Object);
 
 
-            BalanceController controller = new BalanceController(_balanceManagmentRepositoryMock.Object, _currencyQueryRepositoryMock.Object, _groupQueryRepositoryMock.Object, _groupUsersQueryRepositoryMock.Object, _balanceQueryRepositoryMock.Object, _balanceSumAmountMock.Object)
+            BalanceController controller = new BalanceController(_balanceManagmentRepositoryMock.Object, _currencyQueryRepositoryMock.Object, _groupQueryRepositoryMock.Object, _groupUsersQueryRepositoryMock.Object, _balanceQueryRepositoryMock.Object, _balanceSumAmountMock.Object, _chartDataRepositoryMock.Object)
             {
                 ControllerContext = new ControllerContext
                 {
@@ -681,7 +692,7 @@ namespace FinansoApp.Tests.Controllers
             context.SetupGet(ctx => ctx.User).Returns(mockPrincipal.Object);
 
 
-            BalanceController controller = new BalanceController(_balanceManagmentRepositoryMock.Object, _currencyQueryRepositoryMock.Object, _groupQueryRepositoryMock.Object, _groupUsersQueryRepositoryMock.Object, _balanceQueryRepositoryMock.Object, _balanceSumAmountMock.Object)
+            BalanceController controller = new BalanceController(_balanceManagmentRepositoryMock.Object, _currencyQueryRepositoryMock.Object, _groupQueryRepositoryMock.Object, _groupUsersQueryRepositoryMock.Object, _balanceQueryRepositoryMock.Object, _balanceSumAmountMock.Object, _chartDataRepositoryMock.Object)
             {
                 ControllerContext = new ControllerContext
                 {
@@ -724,7 +735,7 @@ namespace FinansoApp.Tests.Controllers
             context.SetupGet(ctx => ctx.User).Returns(mockPrincipal.Object);
 
 
-            BalanceController controller = new BalanceController(_balanceManagmentRepositoryMock.Object, _currencyQueryRepositoryMock.Object, _groupQueryRepositoryMock.Object, _groupUsersQueryRepositoryMock.Object, _balanceQueryRepositoryMock.Object, _balanceSumAmountMock.Object)
+            BalanceController controller = new BalanceController(_balanceManagmentRepositoryMock.Object, _currencyQueryRepositoryMock.Object, _groupQueryRepositoryMock.Object, _groupUsersQueryRepositoryMock.Object, _balanceQueryRepositoryMock.Object, _balanceSumAmountMock.Object, _chartDataRepositoryMock.Object)
             {
                 ControllerContext = new ControllerContext
                 {

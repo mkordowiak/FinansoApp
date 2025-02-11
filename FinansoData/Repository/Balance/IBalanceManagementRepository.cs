@@ -2,7 +2,7 @@
 
 namespace FinansoData.Repository.Balance
 {
-    public interface IBalanceManagmentRepository
+    public interface IBalanceManagementRepository
     {
         /// <summary>
         /// Add new balance

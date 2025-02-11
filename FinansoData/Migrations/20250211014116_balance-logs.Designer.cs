@@ -4,6 +4,7 @@ using FinansoData.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FinansoData.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250211014116_balance-logs")]
+    partial class balancelogs
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -145,12 +148,7 @@ namespace FinansoData.Migrations
 
                     b.HasIndex("GroupId");
 
-                    b.ToTable("Balances", t =>
-                        {
-                            t.HasTrigger("trg_AfterUpdate_Balances");
-                        });
-
-                    b.HasAnnotation("SqlServer:UseSqlOutputClause", false);
+                    b.ToTable("Balances");
                 });
 
             modelBuilder.Entity("FinansoData.Models.BalanceLog", b =>
@@ -176,7 +174,7 @@ namespace FinansoData.Migrations
 
                     b.HasIndex("BalanceId", "Date");
 
-                    b.ToTable("BalanceLogs");
+                    b.ToTable("BalanceLog");
                 });
 
             modelBuilder.Entity("FinansoData.Models.BalanceTransaction", b =>

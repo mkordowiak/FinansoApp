@@ -4,7 +4,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace FinansoData.Repository.Balance
 {
-    public class BalanceManagementRepository : IBalanceManagmentRepository
+    public class BalanceManagementRepository : IBalanceManagementRepository
     {
         private readonly ApplicationDbContext _context;
 

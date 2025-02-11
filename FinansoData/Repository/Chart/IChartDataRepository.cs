@@ -1,4 +1,6 @@
-﻿namespace FinansoData.Repository.Chart
+﻿using FinansoData.DataViewModel.Chart;
+
+namespace FinansoData.Repository.Chart
 {
     public interface IChartDataRepository
     {
@@ -23,5 +25,12 @@
         ///     - Valie
         /// </tuple></returns>
         Task<RepositoryResult<IEnumerable<Tuple<string, decimal>>>> GetIncomesInCategories(string userName, int months = 12);
+
+        /// <summary>
+        /// Get list of grouped expenses by month from last year
+        /// </summary>
+        /// <param name="balanceId"></param>
+        /// <returns></returns>
+        Task<RepositoryResult<IEnumerable<BalanceLogAverage>>> BalanceLogsByMonth(int balanceId);
     }
 }
