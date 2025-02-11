@@ -92,6 +92,12 @@ namespace FinansoData.Data
                 .HasForeignKey(b => b.GroupId)
                 .OnDelete(DeleteBehavior.NoAction);
 
+            modelBuilder
+                .Entity<BalanceLog>()
+                .HasOne(b => b.Balance)
+                .WithMany(bl => bl.BalanceLogs)
+                .HasForeignKey(bl => bl.BalanceId)
+                .OnDelete(DeleteBehavior.NoAction);
 
 
 
@@ -122,6 +128,10 @@ namespace FinansoData.Data
                 .Entity<AppUser>()
                 .HasIndex(u => new { u.NormalizedUserName });
 
+            modelBuilder
+                .Entity<BalanceLog>()
+                .HasIndex(bl => new { bl.BalanceId, bl.Date });
+
 
             // Default values
             modelBuilder
@@ -144,11 +154,19 @@ namespace FinansoData.Data
                 .Property(b => b.CreatedAt)
                 .HasDefaultValueSql("GETDATE()");
 
-
             modelBuilder
                 .Entity<BalanceTransaction>()
                 .Property(bt => bt.CreatedAt)
                 .HasDefaultValueSql("GETDATE()");
+
+            modelBuilder
+                .Entity<BalanceLog>()
+                .Property(bl => bl.Date)
+                .HasDefaultValueSql("GETDATE()");
+
+            modelBuilder
+                .Entity<Balance>()
+                .ToTable(tb => tb.HasTrigger("trg_AfterUpdate_Balances"));
 
             base.OnModelCreating(modelBuilder);
         }
@@ -163,14 +181,7 @@ namespace FinansoData.Data
         public DbSet<TransactionStatus> TransactionStatuses { get; set; }
         public DbSet<TransactionCategory> TransactionCategories { get; set; }
         public DbSet<Settings> Settings { get; set; }
+        public DbSet<BalanceLog> BalanceLogs { get; set; }
 
-        /// <summary>
-        /// run sum transactions stored procedure
-        /// </summary>
-        /// <returns></returns>
-        public async Task SumPlannedTransactions()
-        {
-            List<BalanceTransaction> result = await BalanceTransactions.FromSqlRaw("EXEC SumPlannedTransactions;").ToListAsync(); 
-        }
     }
 }
