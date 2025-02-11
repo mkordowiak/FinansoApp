@@ -1,10 +1,13 @@
+using FinansoApp.Scheduled;
 using FinansoData.Data;
 using FinansoData.Models;
 using FinansoData.Repository;
-using Hangfire;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Quartz;
+using Quartz.AspNetCore;
+
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
@@ -25,7 +28,7 @@ builder.Services.AddScoped<FinansoData.Repository.Balance.IBalanceQueryRepositor
 
 builder.Services.AddScoped<ICacheWrapper, CacheWrapper>();
 builder.Services.AddScoped<FinansoData.Repository.Settings.ISettingsQueryRepository, FinansoData.Repository.Settings.SettingsQueryRepository>();
-builder.Services.AddScoped<FinansoData.Data.ITimedActions, FinansoData.Data.TimedActions>();
+builder.Services.AddScoped<FinansoData.Repository.Procedures.ISumBalanceProcedure, FinansoData.Repository.Procedures.SumBalanceProcedure>();
 
 // Repository account
 builder.Services.AddScoped<FinansoData.Repository.Account.IAuthentication, FinansoData.Repository.Account.Authentication>();
@@ -69,28 +72,36 @@ builder.Services.Configure<IdentityOptions>(options =>
     options.Password.RequireLowercase = true;
     options.Password.RequireNonAlphanumeric = true;
     options.Password.RequireUppercase = false;
-    options.Password.RequiredLength = 6;
+    options.Password.RequiredLength = 7;
     options.Password.RequiredUniqueChars = 2;
 });
 #endif
 
+#region Quartz.NET
 
+builder.Services.AddQuartz(q =>
+{
+    JobKey jobKey = new JobKey("UpdateBalanceTransactionsAndUpdateBalances");
+    q.AddJob<UpdateBalanceTransactionsAndUpdateBalances>(opts => opts.WithIdentity(jobKey));
 
-#region hangfire
-builder.Services.AddHangfire(configuration => configuration
-    .SetDataCompatibilityLevel(CompatibilityLevel.Version_170)
-    .UseSimpleAssemblyNameTypeSerializer()
-    .UseRecommendedSerializerSettings()
-    .UseSqlServerStorage(builder.Configuration.GetConnectionString("DefaultConnection"), new Hangfire.SqlServer.SqlServerStorageOptions
-    {
-        CommandBatchMaxTimeout = TimeSpan.FromMinutes(5),
-        SlidingInvisibilityTimeout = TimeSpan.FromMinutes(5),
-        QueuePollInterval = TimeSpan.Zero,
-        UseRecommendedIsolationLevel = true,
-        DisableGlobalLocks = true
-    }));
+#if DEBUG
+    q.AddTrigger(opts => opts
+        .ForJob(jobKey)
+        .WithIdentity("UpdateBalanceTransactionsAndUpdateBalances-trigger")
+        .WithCronSchedule("0 /2 * * * ?"));
+#else
+    q.AddTrigger(opts => opts
+        .ForJob(jobKey)
+        .WithIdentity("UpdateBalanceTransactionsAndUpdateBalances-trigger")
+        .WithCronSchedule("0 /5 0-2 * * ?"));
+#endif
+});
 
-builder.Services.AddHangfireServer();
+builder.Services.AddQuartzServer(options =>
+{
+    options.WaitForJobsToComplete = true;
+});
+
 #endregion
 
 builder.Services.AddIdentity<AppUser, IdentityRole>()
@@ -101,17 +112,6 @@ builder.Services.AddAuthentication(CookieAuthenticationDefaults.AuthenticationSc
     .AddCookie();
 builder.Services.AddAutoMapper(typeof(Program).Assembly);
 WebApplication app = builder.Build();
-
-
-#region Hangfire Recurring Job Scheduling (po app.Build())
-IRecurringJobManager recurringJobManager = app.Services.GetRequiredService<IRecurringJobManager>();
-recurringJobManager.AddOrUpdate<FinansoData.Data.TimedActions>(
-    "aaaaa",
-    job => job.UpdateBalanceTransactions(),
-    Cron.Daily()
-);
-#endregion
-
 
 
 
