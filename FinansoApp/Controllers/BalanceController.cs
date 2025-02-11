@@ -1,6 +1,9 @@
-﻿using FinansoApp.ViewModels.Balance;
+﻿using ChartJSCore.Helpers;
+using ChartJSCore.Models;
+using FinansoApp.ViewModels.Balance;
 using FinansoData.DataViewModel.Balance;
 using FinansoData.Repository.Balance;
+using FinansoData.Repository.Chart;
 using FinansoData.Repository.Currency;
 using FinansoData.Repository.Group;
 using Microsoft.AspNetCore.Authorization;
@@ -10,24 +13,131 @@ namespace FinansoApp.Controllers
 {
     public class BalanceController : Controller
     {
-        private readonly IBalanceManagementRepository _balanceManagmentRepository;
+        private readonly IBalanceManagementRepository _balanceManagementRepository;
         private readonly ICurrencyQueryRepository _currencyRepository;
         private readonly IGroupQueryRepository _groupQueryRepository;
         private readonly IGroupUsersQueryRepository _groupUsersQueryRepository;
         private readonly IBalanceQueryRepository _balanceQueryRepository;
         private readonly IBalanceSumAmount _balanceSumAmount;
-        
+        private readonly IChartDataRepository _chartDataRepository;
 
         public BalanceController(
-            IBalanceManagementRepository balanceManagmentRepository, ICurrencyQueryRepository currency, IGroupQueryRepository group, IGroupUsersQueryRepository groupUsersQueryRepository, IBalanceQueryRepository balanceQueryRepository, IBalanceSumAmount balanceSumAmount)
+            IBalanceManagementRepository balanceManagementRepository,
+            ICurrencyQueryRepository currency,
+            IGroupQueryRepository group,
+            IGroupUsersQueryRepository groupUsersQueryRepository,
+            IBalanceQueryRepository balanceQueryRepository,
+            IBalanceSumAmount balanceSumAmount,
+            IChartDataRepository chartDataRepository)
         {
-            _balanceManagmentRepository = balanceManagmentRepository;
+            _balanceManagementRepository = balanceManagementRepository;
             _currencyRepository = currency;
             _groupQueryRepository = group;
             _groupUsersQueryRepository = groupUsersQueryRepository;
             _balanceQueryRepository = balanceQueryRepository;
             _balanceSumAmount = balanceSumAmount;
+            _chartDataRepository = chartDataRepository;
             _balanceSumAmount = balanceSumAmount;
+        }
+
+        private Chart GenerateVerticalBarChart(string chartTitle, List<string> labels, List<double?> numbers)
+        {
+            Chart chart = new Chart();
+            chart.Type = Enums.ChartType.Bar;
+
+            Data data = new Data();
+
+
+            data.Labels = labels;
+
+            BarDataset dataset = new BarDataset()
+            {
+                Data = numbers,
+                BackgroundColor = new List<ChartColor>
+                {
+                    ChartColor.FromRgba(255, 99, 132, 0.2),
+                    ChartColor.FromRgba(54, 162, 235, 0.2),
+                    ChartColor.FromRgba(255, 206, 86, 0.2),
+                    ChartColor.FromRgba(75, 192, 192, 0.2),
+                    ChartColor.FromRgba(153, 102, 255, 0.2),
+                    ChartColor.FromRgba(255, 159, 64, 0.2)
+                },
+                BorderColor = new List<ChartColor>
+                {
+                    ChartColor.FromRgb(255, 99, 132),
+                    ChartColor.FromRgb(54, 162, 235),
+                    ChartColor.FromRgb(255, 206, 86),
+                    ChartColor.FromRgb(75, 192, 192),
+                    ChartColor.FromRgb(153, 102, 255),
+                    ChartColor.FromRgb(255, 159, 64)
+                },
+                BorderWidth = new List<int>() { 1 },
+                BarPercentage = 0.5,
+                BarThickness = 100,
+                MaxBarThickness = 150,
+                MinBarLength = 2
+            };
+
+            data.Datasets = new List<Dataset>();
+            data.Datasets.Add(dataset);
+
+            chart.Data = data;
+
+            Options options = new Options
+            {
+                Responsive = true,
+                Plugins = new Plugins()
+                {
+                    Colors = new ColorPlugin()
+                    {
+                        Enabled = true
+                    },
+                    Legend = new Legend()
+                    {
+                        Display = false
+                    },
+                    Title = new Title()
+                    {
+                        Display = true,
+                        Text = new List<string>() { chartTitle }
+                    }
+                },
+                Scales = new Dictionary<string, Scale>()
+                {
+                    { "y", new CartesianLinearScale()
+                        {
+                            BeginAtZero = true,
+                            Display = true,
+                            //Ticks = new Tick{Padding = 100, Color = new ChartColor { Blue = 0, Green = 0, Red = 255, Alpha = 1 }, BackdropColor = new ChartColor { Blue = 0, Red = 0, Green = 255, Alpha = 1 } }
+
+                        }
+                    },
+                    { "x", new Scale()
+                        {
+                            Grid = new Grid()
+                            {
+                                Offset = true
+                            }
+                        }
+                    },
+                }
+            };
+
+            chart.Options = options;
+
+            chart.Options.Layout = new Layout
+            {
+                Padding = new Padding
+                {
+                    PaddingObject = new PaddingObject
+                    {
+                        Left = 10,
+                        Right = 12
+                    }
+                }
+            };
+
+            return chart;
         }
 
         public async Task<IActionResult> Index()
@@ -136,7 +246,7 @@ namespace FinansoApp.Controllers
 
             BalanceViewModel newBalanceViewModel = new BalanceViewModel { Name = balanceVM.Name, Amount = 0, Currency = currency.Value, Group = group.Value };
 
-            FinansoData.RepositoryResult<bool> repositoryResult = await _balanceManagmentRepository.AddBalance(newBalanceViewModel);
+            FinansoData.RepositoryResult<bool> repositoryResult = await _balanceManagementRepository.AddBalance(newBalanceViewModel);
 
             if (repositoryResult.IsSuccess == false)
             {
@@ -168,7 +278,18 @@ namespace FinansoApp.Controllers
                 return Unauthorized();
             }
 
-            var balance = await _balanceQueryRepository.GetBalance(id);
+
+            // Chart data
+            FinansoData.RepositoryResult<IEnumerable<FinansoData.DataViewModel.Chart.BalanceLogAverage>> balanceLogChartData = await _chartDataRepository.BalanceLogsByMonth(id);
+            if (balanceLogChartData.IsSuccess)
+            {
+                Chart monthlyBalanceLogChart = GenerateVerticalBarChart("Balance monthly average", balanceLogChartData.Value.Select(x => $"{x.Month}-{x.Year}").ToList(), balanceLogChartData.Value.Select(x => (double?)x.Average).ToList());
+                ViewData["BalanceMonthlyLog"] = monthlyBalanceLogChart;
+            }
+
+            
+
+            FinansoData.RepositoryResult<BalanceViewModel> balance = await _balanceQueryRepository.GetBalance(id);
 
             SetBalanceAmountViewModel setBalanceAmountViewModel = new SetBalanceAmountViewModel
             {
@@ -204,7 +325,7 @@ namespace FinansoApp.Controllers
             }
 
 
-            FinansoData.RepositoryResult<bool?> repositoryResult = await _balanceManagmentRepository.SetBalanceAmount(setBalanceAmountViewModel.BalanceId, setBalanceAmountViewModel.Amount);
+            FinansoData.RepositoryResult<bool?> repositoryResult = await _balanceManagementRepository.SetBalanceAmount(setBalanceAmountViewModel.BalanceId, setBalanceAmountViewModel.Amount);
             if (repositoryResult.IsSuccess == false)
             {
                 return BadRequest();
