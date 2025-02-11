@@ -172,7 +172,8 @@ namespace FinansoData.Data
                 {
                     context.Settings.AddRange(
                         new Settings { Key = "MaxGroupUsersLimit", Value = "10", Type = "int", Description = "Limit of group users" },
-                        new Settings { Key = "TransactionListPageSize", Value = "10", Type = "int", Description = "Number of intems displayed on single page when displaying transaction list" }
+                        new Settings { Key = "TransactionListPageSize", Value = "10", Type = "int", Description = "Number of intems displayed on single page when displaying transaction list" },
+                        new Settings { Key = "BalanceTransactionsNumberOfRowsToBeProceeded", Value = "100", Type = "int", Description = "Max number of rows to be proceeded in one UpdateBalanceTransactions procedure run" }
                     );
                     context.SaveChanges();
                 }
