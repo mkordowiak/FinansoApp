@@ -21,6 +21,7 @@ builder.Services.AddScoped<FinansoData.Repository.Group.IGroupUsersManagementRep
 builder.Services.AddScoped<FinansoData.Repository.Account.IUserQuery, FinansoData.Repository.Account.UserQuery>();
 builder.Services.AddScoped<FinansoData.Repository.Currency.ICurrencyQueryRepository, FinansoData.Repository.Currency.CurrencyQueryRepository>();
 builder.Services.AddScoped<FinansoData.Repository.Balance.IBalanceSumAmount, FinansoData.Repository.Balance.BalanceSumAmount>();
+builder.Services.AddScoped<FinansoData.Repository.BalanceLogs.IBalanceLogsQueryRepository, FinansoData.Repository.BalanceLogs.BalanceLogsQueryRepository>();
 
 builder.Services.AddScoped<FinansoData.Repository.Balance.IBalanceManagmentRepository, FinansoData.Repository.Balance.BalanceManagementRepository>();
 builder.Services.AddScoped<FinansoData.Repository.Balance.IBalanceQueryRepository, FinansoData.Repository.Balance.BalanceQueryRepository>();
