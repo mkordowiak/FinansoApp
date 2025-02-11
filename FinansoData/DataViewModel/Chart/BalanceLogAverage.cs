@@ -1,4 +1,4 @@
-﻿namespace FinansoData.DataViewModel.BalanceLog
+﻿namespace FinansoData.DataViewModel.Chart
 {
     public class BalanceLogAverage
     {
