@@ -68,8 +68,8 @@ namespace FinansoApp.Controllers
             addTransactionViewModel.Balances = _mapper.Map<IEnumerable<Tuple<int, string>>, IEnumerable<SelectListItem>>(balances.Value);
             addTransactionViewModel.TransactionIncomeCategories = _mapper.Map<IEnumerable<Tuple<int, string>>, IEnumerable<SelectListItem>>(incomeCategories.Value);
             addTransactionViewModel.TransactionExpenseCategories = _mapper.Map<IEnumerable<Tuple<int, string>>, IEnumerable<SelectListItem>>(expenseCategories.Value);
-            
-            
+
+
             if (balanceId.HasValue) addTransactionViewModel.BalanceId = (int)balanceId;
             return addTransactionViewModel;
         }
@@ -108,11 +108,10 @@ namespace FinansoApp.Controllers
 
         [Authorize]
         [HttpGet]
-        public async Task<IActionResult> AddTransaction(int? balanceId)
+        public async Task<IActionResult> AddTransaction(int? balanceId, bool isRecurring)
         {
-            
-
             AddTransactionViewModel addTransactionViewModel = await GetDataForAddTransaction(balanceId, User.Identity.Name);
+            addTransactionViewModel.IsRecurring = isRecurring;
             return View(addTransactionViewModel);
         }
 
@@ -123,6 +122,11 @@ namespace FinansoApp.Controllers
         public async Task<IActionResult> AddTransaction(AddTransactionViewModel transactionViewModel)
         {
             // Check if user has access to balance
+            if (User.Identity?.Name == null)
+            {
+                return Unauthorized();
+            }
+
             FinansoData.RepositoryResult<bool?> userAccess = await _balanceQueryRepository.HasUserAccessToBalance(User.Identity.Name, transactionViewModel.BalanceId);
             if (userAccess.Value != true)
             {
@@ -137,6 +141,12 @@ namespace FinansoApp.Controllers
                 return View(transactionViewModel);
             }
 
+            if(transactionViewModel.IsRecurring 
+                && transactionViewModel.RecurringType is null)
+            {
+                return BadRequest();
+            }
+
             int transactionCategoryId = 0;
 
             if (transactionViewModel.TransactionTypeId == 1)
@@ -148,24 +158,80 @@ namespace FinansoApp.Controllers
                 transactionCategoryId = transactionViewModel.TransactionExpenseCategoryId;
             }
 
+            FinansoData.RepositoryResult<bool> result = null;
+
             // Add transaction
-            FinansoData.RepositoryResult<bool> result =
-                await _transactionManagementRepository.AddTransaction(
+            if (!transactionViewModel.IsRecurring)
+            {
+                if(transactionViewModel.TransactionStatusId is null)
+                {
+                    return BadRequest();
+                }
+
+                if (transactionViewModel.TransactionDate is null)
+                {
+                    transactionViewModel.TransactionDate = DateTime.Now;
+                }
+
+                result = await _transactionManagementRepository.AddTransaction(
                     transactionViewModel.Amount,
                     transactionViewModel.Description,
                     transactionViewModel.BalanceId,
-                    transactionViewModel.TransactionDate,
+                    (DateTime)transactionViewModel.TransactionDate,
                     User.Identity.Name,
                     transactionViewModel.TransactionTypeId,
-                    transactionViewModel.TransactionStatusId,
+                    (int)transactionViewModel.TransactionStatusId,
                     transactionCategoryId);
+            }
+
+            if (transactionViewModel.IsRecurring && transactionViewModel.RecurringType == "Weekly")
+            {
+                if(transactionViewModel.RecurringStartDate is null
+                    && transactionViewModel.RecurringEndDate is null)
+                {
+                    return BadRequest();
+                }
+
+                result = await _transactionManagementRepository.AddTransactionWeeklyRecurring(
+                    transactionViewModel.Amount,
+                    transactionViewModel.Description,
+                    transactionViewModel.BalanceId,
+                    (DateTime)transactionViewModel.RecurringStartDate,
+                    (DateTime)transactionViewModel.RecurringEndDate,
+                    User.Identity.Name,
+                    transactionViewModel.TransactionTypeId,
+                    transactionCategoryId);
+            }
+
+            if (transactionViewModel.IsRecurring && transactionViewModel.RecurringType == "Monthly")
+            {
+                if (transactionViewModel.RecurringStartDate is null
+                    && transactionViewModel.RecurringEndDate is null)
+                {
+                    return BadRequest();
+                }
+
+                result = await _transactionManagementRepository.AddTransactionMonthlyRecurring(
+                    transactionViewModel.Amount,
+                    transactionViewModel.Description,
+                    transactionViewModel.BalanceId,
+                    (DateTime)transactionViewModel.RecurringStartDate,
+                    (DateTime)transactionViewModel.RecurringEndDate,
+                    User.Identity.Name,
+                    transactionViewModel.TransactionTypeId,
+                    transactionCategoryId);
+            }
+
+            if (result is null)
+            {
+                return BadRequest();
+            }
 
             if (result.IsSuccess == false ||
                 result.ErrorType == FinansoData.ErrorType.NoUserFound)
             {
                 return Unauthorized();
             }
-
 
             if (result.IsSuccess == false ||
                 result.ErrorType == FinansoData.ErrorType.ServerError)

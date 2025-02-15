@@ -1,14 +1,12 @@
-﻿@*
-    For more information on enabling MVC for empty projects, visit https://go.microsoft.com/fwlink/?LinkID=397860
-*@
-
-@model FinansoApp.ViewModels.Transaction.AddTransactionViewModel
+﻿@model FinansoApp.ViewModels.Transaction.AddTransactionViewModel
 
 @{
     ViewData["Title"] = "Add Transaction";
     if (Model.TransactionDate == null || Model.TransactionDate == DateTime.MinValue)
     {
         Model.TransactionDate = DateTime.Now;
+        Model.RecurringStartDate = DateTime.Now;
+        Model.RecurringEndDate = DateTime.Now.AddMonths(1);
     }
 }
 
@@ -59,6 +57,26 @@
 
     <a type="button" asp-action="Index" asp-controller="Transaction" class="btn btn-primary">Back</a>
 
+    @if(Model.IsRecurring)
+    {
+        <div class="form-group">
+            <input type="radio" name="RecurringType" value="Weekly" id="recurringweekly" /> <label for="recurringweekly">Weekly</label>
+            <input type="radio" name="RecurringType" value="Monthly" checked="checked" id="recurringmonthly" /> <label for="recurringmonthly">Monthly</label>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label" asp-for="RecurringStartDate"></label>
+            <input type="date" class="form-control" asp-for="RecurringStartDate">
+            <span asp-validation-for="RecurringStartDate" class="text-danger"></span>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label" asp-for="RecurringEndDate"></label>
+            <input type="date" class="form-control" asp-for="RecurringEndDate">
+            <span asp-validation-for="RecurringEndDate" class="text-danger"></span>
+        </div>
+    }
+
     <div class="form-group">
         <label class="control-label" asp-for="BalanceId"></label>
         <select class="form-control" asp-for="BalanceId" asp-items="Model.Balances">
@@ -73,13 +91,15 @@
         <span asp-validation-for="TransactionTypeId" class="text-danger"></span>
     </div>
 
-    <div class="form-group">
-        <label class="control-label" asp-for="TransactionStatusId"></label>
-        <select class="form-control" asp-for="TransactionStatusId" asp-items="Model.TransactionStatuses">
-        </select>
-        <span asp-validation-for="TransactionStatusId" class="text-danger"></span>
-    </div>
-
+    @if (!Model.IsRecurring)
+    {
+        <div class="form-group">
+            <label class="control-label" asp-for="TransactionStatusId"></label>
+            <select class="form-control" asp-for="TransactionStatusId" asp-items="Model.TransactionStatuses">
+            </select>
+            <span asp-validation-for="TransactionStatusId" class="text-danger"></span>
+        </div>
+    }
 
     <div class="form-group">
         <label class="control-label" asp-for="Description"></label>
@@ -93,12 +113,15 @@
         <span asp-validation-for="Amount" class="text-danger"></span>
     </div>
 
-    <div class="form-group">
-        <label class="control-label" asp-for="TransactionDate"></label>
-        <input type="date" class="form-control" asp-for="TransactionDate">
-        <span asp-validation-for="TransactionDate" class="text-danger"></span>
-    </div>
-
+    @if (!Model.IsRecurring)
+    {
+        <div class="form-group">
+            <label class="control-label" asp-for="TransactionDate"></label>
+            <input type="date" class="form-control" asp-for="TransactionDate">
+            <span asp-validation-for="TransactionDate" class="text-danger"></span>
+        </div>
+    }
+    
     <div class="form-group" id="expenseCategories">
         <label class="control-label" asp-for="TransactionExpenseCategoryId"></label>
         <select class="form-control" asp-for="TransactionExpenseCategoryId" asp-items="Model.TransactionExpenseCategories">

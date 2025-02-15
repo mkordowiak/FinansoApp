@@ -104,7 +104,7 @@ namespace FinansoApp.Tests.Controllers
         public async Task AddTransaction_GET_ShouldBeAuthorized()
         {
             // Arrange 
-            MethodInfo? httpGetMethod = typeof(TransactionController).GetMethod(nameof(TransactionController.AddTransaction), new[] { typeof(int?) });
+            MethodInfo httpGetMethod = typeof(TransactionController).GetMethod(nameof(TransactionController.AddTransaction), new[] { typeof(int?), typeof(bool) });
 
             // Act
             AuthorizeAttribute? httpGetAuthorizeAttribute = httpGetMethod.GetCustomAttribute<AuthorizeAttribute>();
@@ -160,7 +160,7 @@ namespace FinansoApp.Tests.Controllers
 
 
             // Act
-            IActionResult result = await controller.AddTransaction((int?)null);
+            IActionResult result = await controller.AddTransaction(null, false);
 
 
             // Assert
@@ -188,6 +188,288 @@ namespace FinansoApp.Tests.Controllers
 
             // Assert
             httpPostAuthorizeAttribute.Should().NotBeNull("this method should be protected by authorization");
+        }
+
+        [Fact]
+        public async Task AddTransaction_ShouldCallAddTransactionMethodWhenIsRecurringIsFalse()
+        {
+            // Arrange
+            #region Mocking ClaimsPrincipal
+            string appUser = "appuser";
+            Mock<ClaimsPrincipal> mockPrincipal = new Mock<ClaimsPrincipal>();
+            mockPrincipal.Setup(p => p.Identity.Name).Returns(appUser);
+            mockPrincipal.Setup(p => p.Identity.IsAuthenticated).Returns(true);
+
+            Mock<HttpContext> context = new Mock<HttpContext>();
+            context.SetupGet(ctx => ctx.User).Returns(mockPrincipal.Object);
+
+            IEnumerable<GetTransactionsForUser> listOfTransactions = new List<GetTransactionsForUser>
+{
+    new GetTransactionsForUser { TransactionId = 1, Amount = 100, GroupId = 1, GroupName = "Group Name", BalanceId = 1, BalanceName = "Balance name", TransactionType = "Income", TransactionStatus = "Planned", TransactionDate = DateTime.Now, CurrencyId = 1, CurrencyCode = "USD", CurrencyName = "Dolar", Description = String.Empty }
+};
+            #endregion
+
+            #region Mocking Repository
+
+            _transactionManagementRepositoryMock.Setup(x => x.AddTransaction(
+                It.IsAny<decimal>(),
+                It.IsAny<string>(),
+                It.IsAny<int>(),
+                It.IsAny<DateTime>(),
+                It.IsAny<string>(),
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<int>()
+                ))
+                .ReturnsAsync(RepositoryResult<bool>.Success(true));
+
+            _balanceQueryRepositoryMock.Setup(x => x.HasUserAccessToBalance(It.IsAny<string>(), It.IsAny<int>()))
+                .ReturnsAsync(RepositoryResult<bool?>.Success(true));
+            #endregion
+
+            // Create controller
+            FinansoApp.Controllers.TransactionController controller = new FinansoApp.Controllers.TransactionController(_transactionQueryRepositoryMock.Object, _transactionManagementRepositoryMock.Object, _transactionMetaQueryRepositoryMock.Object, _balanceQueryRepositoryMock.Object, _mapperMock.Object, _settingsQueryRepositoryMock.Object)
+            {
+                ControllerContext = new ControllerContext
+                {
+                    HttpContext = context.Object
+                }
+            };
+
+            AddTransactionViewModel addTransactionViewModelInput = new AddTransactionViewModel
+            {
+                BalanceId = 1,
+                Amount = 100,
+                Description = "Description",
+                TransactionDate = DateTime.Now,
+                TransactionStatusId = 1,
+                TransactionTypeId = 1,
+                IsRecurring = false
+            };
+
+            // Act
+            IActionResult result = await controller.AddTransaction(addTransactionViewModelInput);
+
+
+            // Assert
+            _transactionManagementRepositoryMock.Verify(mock => mock.AddTransaction(
+                It.IsAny<decimal>(),
+                It.IsAny<string>(),
+                It.IsAny<int>(),
+                It.IsAny<DateTime>(),
+                It.IsAny<string>(),
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<int>()
+                ), Times.Once);
+            _transactionManagementRepositoryMock.Verify(mock => mock.AddTransactionMonthlyRecurring(
+                It.IsAny<decimal>(),
+                It.IsAny<string>(),
+                It.IsAny<int>(),
+                It.IsAny<DateTime>(),
+                It.IsAny<DateTime>(),
+                It.IsAny<string>(),
+                It.IsAny<int>(),
+                It.IsAny<int>()), Times.Never);
+            _transactionManagementRepositoryMock.Verify(mock => mock.AddTransactionWeeklyRecurring(
+                It.IsAny<decimal>(),
+                It.IsAny<string>(),
+                It.IsAny<int>(),
+                It.IsAny<DateTime>(),
+                It.IsAny<DateTime>(),
+                It.IsAny<string>(),
+                It.IsAny<int>(),
+                It.IsAny<int>()), Times.Never);
+        }
+
+
+        public async Task AddTransaction_ShouldCallAddTransactionMonthlyRecurring()
+        {
+            // Arrange
+            #region Mocking ClaimsPrincipal
+            string appUser = "appuser";
+            Mock<ClaimsPrincipal> mockPrincipal = new Mock<ClaimsPrincipal>();
+            mockPrincipal.Setup(p => p.Identity.Name).Returns(appUser);
+            mockPrincipal.Setup(p => p.Identity.IsAuthenticated).Returns(true);
+
+            Mock<HttpContext> context = new Mock<HttpContext>();
+            context.SetupGet(ctx => ctx.User).Returns(mockPrincipal.Object);
+
+            IEnumerable<GetTransactionsForUser> listOfTransactions = new List<GetTransactionsForUser>
+{
+    new GetTransactionsForUser { TransactionId = 1, Amount = 100, GroupId = 1, GroupName = "Group Name", BalanceId = 1, BalanceName = "Balance name", TransactionType = "Income", TransactionStatus = "Planned", TransactionDate = DateTime.Now, CurrencyId = 1, CurrencyCode = "USD", CurrencyName = "Dolar", Description = String.Empty }
+};
+            #endregion
+
+            #region Mocking Repository
+
+            _transactionManagementRepositoryMock.Setup(x => x.AddTransaction(
+                It.IsAny<decimal>(),
+                It.IsAny<string>(),
+                It.IsAny<int>(),
+                It.IsAny<DateTime>(),
+                It.IsAny<string>(),
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<int>()
+                ))
+                .ReturnsAsync(RepositoryResult<bool>.Success(true));
+
+            _balanceQueryRepositoryMock.Setup(x => x.HasUserAccessToBalance(It.IsAny<string>(), It.IsAny<int>()))
+                .ReturnsAsync(RepositoryResult<bool?>.Success(true));
+            #endregion
+
+            // Create controller
+            FinansoApp.Controllers.TransactionController controller = new FinansoApp.Controllers.TransactionController(_transactionQueryRepositoryMock.Object, _transactionManagementRepositoryMock.Object, _transactionMetaQueryRepositoryMock.Object, _balanceQueryRepositoryMock.Object, _mapperMock.Object, _settingsQueryRepositoryMock.Object)
+            {
+                ControllerContext = new ControllerContext
+                {
+                    HttpContext = context.Object
+                }
+            };
+
+            AddTransactionViewModel addTransactionViewModelInput = new AddTransactionViewModel
+            {
+                BalanceId = 1,
+                Amount = 100,
+                Description = "Description",
+                TransactionDate = DateTime.Now,
+                TransactionStatusId = 1,
+                TransactionTypeId = 1,
+                IsRecurring = true,
+                RecurringEndDate = DateTime.Now.AddYears(1),
+                RecurringStartDate = DateTime.Now,
+                RecurringType = "Monthly"
+            };
+
+            // Act
+            IActionResult result = await controller.AddTransaction(addTransactionViewModelInput);
+
+
+            // Assert
+            _transactionManagementRepositoryMock.Verify(mock => mock.AddTransaction(
+                It.IsAny<decimal>(),
+                It.IsAny<string>(),
+                It.IsAny<int>(),
+                It.IsAny<DateTime>(),
+                It.IsAny<string>(),
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<int>()
+                ), Times.Never);
+            _transactionManagementRepositoryMock.Verify(mock => mock.AddTransactionMonthlyRecurring(
+                It.IsAny<decimal>(),
+                It.IsAny<string>(),
+                It.IsAny<int>(),
+                It.IsAny<DateTime>(),
+                It.IsAny<DateTime>(),
+                It.IsAny<string>(),
+                It.IsAny<int>(),
+                It.IsAny<int>()), Times.Once);
+            _transactionManagementRepositoryMock.Verify(mock => mock.AddTransactionWeeklyRecurring(
+                It.IsAny<decimal>(),
+                It.IsAny<string>(),
+                It.IsAny<int>(),
+                It.IsAny<DateTime>(),
+                It.IsAny<DateTime>(),
+                It.IsAny<string>(),
+                It.IsAny<int>(),
+                It.IsAny<int>()), Times.Never);
+        }
+
+
+        public async Task AddTransaction_ShouldCallAddTransactionWeeklyRecurring()
+        {
+            // Arrange
+            #region Mocking ClaimsPrincipal
+            string appUser = "appuser";
+            Mock<ClaimsPrincipal> mockPrincipal = new Mock<ClaimsPrincipal>();
+            mockPrincipal.Setup(p => p.Identity.Name).Returns(appUser);
+            mockPrincipal.Setup(p => p.Identity.IsAuthenticated).Returns(true);
+
+            Mock<HttpContext> context = new Mock<HttpContext>();
+            context.SetupGet(ctx => ctx.User).Returns(mockPrincipal.Object);
+
+            IEnumerable<GetTransactionsForUser> listOfTransactions = new List<GetTransactionsForUser>
+{
+    new GetTransactionsForUser { TransactionId = 1, Amount = 100, GroupId = 1, GroupName = "Group Name", BalanceId = 1, BalanceName = "Balance name", TransactionType = "Income", TransactionStatus = "Planned", TransactionDate = DateTime.Now, CurrencyId = 1, CurrencyCode = "USD", CurrencyName = "Dolar", Description = String.Empty }
+};
+            #endregion
+
+            #region Mocking Repository
+
+            _transactionManagementRepositoryMock.Setup(x => x.AddTransaction(
+                It.IsAny<decimal>(),
+                It.IsAny<string>(),
+                It.IsAny<int>(),
+                It.IsAny<DateTime>(),
+                It.IsAny<string>(),
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<int>()
+                ))
+                .ReturnsAsync(RepositoryResult<bool>.Success(true));
+
+            _balanceQueryRepositoryMock.Setup(x => x.HasUserAccessToBalance(It.IsAny<string>(), It.IsAny<int>()))
+                .ReturnsAsync(RepositoryResult<bool?>.Success(true));
+            #endregion
+
+            // Create controller
+            FinansoApp.Controllers.TransactionController controller = new FinansoApp.Controllers.TransactionController(_transactionQueryRepositoryMock.Object, _transactionManagementRepositoryMock.Object, _transactionMetaQueryRepositoryMock.Object, _balanceQueryRepositoryMock.Object, _mapperMock.Object, _settingsQueryRepositoryMock.Object)
+            {
+                ControllerContext = new ControllerContext
+                {
+                    HttpContext = context.Object
+                }
+            };
+
+            AddTransactionViewModel addTransactionViewModelInput = new AddTransactionViewModel
+            {
+                BalanceId = 1,
+                Amount = 100,
+                Description = "Description",
+                TransactionDate = DateTime.Now,
+                TransactionStatusId = 1,
+                TransactionTypeId = 1,
+                IsRecurring = true,
+                RecurringEndDate = DateTime.Now.AddYears(1),
+                RecurringStartDate = DateTime.Now,
+                RecurringType = "Weekly"
+            };
+
+            // Act
+            IActionResult result = await controller.AddTransaction(addTransactionViewModelInput);
+
+
+            // Assert
+            _transactionManagementRepositoryMock.Verify(mock => mock.AddTransaction(
+                It.IsAny<decimal>(),
+                It.IsAny<string>(),
+                It.IsAny<int>(),
+                It.IsAny<DateTime>(),
+                It.IsAny<string>(),
+                It.IsAny<int>(),
+                It.IsAny<int>(),
+                It.IsAny<int>()
+                ), Times.Never);
+            _transactionManagementRepositoryMock.Verify(mock => mock.AddTransactionMonthlyRecurring(
+                It.IsAny<decimal>(),
+                It.IsAny<string>(),
+                It.IsAny<int>(),
+                It.IsAny<DateTime>(),
+                It.IsAny<DateTime>(),
+                It.IsAny<string>(),
+                It.IsAny<int>(),
+                It.IsAny<int>()), Times.Never);
+            _transactionManagementRepositoryMock.Verify(mock => mock.AddTransactionWeeklyRecurring(
+                It.IsAny<decimal>(),
+                It.IsAny<string>(),
+                It.IsAny<int>(),
+                It.IsAny<DateTime>(),
+                It.IsAny<DateTime>(),
+                It.IsAny<string>(),
+                It.IsAny<int>(),
+                It.IsAny<int>()), Times.Once);
         }
 
         [Fact]
