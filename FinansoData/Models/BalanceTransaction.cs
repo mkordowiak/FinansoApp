@@ -48,6 +48,9 @@ namespace FinansoData.Models
         [Required]
         public int TransactionCategoryId { get; set; }
 
+        [MaxLength(64)]
+        public string? RecurringTransactionId { get; set; }
+
         [Required]
         public int CurrencyId { get; set; }
 
