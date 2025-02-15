@@ -5,8 +5,8 @@
     
 }
 
-<a type="button" asp-action="AddTransaction" asp-controller="Transaction" class="btn btn-primary">Add Transaction</a>
-
+<a type="button" asp-action="AddTransaction" asp-controller="Transaction" class="btn btn-primary" asp-route-isRecurring="false">Add Transaction</a>
+<a type="button" asp-action="AddTransaction" asp-controller="Transaction" class="btn btn-primary" asp-route-isRecurring="true">Add Recurring Transaction</a>
 
 <div class="row">
     <div class="col-md-12">
