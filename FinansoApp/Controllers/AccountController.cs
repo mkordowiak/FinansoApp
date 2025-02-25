@@ -18,7 +18,13 @@ namespace FinansoApp.Controllers
         private readonly IUserManagement _userManagement;
         private readonly IGroupManagementRepository _groupManagementRepository;
 
-        public AccountController(UserManager<AppUser> userManager, IAuthentication authentication, IUserManagement userManagement, IUserQuery userQuery, IGroupManagementRepository groupManagementRepository, SignInManager<AppUser> signInManager = null)
+        public AccountController(
+            UserManager<AppUser> userManager,
+            IAuthentication authentication,
+            IUserManagement userManagement,
+            IUserQuery userQuery,
+            IGroupManagementRepository groupManagementRepository,
+            SignInManager<AppUser> signInManager = null)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -84,7 +90,7 @@ namespace FinansoApp.Controllers
 
         public IActionResult Register()
         {
-            // Hold values wher reload
+            // Hold values when reload
             RegisterViewModel responseViewModel = new RegisterViewModel();
             return View(responseViewModel);
         }
