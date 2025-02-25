@@ -4,6 +4,7 @@ using FinansoData.Repository.Account;
 using FluentAssertions;
 using Microsoft.AspNetCore.Identity;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Moq;
 
 namespace FinansoData.Tests.Repository.Account
@@ -13,6 +14,7 @@ namespace FinansoData.Tests.Repository.Account
         private readonly Mock<ApplicationDbContext> _contextMock;
         private readonly Mock<UserManager<AppUser>> _userManagerMock;
         private readonly Mock<IUserStore<AppUser>> _userStoreMock;
+        private readonly Mock<ILogger<UserManagement>> _loggerMock;
 
         private readonly DbContextOptions<ApplicationDbContext> _dbContextOptions;
         private readonly string _username;
@@ -32,6 +34,13 @@ namespace FinansoData.Tests.Repository.Account
 
             _defaultPassword = "password123!";
 
+            _loggerMock = new Mock<ILogger<UserManagement>>();
+            _loggerMock.Setup(x => x.Log(
+                It.IsAny<LogLevel>(),
+                It.IsAny<EventId>(),
+                It.IsAny<It.IsAnyType>(),
+                It.IsAny<Exception>(),
+                (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()));
 
             // In memory test database
             _user1 = new AppUser
@@ -78,7 +87,7 @@ namespace FinansoData.Tests.Repository.Account
             RepositoryResult<AppUser?> user;
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
-                UserManagement repository = new UserManagement(context, _userManagerMock.Object, authenticationMock.Object);
+                UserManagement repository = new UserManagement(context, _userManagerMock.Object, authenticationMock.Object, _loggerMock.Object);
 
                 // Act
                 user = await repository.CreateAppUser(_user1.NormalizedEmail, _defaultPassword, "name");
@@ -115,7 +124,7 @@ namespace FinansoData.Tests.Repository.Account
             RepositoryResult<AppUser?> repoResult;
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
-                UserManagement repository = new UserManagement(context, _userManagerMock.Object, authenticationMock.Object);
+                UserManagement repository = new UserManagement(context, _userManagerMock.Object, authenticationMock.Object, _loggerMock.Object);
 
 
                 // Act
@@ -149,7 +158,7 @@ namespace FinansoData.Tests.Repository.Account
             RepositoryResult<AppUser?> user;
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
-                UserManagement repository = new UserManagement(context, _userManagerMock.Object, authenticationMock.Object);
+                UserManagement repository = new UserManagement(context, _userManagerMock.Object, authenticationMock.Object, _loggerMock.Object);
 
 
                 // Act
@@ -181,7 +190,7 @@ namespace FinansoData.Tests.Repository.Account
             RepositoryResult<bool> repositoryResult;
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
-                UserManagement repository = new UserManagement(context, _userManagerMock.Object, authenticationMock.Object);
+                UserManagement repository = new UserManagement(context, _userManagerMock.Object, authenticationMock.Object, _loggerMock.Object);
 
                 // Act
                 repositoryResult = await repository.AdminSetNewPassword(appUser, _defaultPassword);
@@ -215,7 +224,7 @@ namespace FinansoData.Tests.Repository.Account
 
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
-                UserManagement repository = new UserManagement(context, _userManagerMock.Object, authenticationMock.Object);
+                UserManagement repository = new UserManagement(context, _userManagerMock.Object, authenticationMock.Object, _loggerMock.Object);
 
 
                 // Act
@@ -246,7 +255,7 @@ namespace FinansoData.Tests.Repository.Account
 
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
-                UserManagement repository = new UserManagement(context, _userManagerMock.Object, authenticationMock.Object);
+                UserManagement repository = new UserManagement(context, _userManagerMock.Object, authenticationMock.Object, _loggerMock.Object);
 
                 // Act
                 RepositoryResult<bool> result = await repository.EditUserInfo(updateAppUser);
