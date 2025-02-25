@@ -1,6 +1,7 @@
 ﻿using FinansoData.Data;
 using FinansoData.Models;
 using Microsoft.AspNetCore.Identity;
+using Microsoft.Extensions.Logging;
 
 namespace FinansoData.Repository.Account
 {
@@ -9,12 +10,18 @@ namespace FinansoData.Repository.Account
         private readonly ApplicationDbContext _context;
         private readonly UserManager<AppUser> _userManager;
         private readonly IAuthentication _authentication;
+        private readonly ILogger<UserManagement> _logger;
 
-        public UserManagement(ApplicationDbContext context, UserManager<AppUser> userManager, IAuthentication authentication)
+        public UserManagement(
+            ApplicationDbContext context,
+            UserManager<AppUser> userManager,
+            IAuthentication authentication,
+            ILogger<UserManagement> logger)
         {
             _context = context;
             _userManager = userManager;
             _authentication = authentication;
+            _logger = logger;
         }
 
         private async Task<bool> Save()
@@ -135,8 +142,9 @@ namespace FinansoData.Repository.Account
             {
                 userCreation = await _userManager.CreateAsync(newUser, Password);
             }
-            catch
+            catch(Exception ex)
             {
+                _logger.LogError(ex, "Error while creating user");
                 return RepositoryResult<AppUser?>.Failure(null, ErrorType.ServerError);
             }
 
@@ -153,8 +161,9 @@ namespace FinansoData.Repository.Account
             {
                 userRoleAssign = await _userManager.AddToRoleAsync(newUser, UserRoles.User);
             }
-            catch
+            catch(Exception ex)
             {
+                _logger.LogError(ex, "Error while assigning user to role");
                 await DeleteUserAsync(newUser);
                 return RepositoryResult<AppUser?>.Failure(null, ErrorType.AssignUserRoleError);
             }
