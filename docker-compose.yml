@@ -1,7 +1,7 @@
 services:
     finansoapp:
         container_name: "finansoapp"
-        image: mkordowiak/finanso-app
+        image: ${DOCKER_REGISTRY-}finansoapp
         build:
             context: .
             dockerfile: FinansoApp/Dockerfile
