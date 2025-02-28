@@ -39,6 +39,8 @@ namespace FinansoApp.Controllers
             _settingsQueryRepository = settingsQueryRepository;
         }
 
+        private string? userNameIdentity => User.Identity?.Name;
+
         /// <summary>
         /// Index page
         /// </summary>
@@ -46,13 +48,18 @@ namespace FinansoApp.Controllers
         [Authorize]
         public async Task<IActionResult> Index()
         {
-            FinansoData.RepositoryResult<int> groupInvitations = await _groupUsersQuery.GetInvitationCountForGroup(User.Identity.Name);
+            if(userNameIdentity == null)
+            {
+                return Unauthorized();
+            }
+
+            FinansoData.RepositoryResult<int> groupInvitations = await _groupUsersQuery.GetInvitationCountForGroup(userNameIdentity);
             if (groupInvitations.IsSuccess == false)
             {
                 return BadRequest();
             }
 
-            FinansoData.RepositoryResult<IEnumerable<GetUserGroupsViewModel>?> data = await _groupQueryRepository.GetUserGroups(User.Identity.Name);
+            FinansoData.RepositoryResult<IEnumerable<GetUserGroupsViewModel>?> data = await _groupQueryRepository.GetUserGroups(userNameIdentity);
             if (data.IsSuccess == false)
             {
                 return BadRequest();
@@ -62,7 +69,7 @@ namespace FinansoApp.Controllers
             FinansoApp.ViewModels.Group.GroupIndexViewModel vm = new GroupIndexViewModel
             {
                 GroupInvitations = groupInvitations.Value,
-                Groups = data.Value.ToList()
+                Groups = data.Value is null ? new List<GetUserGroupsViewModel>() : data.Value.ToList()
             };
 
             return View(vm);
@@ -87,7 +94,12 @@ namespace FinansoApp.Controllers
         [HttpPost]
         public async Task<IActionResult> Create(GroupCreateViewModel groupCreateViewModel)
         {
-            FinansoData.RepositoryResult<bool?> createGroup = await _groupManagementRepository.Add(groupCreateViewModel.Name, User.Identity.Name);
+            if (!ModelState.IsValid)
+            {
+                return View(groupCreateViewModel);
+            }
+
+            FinansoData.RepositoryResult<bool?> createGroup = await _groupManagementRepository.Add(groupCreateViewModel.Name, userNameIdentity);
 
 
             if (createGroup.IsSuccess == false
@@ -114,8 +126,13 @@ namespace FinansoApp.Controllers
         [Authorize]
         public async Task<IActionResult> EditMembers(int id)
         {
+            if(userNameIdentity == null)
+            {
+                return Unauthorized();
+            }
+
             // check logged in user access
-            FinansoData.RepositoryResult<GetUserMembershipInGroupViewModel> groupMemberInfo = await _groupUsersQuery.GetUserMembershipInGroupAsync(id, User.Identity.Name);
+            FinansoData.RepositoryResult<GetUserMembershipInGroupViewModel> groupMemberInfo = await _groupUsersQuery.GetUserMembershipInGroupAsync(id, userNameIdentity);
 
             if (groupMemberInfo.Value.IsMember == false)
             {
@@ -166,8 +183,13 @@ namespace FinansoApp.Controllers
                 return NotFound();
             }
 
+            if (userNameIdentity == null)
+            {
+                return Unauthorized();
+            }
+
             // Check if user is group owner
-            FinansoData.RepositoryResult<bool> userGroupOwner = await _groupUsersQuery.IsUserGroupOwner(id, User.Identity.Name);
+            FinansoData.RepositoryResult<bool> userGroupOwner = await _groupUsersQuery.IsUserGroupOwner(id, userNameIdentity);
 
             if (!userGroupOwner.IsSuccess)
             {
@@ -205,8 +227,13 @@ namespace FinansoApp.Controllers
                 return NotFound();
             }
 
+            if (userNameIdentity == null)
+            {
+                return Unauthorized();
+            }
+
             // Check if user is group owner
-            FinansoData.RepositoryResult<bool> userGroupOwner = await _groupUsersQuery.IsUserGroupOwner(id, User.Identity.Name);
+            FinansoData.RepositoryResult<bool> userGroupOwner = await _groupUsersQuery.IsUserGroupOwner(id, userNameIdentity);
 
             if (!userGroupOwner.IsSuccess)
             {
@@ -249,8 +276,13 @@ namespace FinansoApp.Controllers
         [Authorize]
         public async Task<IActionResult> DeleteGroupUserConfirmed(int groupUserId, int groupId)
         {
+            if (userNameIdentity == null)
+            {
+                return Unauthorized();
+            }
+
             // Check if user is group owner
-            FinansoData.RepositoryResult<bool> userGroupOwner = await _groupUsersQuery.IsUserGroupOwner(groupId, User.Identity.Name);
+            FinansoData.RepositoryResult<bool> userGroupOwner = await _groupUsersQuery.IsUserGroupOwner(groupId, userNameIdentity);
 
             // Return bad request if something went wrong
             if (!userGroupOwner.IsSuccess)
@@ -280,8 +312,13 @@ namespace FinansoApp.Controllers
         [Authorize]
         public async Task<IActionResult> AddGroupUser(int id)
         {
+            if (userNameIdentity == null)
+            {
+                return Unauthorized();
+            }
+
             // Check if user is group owner
-            FinansoData.RepositoryResult<bool> userGroupOwner = await _groupUsersQuery.IsUserGroupOwner(id, User.Identity.Name);
+            FinansoData.RepositoryResult<bool> userGroupOwner = await _groupUsersQuery.IsUserGroupOwner(id, userNameIdentity);
 
             // Return bad request if something went wrong
             if (!userGroupOwner.IsSuccess)
@@ -312,8 +349,14 @@ namespace FinansoApp.Controllers
         [HttpPost]
         public async Task<IActionResult> AddGroupUser(AddGroupUserViemModel model)
         {
+            if (userNameIdentity == null)
+            {
+                return Unauthorized();
+            }
+
+
             // Check if user is trying to add himself
-            if (model.UserName == User.Identity.Name)
+            if (model.UserName == userNameIdentity)
             {
                 return View("AddGroupUser", new AddGroupUserViemModel
                 {
@@ -324,7 +367,7 @@ namespace FinansoApp.Controllers
             }
 
             // Check if user is group owner
-            FinansoData.RepositoryResult<bool> userGroupOwner = await _groupUsersQuery.IsUserGroupOwner(model.GroupId, User.Identity.Name);
+            FinansoData.RepositoryResult<bool> userGroupOwner = await _groupUsersQuery.IsUserGroupOwner(model.GroupId, userNameIdentity);
 
             // Return bad request if something went wrong
             if (!userGroupOwner.IsSuccess)
@@ -434,7 +477,13 @@ namespace FinansoApp.Controllers
         [Authorize]
         public async Task<IActionResult> Invitations()
         {
-            FinansoData.RepositoryResult<IEnumerable<GetGroupInvitationsViewModel>> repositoryResult = await _groupUsersQuery.GetGroupInvitations(User.Identity.Name);
+            if (userNameIdentity == null)
+            {
+                return Unauthorized();
+            }
+
+
+            FinansoData.RepositoryResult<IEnumerable<GetGroupInvitationsViewModel>> repositoryResult = await _groupUsersQuery.GetGroupInvitations(userNameIdentity);
             if (repositoryResult.IsSuccess == false)
             {
                 return BadRequest();
@@ -447,7 +496,13 @@ namespace FinansoApp.Controllers
         [HttpPost]
         public async Task<IActionResult> AcceptInvitation(int groupUserId)
         {
-            FinansoData.RepositoryResult<bool> isUserInvited = await _groupUsersQuery.IsUserInvited(groupUserId, User.Identity.Name);
+            if (userNameIdentity == null)
+            {
+                return Unauthorized();
+            }
+
+
+            FinansoData.RepositoryResult<bool> isUserInvited = await _groupUsersQuery.IsUserInvited(groupUserId, userNameIdentity);
 
             if (isUserInvited.IsSuccess == false)
             {
@@ -474,7 +529,12 @@ namespace FinansoApp.Controllers
         [HttpPost]
         public async Task<IActionResult> RejectInvitation(int groupUserId)
         {
-            FinansoData.RepositoryResult<bool> isUserInvited = await _groupUsersQuery.IsUserInvited(groupUserId, User.Identity.Name);
+            if (userNameIdentity == null)
+            {
+                return Unauthorized();
+            }
+
+            FinansoData.RepositoryResult<bool> isUserInvited = await _groupUsersQuery.IsUserInvited(groupUserId, userNameIdentity);
 
             if (isUserInvited.IsSuccess == false)
             {

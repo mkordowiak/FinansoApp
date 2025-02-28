@@ -40,6 +40,8 @@ namespace FinansoApp.Controllers
             _balanceSumAmount = balanceSumAmount;
         }
 
+        private string? userNameIdentity => User.Identity?.Name;
+
         private Chart GenerateVerticalBarChart(string chartTitle, List<string> labels, List<double?> numbers)
         {
             Chart chart = new Chart();
@@ -142,23 +144,27 @@ namespace FinansoApp.Controllers
 
         public async Task<IActionResult> Index()
         {
+            if (userNameIdentity == null)
+            {
+                return Unauthorized();
+            }
 
             // Get list of balances for user
-            FinansoData.RepositoryResult<IEnumerable<BalanceViewModel>> repositoryResult = await _balanceQueryRepository.GetListOfBalancesForUser(User.Identity.Name);
+            FinansoData.RepositoryResult<IEnumerable<BalanceViewModel>?> repositoryResult = await _balanceQueryRepository.GetListOfBalancesForUser(userNameIdentity);
             if (!repositoryResult.IsSuccess)
             {
                 return BadRequest();
             }
 
             // Get sum of all balances for user
-            FinansoData.RepositoryResult<decimal?> sumAmountResult = await _balanceSumAmount.GetBalancesSumAmountForUser(User.Identity.Name);
+            FinansoData.RepositoryResult<decimal?> sumAmountResult = await _balanceSumAmount.GetBalancesSumAmountForUser(userNameIdentity);
             if (!sumAmountResult.IsSuccess)
             {
                 BadRequest();
             }
 
             ViewModels.Balance.IndexViewModel indexViewModel = new ViewModels.Balance.IndexViewModel();
-            indexViewModel.Balances = repositoryResult.Value;
+            indexViewModel.Balances = repositoryResult.Value ?? Enumerable.Empty<BalanceViewModel>();
             indexViewModel.SumAmount = sumAmountResult.Value;
 
             return View(indexViewModel);
@@ -175,9 +181,14 @@ namespace FinansoApp.Controllers
         [Authorize]
         public async Task<IActionResult> AddBalance()
         {
+            if (userNameIdentity == null)
+            {
+                return Unauthorized();
+            }
+
             // Get all currencies and groups for current user
             FinansoData.RepositoryResult<IEnumerable<FinansoData.DataViewModel.Currency.CurrencyViewModel>> currencies = await _currencyRepository.GetAllCurrencies();
-            FinansoData.RepositoryResult<IEnumerable<FinansoData.DataViewModel.Group.GetUserGroupsViewModel>?> groups = await _groupQueryRepository.GetUserGroups(User.Identity.Name);
+            FinansoData.RepositoryResult<IEnumerable<FinansoData.DataViewModel.Group.GetUserGroupsViewModel>?> groups = await _groupQueryRepository.GetUserGroups(userNameIdentity);
 
             if (currencies.IsSuccess == false || groups.IsSuccess == false)
             {
@@ -208,17 +219,22 @@ namespace FinansoApp.Controllers
         [Authorize]
         public async Task<IActionResult> AddBalance(AddBalanceViewModel balanceVM)
         {
+            if (userNameIdentity == null)
+            {
+                return Unauthorized();
+            }
+
             if (!ModelState.IsValid)
             {
                 // Get all currencies and groups for current user
                 balanceVM.Currencies = (await _currencyRepository.GetAllCurrencies()).Value;
-                balanceVM.Groups = (await _groupQueryRepository.GetUserGroups(User.Identity.Name)).Value;
+                balanceVM.Groups = (await _groupQueryRepository.GetUserGroups(userNameIdentity)).Value;
 
                 return View(balanceVM);
             }
 
             // Check if user has access to selected group
-            FinansoData.RepositoryResult<FinansoData.DataViewModel.Group.GetUserMembershipInGroupViewModel> groupMembershipResult = await _groupUsersQueryRepository.GetUserMembershipInGroupAsync(balanceVM.SelectedGroup, User.Identity.Name);
+            FinansoData.RepositoryResult<FinansoData.DataViewModel.Group.GetUserMembershipInGroupViewModel> groupMembershipResult = await _groupUsersQueryRepository.GetUserMembershipInGroupAsync(balanceVM.SelectedGroup, userNameIdentity);
             if (!groupMembershipResult.IsSuccess)
             {
                 return BadRequest();
@@ -265,8 +281,13 @@ namespace FinansoApp.Controllers
         [HttpGet]
         public async Task<IActionResult> SetBalanceAmount(int id)
         {
+            if (userNameIdentity == null)
+            {
+                return Unauthorized();
+            }
+
             // Check if user has access to selected group
-            FinansoData.RepositoryResult<bool?> hasUserAccessToGroup = await _balanceQueryRepository.HasUserAccessToBalance(User.Identity.Name, id);
+            FinansoData.RepositoryResult<bool?> hasUserAccessToGroup = await _balanceQueryRepository.HasUserAccessToBalance(userNameIdentity, id);
 
             if (!hasUserAccessToGroup.IsSuccess)
             {
@@ -286,8 +307,6 @@ namespace FinansoApp.Controllers
                 Chart monthlyBalanceLogChart = GenerateVerticalBarChart("Balance monthly average", balanceLogChartData.Value.Select(x => $"{x.Month}-{x.Year}").ToList(), balanceLogChartData.Value.Select(x => (double?)x.Average).ToList());
                 ViewData["BalanceMonthlyLog"] = monthlyBalanceLogChart;
             }
-
-            
 
             FinansoData.RepositoryResult<BalanceViewModel> balance = await _balanceQueryRepository.GetBalance(id);
 
@@ -311,8 +330,13 @@ namespace FinansoApp.Controllers
                 return View(setBalanceAmountViewModel);
             }
 
+            if (userNameIdentity == null)
+            {
+                return Unauthorized();
+            }
+
             // Check if user has access to selected group
-            FinansoData.RepositoryResult<bool?> hasUserAccessToGroup = await _balanceQueryRepository.HasUserAccessToBalance(User.Identity.Name, setBalanceAmountViewModel.BalanceId);
+            FinansoData.RepositoryResult<bool?> hasUserAccessToGroup = await _balanceQueryRepository.HasUserAccessToBalance(userNameIdentity, setBalanceAmountViewModel.BalanceId);
 
             if (!hasUserAccessToGroup.IsSuccess)
             {

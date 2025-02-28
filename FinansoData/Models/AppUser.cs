@@ -41,6 +41,6 @@ namespace FinansoData.Models
         public DateTime? Modified { get; set; }
 
         // Navigation properties
-        public virtual ICollection<BalanceTransaction> BalanceTransactions { get; set; }
+        public virtual ICollection<BalanceTransaction> BalanceTransactions { get; set; } = new List<BalanceTransaction>();
     }
 }

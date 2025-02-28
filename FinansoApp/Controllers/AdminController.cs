@@ -24,7 +24,7 @@ namespace FinansoApp.Controllers
         [HttpPost]
         public async Task<IActionResult> SeedBasicData()
         {
-            _seed.SeedCurrencies();
+            await _seed.SeedCurrencies();
             return RedirectToAction("Index", "Home");
         }
     }

@@ -54,8 +54,6 @@ namespace FinansoData.Repository.Chart
                 return RepositoryResult<IEnumerable<BalanceLogAverage>>.Failure(ex.Message, ErrorType.ServerError);
             }
 
-            return RepositoryResult<IEnumerable<BalanceLogAverage>>.Success(result);
-
             _cacheWrapper.Set(cacheDataKey, result, TimeSpan.FromMinutes(30));
             return RepositoryResult<IEnumerable<BalanceLogAverage>>.Success(result);
         }

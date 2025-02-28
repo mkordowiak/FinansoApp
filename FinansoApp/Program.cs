@@ -117,7 +117,14 @@ WebApplication app = builder.Build();
 
 if (args.Length == 1 && args[0].ToLower() == "seeddata")
 {
-    string defaultPassword = builder.Configuration.GetValue<string>("DefaultPassword");
+    string? defaultPassword = builder.Configuration.GetValue<string>("DefaultPassword");
+
+    if (string.IsNullOrEmpty(defaultPassword))
+    {
+        Console.WriteLine("Default password not found in appsettings.json. Exiting");
+        return;
+    }
+
     Console.WriteLine($"Default password: \"{defaultPassword}\"");
 
 
@@ -142,7 +149,7 @@ if (args.Length == 1 && args[0].ToLower() == "seeddata")
     Console.WriteLine("Currencies seeded");
 
     //Seed.SeedUsers(app, defaultPassword);
-    FinansoData.Data.Seed.SeedUsers(app, defaultPassword);
+    await FinansoData.Data.Seed.SeedUsers(app, defaultPassword);
 
     Console.WriteLine("Users seeded");
 

@@ -18,7 +18,13 @@ namespace FinansoApp.Controllers
         private readonly IUserManagement _userManagement;
         private readonly IGroupManagementRepository _groupManagementRepository;
 
-        public AccountController(UserManager<AppUser> userManager, IAuthentication authentication, IUserManagement userManagement, IUserQuery userQuery, IGroupManagementRepository groupManagementRepository, SignInManager<AppUser> signInManager = null)
+        public AccountController(
+            UserManager<AppUser> userManager, 
+            IAuthentication authentication, 
+            IUserManagement userManagement, 
+            IUserQuery userQuery, 
+            IGroupManagementRepository groupManagementRepository, 
+            SignInManager<AppUser> signInManager)
         {
             _userManager = userManager;
             _signInManager = signInManager;
@@ -28,6 +34,7 @@ namespace FinansoApp.Controllers
             _groupManagementRepository = groupManagementRepository;
         }
 
+        private string? userNameIdentity => User.Identity?.Name;
 
 
 
@@ -139,7 +146,12 @@ namespace FinansoApp.Controllers
         [Authorize]
         public async Task<IActionResult> Edit()
         {
-            RepositoryResult<AppUser?> repositoryResult = await _userQuery.GetUserByEmail(User.Identity.Name);
+            if (userNameIdentity == null)
+            {
+                return Unauthorized();
+            }
+
+            RepositoryResult<AppUser?> repositoryResult = await _userQuery.GetUserByEmail(userNameIdentity);
 
             if (repositoryResult.IsSuccess == false)
             {
@@ -153,8 +165,8 @@ namespace FinansoApp.Controllers
 
             FinansoApp.ViewModels.Account.EditAccountViewModel editAccountViewModel = new FinansoApp.ViewModels.Account.EditAccountViewModel
             {
-                FirstName = repositoryResult.Value.FirstName,
-                LastName = repositoryResult.Value.LastName,
+                FirstName = repositoryResult.Value.FirstName is null ? string.Empty : repositoryResult.Value.FirstName,
+                LastName = repositoryResult.Value.LastName is null ? string.Empty : repositoryResult.Value.LastName,
                 Nickname = repositoryResult.Value.Nickname
             };
 
@@ -170,7 +182,12 @@ namespace FinansoApp.Controllers
                 return View(editAccountViewModel);
             }
 
-            RepositoryResult<AppUser?> getUserRepositoryResult = await _userQuery.GetUserByEmail(User.Identity.Name);
+            if (userNameIdentity == null)
+            {
+                return Unauthorized();
+            }
+
+            RepositoryResult<AppUser?> getUserRepositoryResult = await _userQuery.GetUserByEmail(userNameIdentity);
 
             if (getUserRepositoryResult.IsSuccess == false)
             {
