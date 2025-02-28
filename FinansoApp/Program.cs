@@ -11,6 +11,7 @@ using Quartz.AspNetCore;
 
 WebApplicationBuilder builder = WebApplication.CreateBuilder(args);
 
+#region Register services
 // Scopes
 builder.Services.AddScoped<FinansoData.Data.ISeed, FinansoData.Data.Seed>();
 builder.Services.AddScoped<FinansoData.Repository.Group.IGroupCrudRepository, FinansoData.Repository.Group.GroupCrudRepository>();
@@ -45,7 +46,7 @@ builder.Services.AddScoped<FinansoData.Repository.Chart.IChartDataRepository, Fi
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
-
+#endregion
 
 
 builder.Services.AddDbContext<FinansoData.Data.ApplicationDbContext>(options =>
@@ -53,10 +54,11 @@ builder.Services.AddDbContext<FinansoData.Data.ApplicationDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection"));
 });
 
+#region Password settings
 #if DEBUG
 builder.Services.Configure<IdentityOptions>(options =>
 {
-    // Password settings.
+    // debug password settings.
     options.Password.RequireDigit = false;
     options.Password.RequireLowercase = false;
     options.Password.RequireNonAlphanumeric = false;
@@ -67,15 +69,16 @@ builder.Services.Configure<IdentityOptions>(options =>
 #else 
 builder.Services.Configure<IdentityOptions>(options =>
 {
-    // Password settings.
+    // Release assword settings.
     options.Password.RequireDigit = true;
     options.Password.RequireLowercase = true;
-    options.Password.RequireNonAlphanumeric = true;
-    options.Password.RequireUppercase = false;
+    options.Password.RequireNonAlphanumeric = false;
+    options.Password.RequireUppercase = true;
     options.Password.RequiredLength = 7;
     options.Password.RequiredUniqueChars = 2;
 });
 #endif
+#endregion
 
 #region Quartz.NET
 
@@ -115,7 +118,21 @@ WebApplication app = builder.Build();
 
 
 
-if (args.Length == 1 && args[0].ToLower() == "seeddata")
+// If the app is in development mode, migrate the database and seed data
+if (app.Environment.IsDevelopment())
+{
+    ApplicationDbContext application = app.Services.CreateScope().ServiceProvider.GetRequiredService<ApplicationDbContext>();
+
+    IEnumerable<string> pendingMigrations = await application.Database.GetPendingMigrationsAsync();
+    if (pendingMigrations != null)
+    {
+        await application.Database.MigrateAsync();
+        seeddata();
+    }
+
+}
+
+void seeddata()
 {
     string defaultPassword = builder.Configuration.GetValue<string>("DefaultPassword");
     Console.WriteLine($"Default password: \"{defaultPassword}\"");
@@ -147,6 +164,20 @@ if (args.Length == 1 && args[0].ToLower() == "seeddata")
     Console.WriteLine("Users seeded");
 
     return;
+}
+
+
+
+if (args.Length == 1 && args[0].ToLower() == "seeddata")
+{
+    ApplicationDbContext application = app.Services.CreateScope().ServiceProvider.GetRequiredService<ApplicationDbContext>();
+    IEnumerable<string> pendingMigrations = await application.Database.GetPendingMigrationsAsync();
+    if (pendingMigrations != null)
+    {
+        await application.Database.MigrateAsync();
+    }
+
+    seeddata();
 }
 
 

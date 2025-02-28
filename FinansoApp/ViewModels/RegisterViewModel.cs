@@ -20,11 +20,17 @@ namespace FinansoApp.ViewModels
 
         [Required(ErrorMessage = "Password is required")]
         [DataType(DataType.Password)]
+#if DEBUG
+        [MinLength(2, ErrorMessage = "Password must be at least 2 characters long")]
+#else
+        [MinLength(7, ErrorMessage = "Password must be at least 7 characters long")]
+        [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{6,}$", ErrorMessage = "Password must contain at least one uppercase letter, one lowercase letter and one number")]
+#endif
         public string Password { get; set; }
 
         [Required(ErrorMessage = "You must confirm your password")]
         [DataType(DataType.Password)]
-        [Display(Name = "Confitm password")]
+        [Display(Name = "Confirm password")]
         [Compare("Password", ErrorMessage = "Password mismatch")]
         public string ConfirmPassword { get; set; }
 

@@ -3,6 +3,8 @@ using FinansoData.Models;
 using FinansoData.Repository.Group;
 using FluentAssertions;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
+using Moq;
 
 namespace FinansoData.Tests.Repository.Group
 {
@@ -14,12 +16,20 @@ namespace FinansoData.Tests.Repository.Group
         private FinansoData.Models.Group _group1;
         private Models.Group _group2;
         private GroupUser _groupUser;
+        private readonly Mock<ILogger<GroupManagementRepository>> _iloggerMoq;
 
         public GroupManagmentRepositoryTests()
         {
             _dbContextOptions = new DbContextOptionsBuilder<ApplicationDbContext>()
                 .UseInMemoryDatabase(databaseName: Guid.NewGuid().ToString())
                 .Options;
+            _iloggerMoq = new Mock<ILogger<GroupManagementRepository>>();
+            _iloggerMoq.Setup(x => x.Log(
+                It.IsAny<LogLevel>(),
+                It.IsAny<EventId>(),
+                It.IsAny<It.IsAnyType>(),
+                It.IsAny<Exception>(),
+                (Func<It.IsAnyType, Exception, string>)It.IsAny<object>()));
 
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
@@ -55,7 +65,7 @@ namespace FinansoData.Tests.Repository.Group
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
                 IGroupCrudRepository groupCrudRepository = new GroupCrudRepository(context);
-                GroupManagementRepository groupRepository = new GroupManagementRepository(context, groupCrudRepository);
+                GroupManagementRepository groupRepository = new GroupManagementRepository(context, groupCrudRepository, _iloggerMoq.Object);
 
                 string newGroupName = "New group";
                 string groupOwnerUserName = _group1Owner.NormalizedUserName;
@@ -77,7 +87,7 @@ namespace FinansoData.Tests.Repository.Group
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
                 IGroupCrudRepository groupCrudRepository = new GroupCrudRepository(context);
-                GroupManagementRepository groupManagementRepository = new GroupManagementRepository(context, groupCrudRepository);
+                GroupManagementRepository groupManagementRepository = new GroupManagementRepository(context, groupCrudRepository, _iloggerMoq.Object);
 
                 string newGroupName = "New group";
                 string groupOwnerUserName = "wrong username";
@@ -101,7 +111,7 @@ namespace FinansoData.Tests.Repository.Group
             using (ApplicationDbContext context = new ApplicationDbContext(_dbContextOptions))
             {
                 IGroupCrudRepository groupCrudRepository = new GroupCrudRepository(context);
-                GroupManagementRepository groupManagementRepository = new GroupManagementRepository(context, groupCrudRepository);
+                GroupManagementRepository groupManagementRepository = new GroupManagementRepository(context, groupCrudRepository, _iloggerMoq.Object);
 
                 // Act
                 RepositoryResult<bool> result = await groupManagementRepository.DeleteGroup(999);

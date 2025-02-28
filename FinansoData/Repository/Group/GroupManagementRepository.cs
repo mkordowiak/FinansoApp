@@ -1,6 +1,7 @@
 ﻿using FinansoData.Data;
 using FinansoData.Models;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 
 namespace FinansoData.Repository.Group
 {
@@ -8,15 +9,18 @@ namespace FinansoData.Repository.Group
     {
         private readonly ApplicationDbContext _context;
         private readonly IGroupCrudRepository _groupCrudRepository;
+        private readonly ILogger<GroupManagementRepository> _logger;
 
-        public GroupManagementRepository(ApplicationDbContext context, IGroupCrudRepository groupCrudRepository)
+        public GroupManagementRepository(ApplicationDbContext context, IGroupCrudRepository groupCrudRepository, ILogger<GroupManagementRepository> logger)
         {
             _context = context;
             _groupCrudRepository = groupCrudRepository;
+            _logger = logger;
         }
 
         public async Task<RepositoryResult<bool?>> Add(string groupName, string appUser)
         {
+            _logger.LogInformation("Adding group {groupName} for user {appUser}", groupName, appUser);
             AppUser? user;
             try
             {
@@ -111,7 +115,7 @@ namespace FinansoData.Repository.Group
             }
 
 
-            using(var transaction = await _context.Database.BeginTransactionAsync())
+            using (Microsoft.EntityFrameworkCore.Storage.IDbContextTransaction transaction = await _context.Database.BeginTransactionAsync())
             {
                 try
                 {
@@ -130,7 +134,7 @@ namespace FinansoData.Repository.Group
                     return RepositoryResult<bool>.Failure(ex.Message, ErrorType.ServerError);
                 }
             }
-            
+
             return RepositoryResult<bool>.Success(true);
         }
     }
