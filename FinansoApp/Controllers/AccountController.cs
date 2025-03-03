@@ -91,7 +91,7 @@ namespace FinansoApp.Controllers
 
         public IActionResult Register()
         {
-            // Hold values wher reload
+            // Hold values when reload
             RegisterViewModel responseViewModel = new RegisterViewModel();
             return View(responseViewModel);
         }
