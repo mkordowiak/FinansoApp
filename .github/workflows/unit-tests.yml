@@ -19,7 +19,7 @@ jobs:
         dotnet-version: '8.x'
 
     - name: Restore dependencies
-      run: dotnet restore FinanoApp.sln
+      run: dotnet restore FinansoApp.sln
 
     - name: Install dependencies
       run: dotnet tool restore
